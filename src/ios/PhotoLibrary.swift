@@ -1,8 +1,26 @@
 import Photos
+import Foundation
+
+//TODO: Swift 3
+//extension NSDate: JSONRepresentable {
+//    var JSONRepresentation: AnyObject {
+//        let formatter = NSDateFormatter()
+//        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+//
+//        return formatter.stringFromDate(self)
+//    }
+//}
+//extension NSURL: JSONRepresentable {
+//    var JSONRepresentation: AnyObject {
+//        return self.absoluteString
+//    }
+//}
 
 @objc(PhotoLibrary) class PhotoLibrary : CDVPlugin {
 
   var fetchOptions: PHFetchOptions!
+  var imageRequestOptions: PHImageRequestOptions!
+  var dateFormatter: NSDateFormatter! //TODO: remove in Swift 3, use JSONRepresentable
 
   override func pluginInitialize() {
     fetchOptions = PHFetchOptions()
@@ -10,6 +28,12 @@ import Photos
     if #available(iOS 9.0, *) {
       fetchOptions.includeAssetSourceTypes = [.TypeUserLibrary, .TypeiTunesSynced, .TypeCloudShared]
     }
+
+    imageRequestOptions = PHImageRequestOptions()
+    imageRequestOptions.synchronous = true
+
+    dateFormatter = NSDateFormatter()
+    dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
   }
 
   // Will sort by creation date
@@ -22,16 +46,26 @@ import Photos
 
       fetchResult.enumerateObjectsUsingBlock {
         (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
+
         let asset = obj as! PHAsset
-        let resultImage = NSMutableDictionary()
-        resultImage["id"] = asset.localIdentifier
-        resultImage["title"] = ""
-        resultImage["width"] = asset.pixelWidth
-        resultImage["height"] = asset.pixelHeight
-        resultImage["data"] = ""
-        resultImage["thumbnail"] = ""
-        resultImage["creationDate"] = 0
-        images.append(resultImage)
+
+        PHImageManager.defaultManager().requestImageDataForAsset(asset, options: self.imageRequestOptions) {
+            (imageDate: NSData?, dataUTI: String?, orientation: UIImageOrientation, info: [NSObject : AnyObject]?) in
+
+            let imageURL = info?["PHImageFileURLKey"] as? NSURL
+
+            let resultImage = NSMutableDictionary()
+
+            resultImage["id"] = asset.localIdentifier
+            resultImage["filename"] = imageURL?.pathComponents?.last
+            resultImage["url"] = imageURL?.absoluteString //TODO: in Swift 3, use JSONRepresentable
+            resultImage["width"] = asset.pixelWidth
+            resultImage["height"] = asset.pixelHeight
+            resultImage["creationDate"] = self.dateFormatter.stringFromDate(asset.creationDate!) //TODO: in Swift 3, use JSONRepresentable
+            // TODO: asset.faceRegions, asset.locationData
+
+            images.append(resultImage)
+        }
       }
 
       let pluginResult = CDVPluginResult(
