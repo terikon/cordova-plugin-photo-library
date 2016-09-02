@@ -1,15 +1,5 @@
 import Photos
 
-class ResultImage {
-  var id: String?
-  var title: String?
-  var width: Int?
-  var height: Int?
-  var data: String?
-  var thumbnail: String?
-  var creationDate: Int?
-}
-
 @objc(PhotoLibrary) class PhotoLibrary : CDVPlugin {
 
   var fetchOptions: PHFetchOptions!
@@ -28,19 +18,19 @@ class ResultImage {
 
       let fetchResult = PHAsset.fetchAssetsWithMediaType(.Image, options: self.fetchOptions)
 
-      var images = [ResultImage]()
+      var images = [NSDictionary]()
 
       fetchResult.enumerateObjectsUsingBlock {
         (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
         let asset = obj as! PHAsset
-        let resultImage = ResultImage()
-        resultImage.id = asset.localIdentifier
-        resultImage.title = ""
-        resultImage.width = asset.pixelWidth
-        resultImage.height = asset.pixelHeight
-        resultImage.data = ""
-        resultImage.thumbnail = ""
-        resultImage.creationDate = 0
+        let resultImage = NSMutableDictionary()
+        resultImage["id"] = asset.localIdentifier
+        resultImage["title"] = ""
+        resultImage["width"] = asset.pixelWidth
+        resultImage["height"] = asset.pixelHeight
+        resultImage["data"] = ""
+        resultImage["thumbnail"] = ""
+        resultImage["creationDate"] = 0
         images.append(resultImage)
       }
 
