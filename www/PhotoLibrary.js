@@ -19,17 +19,18 @@ exports.getLibrary = function (success, error, options) {
     error,
     'PhotoLibrary',
     'getLibrary',
-    [options]
+    []
   );
 }
 
 exports.getThumbnailURL = function (photoId, success, error, options) {
+  var thumbnailHeight = options && options.height;
   cordova.exec(
     success,
     error,
     'PhotoLibrary',
     'getThumbnailURL',
-    [photoId, options]
+    [photoId, thumbnailHeight]
   );
 }
 
@@ -39,6 +40,6 @@ exports.getPhotoURL = function (photoId, success, error, options) {
     error,
     'PhotoLibrary',
     'getPhotoURL',
-    [photoId, options]
+    [photoId]
   );
 }

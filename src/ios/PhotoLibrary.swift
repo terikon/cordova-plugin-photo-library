@@ -61,7 +61,6 @@ import Foundation
                     libraryItem["id"] = asset.localIdentifier
                     libraryItem["filename"] = imageURL?.pathComponents?.last
                     libraryItem["nativeURL"] = imageURL?.absoluteString //TODO: in Swift 3, use JSONRepresentable
-                    libraryItem["uti"] = dataUTI
                     libraryItem["width"] = asset.pixelWidth
                     libraryItem["height"] = asset.pixelHeight
                     libraryItem["creationDate"] = self.dateFormatter.stringFromDate(asset.creationDate!) //TODO: in Swift 3, use JSONRepresentable
@@ -84,8 +83,7 @@ import Foundation
         dispatch_async(dispatch_get_main_queue()) {
 
             let photoId = command.arguments[0] as? String ?? ""
-            let options = command.arguments[1] as? NSDictionary ?? NSDictionary()
-            let thumbnailHeight = options["height"] as? Int ?? 200
+            let thumbnailHeight = command.arguments[1] as? Int ?? 200
 
             let fetchResult = PHAsset.fetchAssetsWithLocalIdentifiers([photoId], options: self.fetchOptions)
 
@@ -115,7 +113,6 @@ import Foundation
         dispatch_async(dispatch_get_main_queue()) {
 
             let photoId = command.arguments[0] as? String ?? ""
-            let options = command.arguments[1] as? NSDictionary ?? NSDictionary()
 
             let fetchResult = PHAsset.fetchAssetsWithLocalIdentifiers([photoId], options: self.fetchOptions)
 
@@ -149,7 +146,7 @@ import Foundation
       imageData = UIImagePNGRepresentation(image)
       mimeType = "image/png"
     } else {
-      imageData = UIImageJPEGRepresentation(image, 1.0)
+      imageData = UIImageJPEGRepresentation(image, 0.5)
       mimeType = "image/jpeg"
     }
     if (imageData != nil) {
