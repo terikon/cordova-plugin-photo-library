@@ -13,32 +13,32 @@ exports.echojs = function (arg0, success, error) {
 
 };
 
-exports.getLibrary = function (success, error) {
+exports.getLibrary = function (success, error, options) {
   cordova.exec(
     success,
     error,
     'PhotoLibrary',
     'getLibrary',
-    []
+    [options]
   );
 }
 
-exports.getThumbnailURL = function (photoId, success, error) {
+exports.getThumbnailURL = function (photoId, success, error, options) {
   cordova.exec(
     success,
     error,
     'PhotoLibrary',
     'getThumbnailURL',
-    [photoId]
+    [photoId, options]
   );
 }
 
-exports.getPhotoURL = function (photoId, success, error) {
+exports.getPhotoURL = function (photoId, success, error, options) {
   cordova.exec(
     success,
     error,
     'PhotoLibrary',
     'getPhotoURL',
-    [photoId]
+    [photoId, options]
   );
 }

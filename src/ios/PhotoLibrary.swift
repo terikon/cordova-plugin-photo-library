@@ -18,79 +18,129 @@ import Foundation
 
 @objc(PhotoLibrary) class PhotoLibrary : CDVPlugin {
 
-  var fetchOptions: PHFetchOptions!
-  var imageRequestOptions: PHImageRequestOptions!
-  var dateFormatter: NSDateFormatter! //TODO: remove in Swift 3, use JSONRepresentable
+    var fetchOptions: PHFetchOptions!
+    var imageRequestOptions: PHImageRequestOptions!
+    var dateFormatter: NSDateFormatter! //TODO: remove in Swift 3, use JSONRepresentable
 
-  override func pluginInitialize() {
-    fetchOptions = PHFetchOptions()
-    fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
-    if #available(iOS 9.0, *) {
-      fetchOptions.includeAssetSourceTypes = [.TypeUserLibrary, .TypeiTunesSynced, .TypeCloudShared]
+    override func pluginInitialize() {
+        fetchOptions = PHFetchOptions()
+        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
+        if #available(iOS 9.0, *) {
+            fetchOptions.includeAssetSourceTypes = [.TypeUserLibrary, .TypeiTunesSynced, .TypeCloudShared]
+        }
+
+        imageRequestOptions = PHImageRequestOptions()
+        imageRequestOptions.synchronous = true
+        imageRequestOptions.resizeMode = .Fast
+        imageRequestOptions.deliveryMode = .FastFormat
+        imageRequestOptions.version = .Current
+
+        dateFormatter = NSDateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
     }
 
-    imageRequestOptions = PHImageRequestOptions()
-    imageRequestOptions.synchronous = true
-    imageRequestOptions.resizeMode = .Fast
-    imageRequestOptions.deliveryMode = .FastFormat
-    imageRequestOptions.version = .Current
+    // Will sort by creation date
+    func getLibrary(command: CDVInvokedUrlCommand) {
+        dispatch_async(dispatch_get_main_queue()) {
+            let fetchResult = PHAsset.fetchAssetsWithMediaType(.Image, options: self.fetchOptions)
 
-    dateFormatter = NSDateFormatter()
-    dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
-  }
+            var library = [NSDictionary]()
 
-  // Will sort by creation date
-  func getLibrary(command: CDVInvokedUrlCommand) {
-    dispatch_async(dispatch_get_main_queue(), {
+            fetchResult.enumerateObjectsUsingBlock {
+                (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
 
-      let fetchResult = PHAsset.fetchAssetsWithMediaType(.Image, options: self.fetchOptions)
+                let asset = obj as! PHAsset
 
-      var images = [NSDictionary]()
+                PHImageManager.defaultManager().requestImageDataForAsset(asset, options: self.imageRequestOptions) {
+                    (imageData: NSData?, dataUTI: String?, orientation: UIImageOrientation, info: [NSObject : AnyObject]?) in
 
-      fetchResult.enumerateObjectsUsingBlock {
-        (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
+                    let imageURL = info?["PHImageFileURLKey"] as? NSURL
 
-        let asset = obj as! PHAsset
+                    let libraryItem = NSMutableDictionary()
 
-        PHImageManager.defaultManager().requestImageDataForAsset(asset, options: self.imageRequestOptions) {
-            (imageDate: NSData?, dataUTI: String?, orientation: UIImageOrientation, info: [NSObject : AnyObject]?) in
+                    libraryItem["id"] = asset.localIdentifier
+                    libraryItem["filename"] = imageURL?.pathComponents?.last
+                    libraryItem["nativeURL"] = imageURL?.absoluteString //TODO: in Swift 3, use JSONRepresentable
+                    libraryItem["uti"] = dataUTI
+                    libraryItem["width"] = asset.pixelWidth
+                    libraryItem["height"] = asset.pixelHeight
+                    libraryItem["creationDate"] = self.dateFormatter.stringFromDate(asset.creationDate!) //TODO: in Swift 3, use JSONRepresentable
+                    // TODO: asset.faceRegions, asset.locationData
 
-            PHImageManager.defaultManager().requestImageForAsset(asset, targetSize: CGSize(width: Double(asset.pixelWidth)*0.2, height: Double(asset.pixelHeight)*0.2), contentMode: .AspectFill, options: self.imageRequestOptions) {
-                (image: UIImage?, imageInfo: [NSObject : AnyObject]?) in
-                //TODO: convert image to url data
+                    library.append(libraryItem)
+                }
+            }
 
-                let imageURL = info?["PHImageFileURLKey"] as? NSURL
+            let pluginResult = CDVPluginResult(
+                status: CDVCommandStatus_OK,
+                messageAsArray: library
+            )
 
-                let resultImage = NSMutableDictionary()
+            self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId)
+        }
+    }
 
-                resultImage["id"] = asset.localIdentifier
-                resultImage["filename"] = imageURL?.pathComponents?.last
-                resultImage["nativeUrl"] = imageURL?.absoluteString //TODO: in Swift 3, use JSONRepresentable
-                resultImage["url"] = image != nil ? self.image2DataURL(image!) : nil
-                resultImage["width"] = asset.pixelWidth
-                resultImage["height"] = asset.pixelHeight
-                resultImage["creationDate"] = self.dateFormatter.stringFromDate(asset.creationDate!) //TODO: in Swift 3, use JSONRepresentable
-                // TODO: asset.faceRegions, asset.locationData
+    func getThumbnailURL(command: CDVInvokedUrlCommand) {
+        dispatch_async(dispatch_get_main_queue()) {
 
-                images.append(resultImage)
+            let photoId = command.arguments[0] as? String ?? ""
+            let options = command.arguments[1] as? NSDictionary ?? NSDictionary()
+            let thumbnailHeight = options["height"] as? Int ?? 200
+
+            let fetchResult = PHAsset.fetchAssetsWithLocalIdentifiers([photoId], options: self.fetchOptions)
+
+            fetchResult.enumerateObjectsUsingBlock {
+                (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
+
+                let asset = obj as! PHAsset
+                let ratio = asset.pixelWidth / asset.pixelHeight
+
+                PHImageManager.defaultManager().requestImageForAsset(asset, targetSize: CGSize(width: thumbnailHeight * ratio, height: thumbnailHeight), contentMode: .AspectFill, options: self.imageRequestOptions) {
+                    (image: UIImage?, imageInfo: [NSObject : AnyObject]?) in
+
+                    let imageURL:String? = image != nil ? self.image2DataURL(image!) : nil
+
+                    let pluginResult = CDVPluginResult(
+                        status: CDVCommandStatus_OK,
+                        messageAsString: imageURL
+                    )
+
+                    self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
+                }
             }
         }
-      }
+    }
 
-      let pluginResult = CDVPluginResult(
-        status: CDVCommandStatus_OK,
-        messageAsArray: images
-      )
+    func getPhotoURL(command: CDVInvokedUrlCommand) {
+        dispatch_async(dispatch_get_main_queue()) {
 
-      //pluginResult.setKeepCallbackAsBool(true)
+            let photoId = command.arguments[0] as? String ?? ""
+            let options = command.arguments[1] as? NSDictionary ?? NSDictionary()
 
-      self.commandDelegate!.sendPluginResult(
-        pluginResult,
-        callbackId: command.callbackId
-      )
+            let fetchResult = PHAsset.fetchAssetsWithLocalIdentifiers([photoId], options: self.fetchOptions)
 
-    });
-  }
+            fetchResult.enumerateObjectsUsingBlock {
+                (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
+
+                let asset = obj as! PHAsset
+
+                PHImageManager.defaultManager().requestImageDataForAsset(asset, options: self.imageRequestOptions) {
+                    (imageData: NSData?, dataUTI: String?, orientation: UIImageOrientation, info: [NSObject : AnyObject]?) in
+
+                    let image = imageData != nil ? UIImage(data: imageData!) : nil
+
+                    let imageURL:String? = image != nil ? self.image2DataURL(image!) : nil
+
+                    let pluginResult = CDVPluginResult(
+                        status: CDVCommandStatus_OK,
+                        messageAsString: imageURL
+                    )
+
+                    self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
+                }
+            }
+        }
+    }
 
   private func image2DataURL(image: UIImage) -> String? {
     var imageData: NSData?
