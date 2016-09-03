@@ -2,7 +2,7 @@
 <plugin id="cordova-plugin-photo-library" version="0.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>Photo Library</name>
     <js-module name="PhotoLibrary" src="www/PhotoLibrary.js">
-        <clobbers target="cordova.terikon.photoLibrary" />
+        <clobbers target="cordova.plugins.photoLibrary" />
     </js-module>
     <platform name="ios">
         <config-file target="config.xml" parent="/*">

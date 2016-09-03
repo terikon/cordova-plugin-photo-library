@@ -39,32 +39,8 @@ import Foundation
     dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
   }
 
-    private func image2DataURL(image: UIImage) -> String? {
-        var imageData: NSData?
-        var mimeType: String
-        if (imageHasAlpha(image)){
-            imageData = UIImagePNGRepresentation(image)
-            mimeType = "image/png"
-        } else {
-            imageData = UIImageJPEGRepresentation(image, 1.0)
-            mimeType = "image/jpeg"
-        }
-        if (imageData != nil) {
-            let encodedString = imageData?.base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
-            if (encodedString != nil) {
-                return String(format: "data:%@;base64,%@", mimeType, encodedString!)
-            }
-        }
-        return nil
-    }
-
-    private func imageHasAlpha(image: UIImage) -> Bool {
-        let alphaInfo = CGImageGetAlphaInfo(image.CGImage)
-        return alphaInfo == .First || alphaInfo == .Last || alphaInfo == .PremultipliedFirst || alphaInfo == .PremultipliedLast
-    }
-
   // Will sort by creation date
-  func getPhotos(command: CDVInvokedUrlCommand) {
+  func getLibrary(command: CDVInvokedUrlCommand) {
     dispatch_async(dispatch_get_main_queue(), {
 
       let fetchResult = PHAsset.fetchAssetsWithMediaType(.Image, options: self.fetchOptions)
@@ -114,6 +90,30 @@ import Foundation
       )
 
     });
+  }
+
+  private func image2DataURL(image: UIImage) -> String? {
+    var imageData: NSData?
+    var mimeType: String
+    if (imageHasAlpha(image)){
+      imageData = UIImagePNGRepresentation(image)
+      mimeType = "image/png"
+    } else {
+      imageData = UIImageJPEGRepresentation(image, 1.0)
+      mimeType = "image/jpeg"
+    }
+    if (imageData != nil) {
+      let encodedString = imageData?.base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
+      if (encodedString != nil) {
+        return String(format: "data:%@;base64,%@", mimeType, encodedString!)
+      }
+    }
+    return nil
+  }
+
+  private func imageHasAlpha(image: UIImage) -> Bool {
+    let alphaInfo = CGImageGetAlphaInfo(image.CGImage)
+    return alphaInfo == .First || alphaInfo == .Last || alphaInfo == .PremultipliedFirst || alphaInfo == .PremultipliedLast
   }
 
   func echo(command: CDVInvokedUrlCommand) {
