@@ -31,6 +31,9 @@ import Foundation
 
     imageRequestOptions = PHImageRequestOptions()
     imageRequestOptions.synchronous = true
+    imageRequestOptions.resizeMode = .Fast
+    imageRequestOptions.deliveryMode = .FastFormat
+    imageRequestOptions.version = .Current
 
     dateFormatter = NSDateFormatter()
     dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
@@ -62,8 +65,8 @@ import Foundation
 
                 resultImage["id"] = asset.localIdentifier
                 resultImage["filename"] = imageURL?.pathComponents?.last
-                resultImage["fileUrl"] = imageURL?.absoluteString //TODO: in Swift 3, use JSONRepresentable
-                resultImage["url"] = nil //convert to data url
+                resultImage["nativeUrl"] = imageURL?.absoluteString //TODO: in Swift 3, use JSONRepresentable
+                resultImage["url"] = nil //TODO: convert to data url
                 resultImage["width"] = asset.pixelWidth
                 resultImage["height"] = asset.pixelHeight
                 resultImage["creationDate"] = self.dateFormatter.stringFromDate(asset.creationDate!) //TODO: in Swift 3, use JSONRepresentable
@@ -78,6 +81,8 @@ import Foundation
         status: CDVCommandStatus_OK,
         messageAsArray: images
       )
+
+      //pluginResult.setKeepCallbackAsBool(true)
 
       self.commandDelegate!.sendPluginResult(
         pluginResult,
