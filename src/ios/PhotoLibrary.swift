@@ -52,19 +52,25 @@ import Foundation
         PHImageManager.defaultManager().requestImageDataForAsset(asset, options: self.imageRequestOptions) {
             (imageDate: NSData?, dataUTI: String?, orientation: UIImageOrientation, info: [NSObject : AnyObject]?) in
 
-            let imageURL = info?["PHImageFileURLKey"] as? NSURL
+            PHImageManager.defaultManager().requestImageForAsset(asset, targetSize: CGSize(width: Double(asset.pixelWidth)*0.2, height: Double(asset.pixelHeight)*0.2), contentMode: .AspectFill, options: self.imageRequestOptions) {
+                (image: UIImage?, imageInfo: [NSObject : AnyObject]?) in
+                //TODO: convert image to url data
 
-            let resultImage = NSMutableDictionary()
+                let imageURL = info?["PHImageFileURLKey"] as? NSURL
 
-            resultImage["id"] = asset.localIdentifier
-            resultImage["filename"] = imageURL?.pathComponents?.last
-            resultImage["url"] = imageURL?.absoluteString //TODO: in Swift 3, use JSONRepresentable
-            resultImage["width"] = asset.pixelWidth
-            resultImage["height"] = asset.pixelHeight
-            resultImage["creationDate"] = self.dateFormatter.stringFromDate(asset.creationDate!) //TODO: in Swift 3, use JSONRepresentable
-            // TODO: asset.faceRegions, asset.locationData
+                let resultImage = NSMutableDictionary()
 
-            images.append(resultImage)
+                resultImage["id"] = asset.localIdentifier
+                resultImage["filename"] = imageURL?.pathComponents?.last
+                resultImage["fileUrl"] = imageURL?.absoluteString //TODO: in Swift 3, use JSONRepresentable
+                resultImage["url"] = nil //convert to data url
+                resultImage["width"] = asset.pixelWidth
+                resultImage["height"] = asset.pixelHeight
+                resultImage["creationDate"] = self.dateFormatter.stringFromDate(asset.creationDate!) //TODO: in Swift 3, use JSONRepresentable
+                // TODO: asset.faceRegions, asset.locationData
+
+                images.append(resultImage)
+            }
         }
       }
 
