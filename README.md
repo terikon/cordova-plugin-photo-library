@@ -7,3 +7,9 @@ TODO:
 
 - check why cordova-plugin-file returns error for file:///var/.../DCIM folder
 - use PHCachingImageManager to faster load images
+- maybe use messageAsArrayBuffer of CDVPluginResult, and load img from blob:
+
+    var blob = new Blob( [ arrayBufferView ], { type: "image/jpeg" } );
+    var urlCreator = window.URL || window.webkitURL;
+    var imageUrl = urlCreator.createObjectURL( blob );
+    img.src = imageUrl;
