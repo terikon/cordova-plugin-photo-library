@@ -115,7 +115,7 @@ import Foundation
                 self.cachingImageManager.requestImageForAsset(asset, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions) {
                     (image: UIImage?, imageInfo: [NSObject : AnyObject]?) in
 
-                    let imageTuple = self.image2RawData(image!, quality: quality)
+                    let imageTuple = self.image2BlobData(image!, quality: quality)
 
                     let pluginResult = CDVPluginResult(
                         status: CDVCommandStatus_OK,
@@ -146,11 +146,11 @@ import Foundation
 
                     let image = imageData != nil ? UIImage(data: imageData!) : nil
 
-                    let imageURL:String? = image != nil ? self.image2DataURL(image!, quality: 1.0) : nil
+                    let imageTuple = self.image2BlobData(image!, quality: 1.0)
 
                     let pluginResult = CDVPluginResult(
                         status: CDVCommandStatus_OK,
-                        messageAsString: imageURL
+                        messageAsMultipart: [imageTuple.data ?? NSNull(), imageTuple.mimeType ?? NSNull()]
                     )
 
                     self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
@@ -168,7 +168,7 @@ import Foundation
 
     }
 
-    private func image2RawData(image: UIImage, quality: Float) -> (data: NSData?, mimeType: String?) {
+    private func image2BlobData(image: UIImage, quality: Float) -> (data: NSData?, mimeType: String?) {
 //        This returns raw data, but mime type is unknown. Anyway, crodova performs base64 for messageAsArrayBuffer, so there's no performance gain visible
 //        let provider: CGDataProvider = CGImageGetDataProvider(image.CGImage)!
 //        let data = CGDataProviderCopyData(provider)
