@@ -39,8 +39,8 @@ exports.getThumbnail = function (photoId, success, error, options) {
   };
 
   cordova.exec(
-    function (result) {
-      success({ data: result[0], mimeType: result[1] });
+    function (data, mimeType) {
+      success({ data: data, mimeType: mimeType });
     },
     error,
     'PhotoLibrary',
