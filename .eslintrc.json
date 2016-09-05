@@ -1,0 +1,25 @@
+{
+    "env": {
+        "browser": true
+    },
+    "extends": "eslint:recommended",
+    "rules": {
+        "indent": [
+            "error",
+            2
+        ],
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ]
+    },
+    "globals": {
+      "cordova": true,
+      "require": true,
+      "exports": true
+    }
+}

@@ -15,7 +15,7 @@ exports.getLibrary = function (success, error, options) {
     'getLibrary',
     [params]
   );
-}
+};
 
 exports.getThumbnailURL = function (photoId, success, error, options) {
 
@@ -35,7 +35,7 @@ exports.getThumbnailURL = function (photoId, success, error, options) {
     'getThumbnailURL',
     [photoId, params]
   );
-}
+};
 
 exports.getPhotoURL = function (photoId, success, error, options) {
 

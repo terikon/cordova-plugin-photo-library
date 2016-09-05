@@ -1,0 +1,22 @@
+{
+  "name": "cordova-plugin-photo-library",
+  "version": "1.0.0",
+  "description": "Parts are based on",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/terikon/cordova-plugin-photo-library.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/terikon/cordova-plugin-photo-library/issues"
+  },
+  "homepage": "https://github.com/terikon/cordova-plugin-photo-library#readme",
+  "devDependencies": {
+    "eslint": "^3.4.0"
+  }
+}
