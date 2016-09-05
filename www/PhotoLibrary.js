@@ -1,19 +1,25 @@
 var exec = require('cordova/exec');
 
+var defaultThumbnailWidth = 256;
+var defaultThumbnailHeight = 128;
+
 exports.getLibrary = function (success, error, options) {
 
   if (!options) {
     options = {};
   }
 
-  var params = {};
+  options = {
+    thumbnailWidth: options.thumbnailWidth ? options.thumbnailWidth : defaultThumbnailWidth,
+    thumbnailHeight: options.thumbnailHeight ? options.thumbnailHeight : defaultThumbnailHeight,
+  };
 
   cordova.exec(
     success,
     error,
     'PhotoLibrary',
     'getLibrary',
-    [params]
+    [options]
   );
 };
 
@@ -23,8 +29,9 @@ exports.getThumbnailURL = function (photoId, success, error, options) {
     options = {};
   }
 
-  var params = {
-    height: options.height ? options.height : 200,
+  options = {
+    thumbnailWidth: options.thumbnailWidth ? options.thumbnailWidth : defaultThumbnailWidth,
+    thumbnailHeight: options.thumbnailHeight ? options.thumbnailHeight : defaultThumbnailHeight,
     quality: options.quality ? options.quality : 0.5,
   };
 
@@ -32,8 +39,8 @@ exports.getThumbnailURL = function (photoId, success, error, options) {
     success,
     error,
     'PhotoLibrary',
-    'getThumbnailURL',
-    [photoId, params]
+    'getThumbnail',
+    [photoId, options]
   );
 };
 
@@ -43,20 +50,20 @@ exports.getPhotoURL = function (photoId, success, error, options) {
     options = {};
   }
 
-  var params = {};
+  options = {};
 
   cordova.exec(
     success,
     error,
     'PhotoLibrary',
-    'getPhotoURL',
-    [photoId, params]
+    'getPhoto',
+    [photoId, options]
   );
 }
 
 //TODO: remove this
 exports.echo = function (arg0, success, error) {
-  exec(success, error, "PhotoLibrary", "echo", [arg0]);
+  exec(success, error, 'PhotoLibrary', 'echo', [arg0]);
 };
 
 //TODO: remove this

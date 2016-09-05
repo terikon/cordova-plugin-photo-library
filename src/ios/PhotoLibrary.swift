@@ -21,6 +21,9 @@ import Foundation
     var fetchOptions: PHFetchOptions!
     var imageRequestOptions: PHImageRequestOptions!
     var dateFormatter: NSDateFormatter! //TODO: remove in Swift 3, use JSONRepresentable
+    var cachingImageManager: PHCachingImageManager!
+
+    let contentMode = PHImageContentMode.AspectFill
 
     override func pluginInitialize() {
 
@@ -38,20 +41,31 @@ import Foundation
 
         dateFormatter = NSDateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+
+        cachingImageManager = PHCachingImageManager()
     }
 
     // Will sort by creation date
     func getLibrary(command: CDVInvokedUrlCommand) {
         dispatch_async(dispatch_get_main_queue()) {
 
+            let options = command.arguments[0] as! NSDictionary
+            let thumbnailWidth = options["thumbnailWidth"] as! Int
+            let thumbnailHeight = options["thumbnailHeight"] as! Int
+
             let fetchResult = PHAsset.fetchAssetsWithMediaType(.Image, options: self.fetchOptions)
 
             var library = [NSDictionary]()
 
-            fetchResult.enumerateObjectsUsingBlock {
-                (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
+            var assets = [PHAsset]()
+            fetchResult.enumerateObjectsUsingBlock{ (obj, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) in
+                assets.append(obj as! PHAsset)
+            }
 
-                let asset = obj as! PHAsset
+            self.cachingImageManager.stopCachingImagesForAllAssets()
+            self.cachingImageManager.startCachingImagesForAssets(assets, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions)
+
+            assets.forEach { (asset: PHAsset) in
 
                 PHImageManager.defaultManager().requestImageDataForAsset(asset, options: self.imageRequestOptions) {
                     (imageData: NSData?, dataUTI: String?, orientation: UIImageOrientation, info: [NSObject : AnyObject]?) in
@@ -81,23 +95,24 @@ import Foundation
         }
     }
 
-    func getThumbnailURL(command: CDVInvokedUrlCommand) {
+    func getThumbnail(command: CDVInvokedUrlCommand) {
         dispatch_async(dispatch_get_main_queue()) {
 
             let photoId = command.arguments[0] as! String
             let options = command.arguments[1] as! NSDictionary
-            let thumbnailHeight = options["height"] as! Int
+            let thumbnailWidth = options["thumbnailWidth"] as! Int
+            let thumbnailHeight = options["thumbnailHeight"] as! Int
             let quality = options["quality"] as! Float
 
             let fetchResult = PHAsset.fetchAssetsWithLocalIdentifiers([photoId], options: self.fetchOptions)
 
+            // TODO: why enumeration needed for one asset?
             fetchResult.enumerateObjectsUsingBlock {
                 (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
 
                 let asset = obj as! PHAsset
-                let ratio = asset.pixelWidth / asset.pixelHeight
 
-                PHImageManager.defaultManager().requestImageForAsset(asset, targetSize: CGSize(width: thumbnailHeight * ratio, height: thumbnailHeight), contentMode: .AspectFill, options: self.imageRequestOptions) {
+                self.cachingImageManager.requestImageForAsset(asset, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions) {
                     (image: UIImage?, imageInfo: [NSObject : AnyObject]?) in
 
                     let imageURL:String? = image != nil ? self.image2DataURL(image!, quality: CGFloat(quality)) : nil
@@ -113,7 +128,7 @@ import Foundation
         }
     }
 
-    func getPhotoURL(command: CDVInvokedUrlCommand) {
+    func getPhoto(command: CDVInvokedUrlCommand) {
         dispatch_async(dispatch_get_main_queue()) {
 
             let photoId = command.arguments[0] as! String
