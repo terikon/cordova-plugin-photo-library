@@ -115,11 +115,11 @@ import Foundation
                 self.cachingImageManager.requestImageForAsset(asset, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions) {
                     (image: UIImage?, imageInfo: [NSObject : AnyObject]?) in
 
-                    let imageTuple = self.image2RawData(image!, quality: CGFloat(quality))
+                    let imageTuple = self.image2RawData(image!, quality: quality)
 
                     let pluginResult = CDVPluginResult(
                         status: CDVCommandStatus_OK,
-                        messageAsMultipart: [imageTuple.data!, imageTuple.mimeType!]
+                        messageAsMultipart: [imageTuple.data ?? NSNull(), imageTuple.mimeType ?? NSNull()]
                     )
 
                     self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
@@ -168,33 +168,34 @@ import Foundation
 
     }
 
-    private func image2RawData(image: UIImage, quality: CGFloat) -> (data: NSData?, mimeType: String?) {
+    private func image2RawData(image: UIImage, quality: Float) -> (data: NSData?, mimeType: String?) {
+//        This returns raw data, but mime type is unknown. Anyway, crodova performs base64 for messageAsArrayBuffer, so there's no performance gain visible
 //        let provider: CGDataProvider = CGImageGetDataProvider(image.CGImage)!
 //        let data = CGDataProviderCopyData(provider)
 //        return data;
 
         var data: NSData?
-        var mimeType: String
+        var mimeType: String?
 
         if (imageHasAlpha(image)){
             data = UIImagePNGRepresentation(image)
-            mimeType = "image/png"
+            mimeType = data != nil ? "image/png" : nil
         } else {
-            data = UIImageJPEGRepresentation(image, quality)
-            mimeType = "image/jpeg"
+            data = UIImageJPEGRepresentation(image, CGFloat(quality))
+            mimeType = data != nil ? "image/jpeg" : nil
         }
 
         return (data, mimeType);
     }
 
-    private func image2DataURL(image: UIImage, quality: CGFloat) -> String? {
+    private func image2DataURL(image: UIImage, quality: Float) -> String? {
         var imageData: NSData?
         var mimeType: String
         if (imageHasAlpha(image)){
             imageData = UIImagePNGRepresentation(image)
             mimeType = "image/png"
         } else {
-            imageData = UIImageJPEGRepresentation(image, quality)
+            imageData = UIImageJPEGRepresentation(image, CGFloat(quality))
             mimeType = "image/jpeg"
         }
         if (imageData != nil) {
