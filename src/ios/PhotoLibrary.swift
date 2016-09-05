@@ -115,14 +115,15 @@ import Foundation
                 self.cachingImageManager.requestImageForAsset(asset, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions) {
                     (image: UIImage?, imageInfo: [NSObject : AnyObject]?) in
 
-                    let imageURL:String? = image != nil ? self.image2DataURL(image!, quality: CGFloat(quality)) : nil
+                    let imageTuple = self.image2RawData(image!, quality: CGFloat(quality))
 
                     let pluginResult = CDVPluginResult(
                         status: CDVCommandStatus_OK,
-                        messageAsString: imageURL
+                        messageAsMultipart: [imageTuple.data!, imageTuple.mimeType!]
                     )
 
                     self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
+
                 }
             }
         }
@@ -167,7 +168,25 @@ import Foundation
 
     }
 
-    //TODO: remove this
+    private func image2RawData(image: UIImage, quality: CGFloat) -> (data: NSData?, mimeType: String?) {
+//        let provider: CGDataProvider = CGImageGetDataProvider(image.CGImage)!
+//        let data = CGDataProviderCopyData(provider)
+//        return data;
+
+        var data: NSData?
+        var mimeType: String
+
+        if (imageHasAlpha(image)){
+            data = UIImagePNGRepresentation(image)
+            mimeType = "image/png"
+        } else {
+            data = UIImageJPEGRepresentation(image, quality)
+            mimeType = "image/jpeg"
+        }
+
+        return (data, mimeType);
+    }
+
     private func image2DataURL(image: UIImage, quality: CGFloat) -> String? {
         var imageData: NSData?
         var mimeType: String
@@ -191,6 +210,8 @@ import Foundation
         let alphaInfo = CGImageGetAlphaInfo(image.CGImage)
         return alphaInfo == .First || alphaInfo == .Last || alphaInfo == .PremultipliedFirst || alphaInfo == .PremultipliedLast
     }
+
+    //TODO: remove these
 
     func echo(command: CDVInvokedUrlCommand) {
         var pluginResult = CDVPluginResult(
