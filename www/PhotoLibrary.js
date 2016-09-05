@@ -3,6 +3,7 @@ var exec = require('cordova/exec');
 var defaultThumbnailWidth = 256;
 var defaultThumbnailHeight = 128;
 
+// Will start caching for specified size
 exports.getLibrary = function (success, error, options) {
 
   if (!options) {
@@ -21,9 +22,11 @@ exports.getLibrary = function (success, error, options) {
     'getLibrary',
     [options]
   );
+
 };
 
-exports.getThumbnailURL = function (photoId, success, error, options) {
+// Provide same size as when calling getLibrary for better performance
+exports.getThumbnail = function (photoId, success, error, options) {
 
   if (!options) {
     options = {};
@@ -42,9 +45,10 @@ exports.getThumbnailURL = function (photoId, success, error, options) {
     'getThumbnail',
     [photoId, options]
   );
+
 };
 
-exports.getPhotoURL = function (photoId, success, error, options) {
+exports.getPhoto = function (photoId, success, error, options) {
 
   if (!options) {
     options = {};
@@ -59,7 +63,21 @@ exports.getPhotoURL = function (photoId, success, error, options) {
     'getPhoto',
     [photoId, options]
   );
-}
+
+};
+
+// Call when thumbnails are not longer needed for better performance
+exports.stopCaching = function (success, error) {
+
+  cordova.exec(
+    success,
+    error,
+    'PhotoLibrary',
+    'stopCaching',
+    []
+  );
+
+};
 
 //TODO: remove this
 exports.echo = function (arg0, success, error) {

@@ -158,6 +158,15 @@ import Foundation
         }
     }
 
+    func stopCaching(command: CDVInvokedUrlCommand) {
+
+        self.cachingImageManager.stopCachingImagesForAllAssets()
+
+        let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
+        self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
+
+    }
+
     //TODO: remove this
     private func image2DataURL(image: UIImage, quality: CGFloat) -> String? {
         var imageData: NSData?
