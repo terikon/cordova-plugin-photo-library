@@ -5,4 +5,6 @@ Parts are based on
 
 # TODO
 
-- Handle cases where image returned by requestImageDataForAsset is null
+- Add Android support
+- iOS: Handle cases where image returned by requestImageDataForAsset is null
+- Add Browser platform support
