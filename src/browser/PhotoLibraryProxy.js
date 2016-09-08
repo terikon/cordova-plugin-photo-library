@@ -108,18 +108,21 @@ module.exports = {
     checkSupported();
 
     let filesElement = createFilesElement();
+
     filesElement.addEventListener('change', (evt) => {
 
       let files = getFiles(evt.target);
-      library = files2Library(files);
-      removeFilesElement(filesElement);
-      success(library);
+      files2Library(files).then(lib => {
+        library = lib;
+        removeFilesElement(filesElement);
+        success(library);
+      });
 
     }, false);
 
   },
   getThumbnail: function (success, error) {
-
+    console.log('getThumbnail');
   },
   getPhoto: function (success, error) {
 
