@@ -102,8 +102,29 @@ function files2Library(files) {
   });
 }
 
+// From here: https://gist.github.com/davoclavo/4424731
+function dataURLToBlob(dataURL) {
+  // convert base64 to raw binary data held in a string
+  var byteString = atob(dataURL.split(',')[1]);
+
+  // separate out the mime component
+  var mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+
+  // write the bytes of the string to an ArrayBuffer
+  var arrayBuffer = new ArrayBuffer(byteString.length);
+  var _ia = new Uint8Array(arrayBuffer);
+  for (var i = 0; i < byteString.length; i++) {
+    _ia[i] = byteString.charCodeAt(i);
+  }
+
+  var dataView = new DataView(arrayBuffer);
+  var blob = new Blob([dataView], { type: mimeString });
+  return blob;
+}
+
 module.exports = {
-  getLibrary: function (success, error) {
+
+  getLibrary: function (success, error, [options]) {
 
     checkSupported();
 
@@ -121,18 +142,40 @@ module.exports = {
     }, false);
 
   },
-  getThumbnail: function (success, error) {
-    console.log('getThumbnail');
-  },
-  getPhoto: function (success, error) {
+
+  getThumbnail: function (success, error, [photoId, options]) {
+
+    let libraryItem = library.find(li => li.id === photoId);
+    if (!libraryItem) {
+      error(`Photo with id ${photoId} not found in the library`);
+      return;
+    }
+
+    success(dataURLToBlob(libraryItem.nativeURL));
 
   },
+
+  getPhoto: function (success, error, [photoId, options]) {
+
+    let libraryItem = library.find(li => li.id === photoId);
+    if (!libraryItem) {
+      error(`Photo with id ${photoId} not found in the library`);
+      return;
+    }
+
+    success(dataURLToBlob(libraryItem.nativeURL));
+
+  },
+
   stopCaching: function (success, error) {
-
+    // Nothing to do
   },
+
+  //TODO: remove this
   echo: function (success, error) {
 
   },
+
 };
 
 require('cordova/exec/proxy').add('PhotoLibrary', module.exports);
