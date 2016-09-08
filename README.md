@@ -9,3 +9,4 @@ Parts are based on
 - iOS: Handle cases where image returned by requestImageDataForAsset is null
 - iOS: It seems to ignore png files
 - Add Browser platform support
+- Compile plugin with webpack
