@@ -1,9 +1,10 @@
-// TODO: add types for optios
+// TODO: add types for options
 
 interface PhotoLibraryCordovaPlugin {
-  getLibrary(success, error, options);
-  getThumbnailURL(photoId, success, error, options);
-  getPhotoURL(photoId, success, error, options);
+  getLibrary(success: (any) => void, error: (err: any) => void, options: any);
+  getThumbnail(photoId: string, success: (any) => void, error: (err: any) => void, options: any);
+  getPhoto(photoId: string, success: (any) => void, error: (err: any) => void, options: any);
+  stopCaching(success: () => void, error: (err: any) => void);
 }
 
 interface CordovaPlugins {

@@ -8,5 +8,5 @@ Parts are based on
 - Add Android support
 - iOS: Handle cases where image returned by requestImageDataForAsset is null
 - iOS: It seems to ignore png files
-- Add Browser platform support
-- Compile plugin with webpack
+- Browser platform: Separate to multiple files
+- Browser platform: Compile plugin with webpack
