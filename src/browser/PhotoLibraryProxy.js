@@ -36,30 +36,58 @@ function readFileAsDataURL(file) {
   return new Promise((resolve, reject) => {
     let reader = new FileReader();
     reader.onload = (e) => {
-      resolve({ file: file, dataURL: e.target.result });
+      resolve(e.target.result);
     };
     reader.readAsDataURL(file);
+  });
+}
+
+function readDataUrlAsImage(dataURL) {
+  return new Promise((resolve, reject) => {
+    var imageObj = new Image();
+    imageObj.onload = () => {
+      resolve(imageObj);
+    };
+    imageObj.src = dataURL;
   });
 }
 
 function files2Library(files) {
   return new Promise((resolve, reject) => {
 
-    let fileURLPromises = files.map(f => readFileAsDataURL(f));
+    let filesWithDataPromises = files.map(f => {
+      return new Promise((resolve, reject) => {
+        readFileAsDataURL(f)
+          .then(dataURL => {
+            return readDataUrlAsImage(dataURL).then(image => {
+              return { dataURL, image };
+            });
+          })
+          .then(dataURLwithImage => {
+            let {image} = dataURLwithImage;
+            resolve({
+              file: f,
+              dataURL: dataURLwithImage.dataURL,
+              width: image.width,
+              height: image.height
+            });
+          });
+      });
+    });
 
-    Promise.all(fileURLPromises)
-      .then(filesWithDataURL => {
-        let result = filesWithDataURL.map(fileWithURL => {
+    Promise.all(filesWithDataPromises)
+      .then(filesWithData => {
+        let result = filesWithData.map(fileWithData => {
 
-          let {file} = fileWithURL;
-          let {dataURL} = fileWithURL;
+          let {file} = fileWithData;
+          let {dataURL} = fileWithData;
 
           let libraryItem = {
             id: `${counter}#${file.name}`,
             filename: file.name,
             nativeURL: dataURL,
-            width: '',
-            height: '',
+            width: fileWithData.width,
+            height: fileWithData.height,
             creationDate: file.lastModifiedDate, // file contains only lastModifiedDate
           };
           counter += 1;
