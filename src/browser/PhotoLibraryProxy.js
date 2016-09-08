@@ -29,8 +29,16 @@ module.exports = {
 
     let {thumbnailWidth, thumbnailHeight, quality} = options;
 
-    //TODO: resize
-    success(dataURLToBlob(libraryItem.nativeURL));
+    readDataUrlAsImage(libraryItem.nativeURL).then(image => {
+      let canvas = document.createElement('canvas');
+      let context = canvas.getContext('2d');
+      canvas.width = thumbnailWidth;
+      canvas.height = thumbnailHeight;
+      context.drawImage(image, 0, 0, thumbnailWidth, thumbnailHeight);
+      canvas.toBlob((blob) => {
+        success(blob);
+      }, 'image/jpeg', quality);
+    });
 
   },
 
