@@ -1,3 +1,64 @@
+module.exports = {
+
+  getLibrary: function (success, error, [options]) {
+
+    checkSupported();
+
+    let filesElement = createFilesElement();
+
+    filesElement.addEventListener('change', (evt) => {
+
+      let files = getFiles(evt.target);
+      files2Library(files).then(lib => {
+        library = lib;
+        removeFilesElement(filesElement);
+        success(library);
+      });
+
+    }, false);
+
+  },
+
+  getThumbnail: function (success, error, [photoId, options]) {
+
+    let libraryItem = library.find(li => li.id === photoId);
+    if (!libraryItem) {
+      error(`Photo with id ${photoId} not found in the library`);
+      return;
+    }
+
+    let {thumbnailWidth, thumbnailHeight, quality} = options;
+
+    //TODO: resize
+    success(dataURLToBlob(libraryItem.nativeURL));
+
+  },
+
+  getPhoto: function (success, error, [photoId, options]) {
+
+    let libraryItem = library.find(li => li.id === photoId);
+    if (!libraryItem) {
+      error(`Photo with id ${photoId} not found in the library`);
+      return;
+    }
+
+    success(dataURLToBlob(libraryItem.nativeURL));
+
+  },
+
+  stopCaching: function (success, error) {
+    // Nothing to do
+  },
+
+  //TODO: remove this
+  echo: function (success, error) {
+
+  },
+
+};
+
+require('cordova/exec/proxy').add('PhotoLibrary', module.exports);
+
 const HIGHEST_POSSIBLE_Z_INDEX = 2147483647;
 
 var library = [];
@@ -79,8 +140,7 @@ function files2Library(files) {
       .then(filesWithData => {
         let result = filesWithData.map(fileWithData => {
 
-          let {file} = fileWithData;
-          let {dataURL} = fileWithData;
+          let {file, dataURL} = fileWithData;
 
           let libraryItem = {
             id: `${counter}#${file.name}`,
@@ -121,61 +181,3 @@ function dataURLToBlob(dataURL) {
   var blob = new Blob([dataView], { type: mimeString });
   return blob;
 }
-
-module.exports = {
-
-  getLibrary: function (success, error, [options]) {
-
-    checkSupported();
-
-    let filesElement = createFilesElement();
-
-    filesElement.addEventListener('change', (evt) => {
-
-      let files = getFiles(evt.target);
-      files2Library(files).then(lib => {
-        library = lib;
-        removeFilesElement(filesElement);
-        success(library);
-      });
-
-    }, false);
-
-  },
-
-  getThumbnail: function (success, error, [photoId, options]) {
-
-    let libraryItem = library.find(li => li.id === photoId);
-    if (!libraryItem) {
-      error(`Photo with id ${photoId} not found in the library`);
-      return;
-    }
-
-    success(dataURLToBlob(libraryItem.nativeURL));
-
-  },
-
-  getPhoto: function (success, error, [photoId, options]) {
-
-    let libraryItem = library.find(li => li.id === photoId);
-    if (!libraryItem) {
-      error(`Photo with id ${photoId} not found in the library`);
-      return;
-    }
-
-    success(dataURLToBlob(libraryItem.nativeURL));
-
-  },
-
-  stopCaching: function (success, error) {
-    // Nothing to do
-  },
-
-  //TODO: remove this
-  echo: function (success, error) {
-
-  },
-
-};
-
-require('cordova/exec/proxy').add('PhotoLibrary', module.exports);
