@@ -40,6 +40,11 @@ exports.getThumbnail = function (photoId, success, error, options) {
 
   cordova.exec(
     function (data, mimeType) {
+      if (!mimeType && data.data && data.mimeType) {
+        // workaround for browser platform cannot return multipart result
+        mimeType = data.mimeType;
+        data = data.data;
+      }
       success({ data: data, mimeType: mimeType });
     },
     error,
@@ -59,7 +64,14 @@ exports.getPhoto = function (photoId, success, error, options) {
   options = {};
 
   cordova.exec(
-    success,
+    function (data, mimeType) {
+      if (!mimeType && data.data && data.mimeType) {
+        // workaround for browser platform cannot return multipart result
+        mimeType = data.mimeType;
+        data = data.data;
+      }
+      success({ data: data, mimeType: mimeType });
+    },
     error,
     'PhotoLibrary',
     'getPhoto',
