@@ -7,7 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class GalleryAPI extends CordovaPlugin {
+public class PhotoLibrary extends CordovaPlugin {
 
   public static final String ACTION_GET_LIBRARY = "getLibrary";
   public static final String ACTION_GET_THUMBNAIL= "getThumbnail";
