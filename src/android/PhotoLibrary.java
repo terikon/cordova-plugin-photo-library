@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 
 import org.apache.cordova.*;
@@ -92,9 +93,36 @@ public class PhotoLibrary extends CordovaPlugin {
     }
   }
 
-  private ArrayOfObjects getLibrary() {
+  private ArrayOfObjects getLibrary() throws JSONException {
 
-    return null;
+    Object columns = new Object() {{
+      put("int.id", MediaStore.Images.Media._ID);
+      put("data", MediaStore.MediaColumns.DATA);
+      put("int.date_added", MediaStore.Images.ImageColumns.DATE_ADDED);
+      put("title", MediaStore.Images.ImageColumns.DISPLAY_NAME);
+      put("int.height", MediaStore.Images.ImageColumns.HEIGHT);
+      put("int.width", MediaStore.Images.ImageColumns.WIDTH);
+      put("int.orientation", MediaStore.Images.ImageColumns.ORIENTATION);
+      put("mime_type", MediaStore.Images.ImageColumns.MIME_TYPE);
+      put("int.size", MediaStore.Images.ImageColumns.SIZE);
+      put("int.thumbnail_id", MediaStore.Images.ImageColumns.MINI_THUMB_MAGIC);
+    }};
+
+    final ArrayOfObjects queryResults = queryContentProvider(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, ""); // TODO: order by
+
+    ArrayOfObjects results = new ArrayOfObjects();
+
+    for (Object queryResult : queryResults) {
+      if (queryResult.getInt("height") <=0 || queryResult.getInt("width") <= 0) {
+        System.err.println(queryResult);
+      } else {
+        results.add(queryResult);
+      }
+    }
+
+    Collections.reverse(results);
+
+    return results;
   }
 
   private void getThumbnail() {
