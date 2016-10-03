@@ -24,7 +24,7 @@ public class PhotoLibrary extends CordovaPlugin {
   }
 
   @Override
-  public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+  public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
     try {
 
       if (ACTION_GET_LIBRARY.equals(action)) {
