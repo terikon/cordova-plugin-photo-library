@@ -8,6 +8,8 @@ import android.net.Uri;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 import org.apache.cordova.*;
 import org.json.JSONArray;
@@ -28,6 +30,7 @@ public class PhotoLibrary extends CordovaPlugin {
   protected void pluginInitialize() {
     super.pluginInitialize();
     // initialization
+    dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
   }
 
   @Override
@@ -93,17 +96,18 @@ public class PhotoLibrary extends CordovaPlugin {
 
   private ArrayList<JSONObject> getLibrary() throws JSONException {
 
+    // All columns here: https://developer.android.com/reference/android/provider/MediaStore.Images.ImageColumns.html,
+    // https://developer.android.com/reference/android/provider/MediaStore.MediaColumns.html
     JSONObject columns = new JSONObject() {{
       put("int.id", MediaStore.Images.Media._ID);
-      put("data", MediaStore.MediaColumns.DATA);
-      put("int.date_added", MediaStore.Images.ImageColumns.DATE_ADDED);
-      put("title", MediaStore.Images.ImageColumns.DISPLAY_NAME);
-      put("int.height", MediaStore.Images.ImageColumns.HEIGHT);
+      put("filename", MediaStore.Images.ImageColumns.DISPLAY_NAME);
+      put("nativeURL", MediaStore.MediaColumns.DATA);
       put("int.width", MediaStore.Images.ImageColumns.WIDTH);
-      put("int.orientation", MediaStore.Images.ImageColumns.ORIENTATION);
-      put("mime_type", MediaStore.Images.ImageColumns.MIME_TYPE);
-      put("int.size", MediaStore.Images.ImageColumns.SIZE);
-      put("int.thumbnail_id", MediaStore.Images.ImageColumns.MINI_THUMB_MAGIC);
+      put("int.height", MediaStore.Images.ImageColumns.HEIGHT);
+      put("date.creationDate", MediaStore.Images.ImageColumns.DATE_TAKEN);
+      //put("mime_type", MediaStore.Images.ImageColumns.MIME_TYPE);
+      //put("int.size", MediaStore.Images.ImageColumns.SIZE);
+      //put("int.thumbnail_id", MediaStore.Images.ImageColumns.MINI_THUMB_MAGIC);
     }};
 
     final ArrayList<JSONObject> queryResults = queryContentProvider(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, ""); // TODO: order by
@@ -145,6 +149,7 @@ public class PhotoLibrary extends CordovaPlugin {
   }
 
   private ArrayList<JSONObject> queryContentProvider(Uri collection, JSONObject columns, String whereClause) throws JSONException {
+
     final ArrayList<String> columnNames = new ArrayList<String>();
     final ArrayList<String> columnValues = new ArrayList<String>();
 
@@ -169,18 +174,19 @@ public class PhotoLibrary extends CordovaPlugin {
 
           if (column.startsWith("int.")) {
             item.put(column.substring(4), cursor.getInt(columnIndex));
-            if (column.substring(4).equals("width") && item.getInt("width") == 0)
-            {
+            if (column.substring(4).equals("width") && item.getInt("width") == 0) {
               System.err.println("cursor: " + cursor.getInt(columnIndex));
-
             }
           } else if (column.startsWith("float.")) {
             item.put(column.substring(6), cursor.getFloat(columnIndex));
+          } else if (column.startsWith("date.")) {
+            long intDate = cursor.getLong(columnIndex);
+            Date date = new Date(intDate);
+            item.put(column.substring(5), dateFormatter.format(date));
           } else {
             item.put(column, cursor.getString(columnIndex));
           }
         }
-
         buffer.add(item);
       }
       while (cursor.moveToNext());
@@ -194,5 +200,7 @@ public class PhotoLibrary extends CordovaPlugin {
   private Context getContext() {
     return this.cordova.getActivity().getApplicationContext();
   }
+
+  private SimpleDateFormat dateFormatter;
 
 }
