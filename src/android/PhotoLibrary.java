@@ -14,8 +14,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
-
 public class PhotoLibrary extends CordovaPlugin {
 
   public static final String ACTION_GET_LIBRARY = "getLibrary";
@@ -40,7 +38,7 @@ public class PhotoLibrary extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
           public void run() {
             try {
-              ArrayOfObjects library = getLibrary();
+              ArrayList<JSONObject> library = getLibrary();
               callbackContext.success(new JSONArray(library));
             } catch (Exception e) {
               e.printStackTrace();
@@ -93,9 +91,9 @@ public class PhotoLibrary extends CordovaPlugin {
     }
   }
 
-  private ArrayOfObjects getLibrary() throws JSONException {
+  private ArrayList<JSONObject> getLibrary() throws JSONException {
 
-    Object columns = new Object() {{
+    JSONObject columns = new JSONObject() {{
       put("int.id", MediaStore.Images.Media._ID);
       put("data", MediaStore.MediaColumns.DATA);
       put("int.date_added", MediaStore.Images.ImageColumns.DATE_ADDED);
@@ -108,11 +106,11 @@ public class PhotoLibrary extends CordovaPlugin {
       put("int.thumbnail_id", MediaStore.Images.ImageColumns.MINI_THUMB_MAGIC);
     }};
 
-    final ArrayOfObjects queryResults = queryContentProvider(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, ""); // TODO: order by
+    final ArrayList<JSONObject> queryResults = queryContentProvider(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, ""); // TODO: order by
 
-    ArrayOfObjects results = new ArrayOfObjects();
+    ArrayList<JSONObject> results = new ArrayList<JSONObject>();
 
-    for (Object queryResult : queryResults) {
+    for (JSONObject queryResult : queryResults) {
       if (queryResult.getInt("height") <=0 || queryResult.getInt("width") <= 0) {
         System.err.println(queryResult);
       } else {
@@ -146,7 +144,7 @@ public class PhotoLibrary extends CordovaPlugin {
     }
   }
 
-  private ArrayOfObjects queryContentProvider(Uri collection, Object columns, String whereClause) throws JSONException {
+  private ArrayList<JSONObject> queryContentProvider(Uri collection, JSONObject columns, String whereClause) throws JSONException {
     final ArrayList<String> columnNames = new ArrayList<String>();
     final ArrayList<String> columnValues = new ArrayList<String>();
 
@@ -160,11 +158,11 @@ public class PhotoLibrary extends CordovaPlugin {
     }
 
     final Cursor cursor = getContext().getContentResolver().query(collection, columnValues.toArray(new String[columns.length()]), whereClause, null, null);
-    final ArrayOfObjects buffer = new ArrayOfObjects();
+    final ArrayList<JSONObject> buffer = new ArrayList<JSONObject>();
 
     if (cursor.moveToFirst()) {
       do {
-        Object item = new Object();
+        JSONObject item = new JSONObject();
 
         for (String column : columnNames) {
           int columnIndex = cursor.getColumnIndex(columns.get(column).toString());
@@ -196,9 +194,5 @@ public class PhotoLibrary extends CordovaPlugin {
   private Context getContext() {
     return this.cordova.getActivity().getApplicationContext();
   }
-
-  private class Object extends JSONObject { }
-
-  private class ArrayOfObjects extends ArrayList<Object> { }
 
 }
