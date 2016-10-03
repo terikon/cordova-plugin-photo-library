@@ -7,7 +7,7 @@
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="PhotoLibrary" >
-                <param name="android-package" value="com.terikon.cordova.photolibrary"/>
+                <param name="android-package" value="com.terikon.cordova.photolibrary.PhotoLibrary"/>
             </feature>
         </config-file>
         <config-file target="AndroidManifest.xml" parent="/*">
