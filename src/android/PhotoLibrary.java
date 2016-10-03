@@ -3,13 +3,16 @@ package com.terikon.cordova.photolibrary;
 import android.provider.MediaStore;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 
+import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Date;
-import java.text.SimpleDateFormat;
 
 import org.apache.cordova.*;
 import org.json.JSONArray;
@@ -59,6 +62,7 @@ public class PhotoLibrary extends CordovaPlugin {
         final int thumbnailWidth = options.getInt("thumbnailWidth");
         final int thumbnailHeight = options.getInt("thumbnailHeight");
         final double quality = options.getDouble("quality");
+
         cordova.getThreadPool().execute(new Runnable() {
           public void run() {
             try {
@@ -73,6 +77,8 @@ public class PhotoLibrary extends CordovaPlugin {
         return true;
 
       } else if (ACTION_GET_PHOTO.equals(action)) {
+
+        final int photoId = args.getInt(0);
 
         cordova.getThreadPool().execute(new Runnable() {
           public void run() {
@@ -143,7 +149,15 @@ public class PhotoLibrary extends CordovaPlugin {
   }
 
   private byte[] getThumbnail(int photoId, int thumbnailWidth, int thumbnailHeight, double quality) {
-    return null;
+
+    // TODO: now only 512 x 384 thumbnails are supported, display error if other size provided, or support custom sizes
+
+    Bitmap bitmap = MediaStore.Images.Thumbnails.getThumbnail(
+      getContext().getContentResolver(), photoId,
+      MediaStore.Images.Thumbnails.MINI_KIND,
+      (BitmapFactory.Options) null );
+
+    return getJpegBytesFromBitmap(bitmap, quality);
   }
 
   private void getPhoto() {
@@ -214,6 +228,12 @@ public class PhotoLibrary extends CordovaPlugin {
 
   private Context getContext() {
     return this.cordova.getActivity().getApplicationContext();
+  }
+
+  private byte[] getJpegBytesFromBitmap(Bitmap bitmap, double quality) {
+    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+    bitmap.compress(Bitmap.CompressFormat.JPEG, (int)(quality * 100), stream);
+    return stream.toByteArray();
   }
 
   private SimpleDateFormat dateFormatter;
