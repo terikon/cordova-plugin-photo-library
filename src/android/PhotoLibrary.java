@@ -38,6 +38,7 @@ public class PhotoLibrary extends CordovaPlugin {
     try {
 
       if (ACTION_GET_LIBRARY.equals(action)) {
+
         cordova.getThreadPool().execute(new Runnable() {
           public void run() {
             try {
@@ -50,12 +51,19 @@ public class PhotoLibrary extends CordovaPlugin {
           }
         });
         return true;
+
       } else if (ACTION_GET_THUMBNAIL.equals(action)) {
+
+        final int photoId = args.getInt(0);
+        final JSONObject options = args.optJSONObject(1);
+        final int thumbnailWidth = options.getInt("thumbnailWidth");
+        final int thumbnailHeight = options.getInt("thumbnailHeight");
+        final double quality = options.getDouble("quality");
         cordova.getThreadPool().execute(new Runnable() {
           public void run() {
             try {
-              // TODO
-              callbackContext.success();
+              byte[] thumbnail = getThumbnail(photoId, thumbnailWidth, thumbnailHeight, quality);
+              callbackContext.success(thumbnail);
             } catch (Exception e) {
               e.printStackTrace();
               callbackContext.error(e.getMessage());
@@ -63,7 +71,9 @@ public class PhotoLibrary extends CordovaPlugin {
           }
         });
         return true;
+
       } else if (ACTION_GET_PHOTO.equals(action)) {
+
         cordova.getThreadPool().execute(new Runnable() {
           public void run() {
             try {
@@ -76,14 +86,19 @@ public class PhotoLibrary extends CordovaPlugin {
           }
         });
         return true;
+
       } else if (ACTION_STOP_CACHING.equals(action)) {
+
         // Nothing to do - it's ios only functionality
         callbackContext.success();
         return true;
+
       } else if (ACTION_ECHO.equals(action)) { // TODO: remove this
+
         String message = args.getString(0);
         this.echo(message, callbackContext);
         return true;
+
       }
       return false;
 
@@ -127,8 +142,8 @@ public class PhotoLibrary extends CordovaPlugin {
     return results;
   }
 
-  private void getThumbnail() {
-
+  private byte[] getThumbnail(int photoId, int thumbnailWidth, int thumbnailHeight, double quality) {
+    return null;
   }
 
   private void getPhoto() {

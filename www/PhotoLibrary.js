@@ -1,7 +1,7 @@
 var exec = require('cordova/exec');
 
-var defaultThumbnailWidth = 256;
-var defaultThumbnailHeight = 128;
+var defaultThumbnailWidth = 512;
+var defaultThumbnailHeight = 384;
 
 // Will start caching for specified size
 exports.getLibrary = function (success, error, options) {
