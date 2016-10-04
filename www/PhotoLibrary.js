@@ -45,7 +45,8 @@ exports.getThumbnail = function (photoId, success, error, options) {
         mimeType = data.mimeType;
         data = data.data;
       }
-      success({ data: data, mimeType: mimeType });
+      var blob = new Blob([data], { type: mimeType });
+      success(blob);
     },
     error,
     'PhotoLibrary',
@@ -70,7 +71,8 @@ exports.getPhoto = function (photoId, success, error, options) {
         mimeType = data.mimeType;
         data = data.data;
       }
-      success({ data: data, mimeType: mimeType });
+      var blob = new Blob([data], { type: mimeType });
+      success(blob);
     },
     error,
     'PhotoLibrary',
