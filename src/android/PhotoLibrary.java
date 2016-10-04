@@ -5,12 +5,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -154,14 +153,10 @@ public class PhotoLibrary extends CordovaPlugin {
     return results;
   }
 
-  private PictureData getThumbnail(String photoId, int thumbnailWidth, int thumbnailHeight, double quality) throws FileNotFoundException {
-
-//    BitmapFactory.Options options = new BitmapFactory.Options();
-//    options.inJustDecodeBounds = true;
-
+  private PictureData getThumbnail(String photoId, int thumbnailWidth, int thumbnailHeight, double quality) throws IOException {
     Bitmap bitmap;
 
-    if (thumbnailHeight == 512 && thumbnailHeight == 384) { // In such case, thumbnail will be cached by MediaStore
+    if (thumbnailWidth == 512 && thumbnailHeight == 384) { // In such case, thumbnail will be cached by MediaStore
       int imageId = getImageId(photoId);
       bitmap = MediaStore.Images.Thumbnails.getThumbnail(
         getContext().getContentResolver(),
@@ -181,6 +176,8 @@ public class PhotoLibrary extends CordovaPlugin {
       options.inSampleSize = options.outHeight / thumbnailHeight;
       is = getContext().getContentResolver().openInputStream(imageUri);
       bitmap = BitmapFactory.decodeStream(is, null, options);
+
+      is.close();
     }
 
     // TODO: cache bytes
@@ -192,14 +189,18 @@ public class PhotoLibrary extends CordovaPlugin {
     return new PictureData(bytes, mimeType);
   }
 
-  private PictureData getPhoto(String photoId) {
+  private PictureData getPhoto(String photoId) throws IOException {
+    int imageId = getImageId(photoId);
+    String imageUrl = getImageUrl(photoId);
+    Uri imageUri = Uri.fromFile(new File(imageUrl));
 
+    String mimeType = queryMimeType(imageId);
 
-    return null;
-  }
+    InputStream is = getContext().getContentResolver().openInputStream(imageUri);
+    byte[] bytes =  readBytes(is);
+    is.close();
 
-  private void stopCaching() {
-
+    return new PictureData(bytes, mimeType);
   }
 
   // TODO: remove this
@@ -266,6 +267,24 @@ public class PhotoLibrary extends CordovaPlugin {
     return buffer;
   }
 
+  private String queryMimeType(int imageId) {
+
+    Cursor cursor = getContext().getContentResolver().query(
+      MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+      new String[] { MediaStore.Images.ImageColumns.MIME_TYPE },
+      MediaStore.MediaColumns._ID + "=?",
+      new String[] {Integer.toString(imageId)}, null);
+
+    if (cursor != null && cursor.moveToFirst()) {
+      String mimeType = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.MIME_TYPE));
+      cursor.close();
+      return mimeType;
+    }
+
+    cursor.close();
+    return null;
+  }
+
   private Context getContext() {
     return this.cordova.getActivity().getApplicationContext();
   }
@@ -293,6 +312,24 @@ public class PhotoLibrary extends CordovaPlugin {
       Arrays.asList(
         new PluginResult(status, pictureData.getBytes()),
         new PluginResult(status, pictureData.getMimeType())));
+  }
+
+  public byte[] readBytes(InputStream inputStream) throws IOException {
+    // this dynamically extends to take the bytes you read
+    ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+
+    // this is storage overwritten on each iteration with bytes
+    int bufferSize = 1024;
+    byte[] buffer = new byte[bufferSize];
+
+    // we need to know how may bytes were read to write them to the byteBuffer
+    int len = 0;
+    while ((len = inputStream.read(buffer)) != -1) {
+      byteBuffer.write(buffer, 0, len);
+    }
+
+    // and then we can return your byte array.
+    return byteBuffer.toByteArray();
   }
 
   private class PictureData {
