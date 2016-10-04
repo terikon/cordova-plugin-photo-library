@@ -5,17 +5,16 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 
 import java.io.ByteArrayOutputStream;
-import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Date;
-import java.util.List;
 
 import org.apache.cordova.*;
 import org.json.JSONArray;
@@ -60,7 +59,7 @@ public class PhotoLibrary extends CordovaPlugin {
 
       } else if (ACTION_GET_THUMBNAIL.equals(action)) {
 
-        final int photoId = args.getInt(0);
+        final String photoId = args.getString(0);
         final JSONObject options = args.optJSONObject(1);
         final int thumbnailWidth = options.getInt("thumbnailWidth");
         final int thumbnailHeight = options.getInt("thumbnailHeight");
@@ -70,11 +69,7 @@ public class PhotoLibrary extends CordovaPlugin {
           public void run() {
             try {
               PictureData thumbnail = getThumbnail(photoId, thumbnailWidth, thumbnailHeight, quality);
-              PluginResult pluginResult = new PluginResult(PluginResult.Status.OK,
-                Arrays.asList(
-                  new PluginResult(PluginResult.Status.OK, thumbnail.getBytes()),
-                  new PluginResult(PluginResult.Status.OK, thumbnail.getMimeType())));
-              callbackContext.sendPluginResult(pluginResult);
+              callbackContext.sendPluginResult(createPluginResult(PluginResult.Status.OK, thumbnail));
             } catch (Exception e) {
               e.printStackTrace();
               callbackContext.error(e.getMessage());
@@ -85,13 +80,13 @@ public class PhotoLibrary extends CordovaPlugin {
 
       } else if (ACTION_GET_PHOTO.equals(action)) {
 
-        final int photoId = args.getInt(0);
+        final String photoId = args.getString(0);
 
         cordova.getThreadPool().execute(new Runnable() {
           public void run() {
             try {
-              // TODO
-              callbackContext.success();
+              PictureData thumbnail = getPhoto(photoId);
+              callbackContext.sendPluginResult(createPluginResult(PluginResult.Status.OK, thumbnail));
             } catch (Exception e) {
               e.printStackTrace();
               callbackContext.error(e.getMessage());
@@ -138,7 +133,7 @@ public class PhotoLibrary extends CordovaPlugin {
       //put("int.thumbnail_id", MediaStore.Images.ImageColumns.MINI_THUMB_MAGIC);
     }};
 
-    final ArrayList<JSONObject> queryResults = queryContentProvider(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, ""); // TODO: order by
+    final ArrayList<JSONObject> queryResults = queryContentProvider(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, "");
 
     ArrayList<JSONObject> results = new ArrayList<JSONObject>();
 
@@ -146,6 +141,7 @@ public class PhotoLibrary extends CordovaPlugin {
       if (queryResult.getInt("height") <=0 || queryResult.getInt("width") <= 0) {
         System.err.println(queryResult);
       } else {
+        queryResult.put("id", queryResult.get("id") + ";" + queryResult.get("nativeURL")); // photoId is in format "imageid;imageurl"
         results.add(queryResult);
       }
     }
@@ -155,22 +151,39 @@ public class PhotoLibrary extends CordovaPlugin {
     return results;
   }
 
-  private PictureData getThumbnail(int photoId, int thumbnailWidth, int thumbnailHeight, double quality) {
+  private PictureData getThumbnail(String photoId, int thumbnailWidth, int thumbnailHeight, double quality) {
 
-    // TODO: now only 512 x 384 thumbnails are supported, display error if other size provided, or support custom sizes
+//    BitmapFactory.Options options = new BitmapFactory.Options();
+//    options.inJustDecodeBounds = true;
 
-    Bitmap bitmap = MediaStore.Images.Thumbnails.getThumbnail(
-      getContext().getContentResolver(), photoId,
-      MediaStore.Images.Thumbnails.MINI_KIND,
-      (BitmapFactory.Options) null );
+    Bitmap bitmap;
+
+    if (thumbnailHeight == 512 && thumbnailHeight == 384) { // In such case, thumbnail will be cached by MediaStore
+      int imageId = getImageId(photoId);
+      bitmap = MediaStore.Images.Thumbnails.getThumbnail(
+        getContext().getContentResolver(),
+        imageId ,
+        MediaStore.Images.Thumbnails.MINI_KIND,
+        (BitmapFactory.Options) null);
+    } else { // No free caching here
+      String imageUrl = getImageUrl(photoId);
+      // TODO: inSampleSize
+      bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(imageUrl),
+        thumbnailWidth, thumbnailWidth);
+    }
 
     byte[] bytes = getJpegBytesFromBitmap(bitmap, quality);
+    String mimeType = "image/jpeg";
 
-    return new PictureData(bytes, "image/jpeg");
+    bitmap.recycle();
+
+    return new PictureData(bytes, mimeType);
   }
 
-  private void getPhoto() {
+  private PictureData getPhoto(String photoId) {
 
+
+    return null;
   }
 
   private void stopCaching() {
@@ -200,7 +213,13 @@ public class PhotoLibrary extends CordovaPlugin {
       columnValues.add("" + columns.getString(column));
     }
 
-    final Cursor cursor = getContext().getContentResolver().query(collection, columnValues.toArray(new String[columns.length()]), whereClause, null, null);
+    final String sortOrder = MediaStore.Images.Media.DATE_TAKEN;
+
+    final Cursor cursor = getContext().getContentResolver().query(
+      collection,
+      columnValues.toArray(new String[columns.length()]),
+      whereClause, null, sortOrder);
+
     final ArrayList<JSONObject> buffer = new ArrayList<JSONObject>();
 
     if (cursor.moveToFirst()) {
@@ -246,6 +265,23 @@ public class PhotoLibrary extends CordovaPlugin {
   }
 
   private SimpleDateFormat dateFormatter;
+
+  // photoId is in format "imageid;imageurl"
+  private int getImageId(String photoId) {
+    return Integer.parseInt(photoId.substring(0, photoId.indexOf(';') - 1));
+  }
+
+  // photoId is in format "imageid;imageurl"
+  private String getImageUrl(String photoId) {
+    return photoId.substring(photoId.indexOf(';') + 1);
+  }
+
+  private PluginResult createPluginResult(PluginResult.Status status, PictureData pictureData) {
+    return new PluginResult(status,
+      Arrays.asList(
+        new PluginResult(status, pictureData.getBytes()),
+        new PluginResult(status, pictureData.getMimeType())));
+  }
 
   private class PictureData {
     private byte[] bytes;

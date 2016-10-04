@@ -20,3 +20,4 @@ https://developer.android.com/reference/org/json/JSONObject.html
 https://developer.android.com/reference/android/provider/MediaStore.Images.Media.html
 https://developer.android.com/reference/android/provider/MediaStore.Images.Thumbnails.html
 https://developer.android.com/reference/android/graphics/BitmapFactory.Options.html
+https://developer.android.com/reference/android/media/ThumbnailUtils.html
