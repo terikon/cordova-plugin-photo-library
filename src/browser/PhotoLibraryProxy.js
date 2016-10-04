@@ -59,11 +59,6 @@ module.exports = {
     // Nothing to do
   },
 
-  //TODO: remove this
-  echo: function (success, error) {
-
-  },
-
 };
 
 require('cordova/exec/proxy').add('PhotoLibrary', module.exports);

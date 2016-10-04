@@ -1,7 +1,7 @@
 var exec = require('cordova/exec');
 
-var defaultThumbnailWidth = 512;
-var defaultThumbnailHeight = 384;
+var defaultThumbnailWidth = 512;  // optimal for android
+var defaultThumbnailHeight = 384; // optimal for android
 
 // Will start caching for specified size
 exports.getLibrary = function (success, error, options) {
@@ -91,18 +91,4 @@ exports.stopCaching = function (success, error) {
     []
   );
 
-};
-
-//TODO: remove this
-exports.echo = function (arg0, success, error) {
-  exec(success, error, 'PhotoLibrary', 'echo', [arg0]);
-};
-
-//TODO: remove this
-exports.echojs = function (arg0, success, error) {
-  if (arg0 && typeof (arg0) === 'string' && arg0.length > 0) {
-    success(arg0);
-  } else {
-    error('Empty message!');
-  }
 };

@@ -30,8 +30,9 @@ public class PhotoLibrary extends CordovaPlugin {
   public static final String ACTION_GET_PHOTO = "getPhoto";
   public static final String ACTION_STOP_CACHING = "stopCaching";
 
-  //TODO: remove
-  public static final String ACTION_ECHO = "echo";
+  // TODO: implement cache
+  //int cacheSize = 4 * 1024 * 1024; // 4MB
+  //private LruCache<String, byte[]> imageCache = new LruCache<String, byte[]>(cacheSize);
 
   @Override
   protected void pluginInitialize() {
@@ -103,13 +104,8 @@ public class PhotoLibrary extends CordovaPlugin {
         callbackContext.success();
         return true;
 
-      } else if (ACTION_ECHO.equals(action)) { // TODO: remove this
-
-        String message = args.getString(0);
-        this.echo(message, callbackContext);
-        return true;
-
       }
+
       return false;
 
     } catch(Exception e) {
@@ -130,9 +126,6 @@ public class PhotoLibrary extends CordovaPlugin {
       put("int.width", MediaStore.Images.ImageColumns.WIDTH);
       put("int.height", MediaStore.Images.ImageColumns.HEIGHT);
       put("date.creationDate", MediaStore.Images.ImageColumns.DATE_TAKEN);
-      //put("mime_type", MediaStore.Images.ImageColumns.MIME_TYPE);
-      //put("int.size", MediaStore.Images.ImageColumns.SIZE);
-      //put("int.thumbnail_id", MediaStore.Images.ImageColumns.MINI_THUMB_MAGIC);
     }};
 
     final ArrayList<JSONObject> queryResults = queryContentProvider(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, "");
@@ -201,15 +194,6 @@ public class PhotoLibrary extends CordovaPlugin {
     is.close();
 
     return new PictureData(bytes, mimeType);
-  }
-
-  // TODO: remove this
-  private void echo(String message, CallbackContext callbackContext) {
-    if (message != null && message.length() > 0) {
-      callbackContext.success(message);
-    } else {
-      callbackContext.error("Expected one non-empty string argument.");
-    }
   }
 
   private ArrayList<JSONObject> queryContentProvider(Uri collection, JSONObject columns, String whereClause) throws JSONException {
@@ -315,20 +299,16 @@ public class PhotoLibrary extends CordovaPlugin {
   }
 
   public byte[] readBytes(InputStream inputStream) throws IOException {
-    // this dynamically extends to take the bytes you read
     ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
 
-    // this is storage overwritten on each iteration with bytes
     int bufferSize = 1024;
     byte[] buffer = new byte[bufferSize];
 
-    // we need to know how may bytes were read to write them to the byteBuffer
     int len = 0;
     while ((len = inputStream.read(buffer)) != -1) {
       byteBuffer.write(buffer, 0, len);
     }
 
-    // and then we can return your byte array.
     return byteBuffer.toByteArray();
   }
 
