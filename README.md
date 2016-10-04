@@ -1,7 +1,8 @@
 Parts are based on
 
-- https://github.com/ryouaki/Cordova-Plugin-Photos
-- https://github.com/subitolabs/cordova-gallery-api 
+- https://github.com/subitolabs/cordova-gallery-api
+- https://github.com/SuryaL/cordova-gallery-api
+- https://github.com/ryouaki/Cordova-Plugin-Photos 
 
 # TODO
 
