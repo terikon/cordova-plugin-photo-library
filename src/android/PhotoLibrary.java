@@ -8,11 +8,14 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 
 import java.io.ByteArrayOutputStream;
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.cordova.*;
 import org.json.JSONArray;
@@ -66,8 +69,12 @@ public class PhotoLibrary extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
           public void run() {
             try {
-              byte[] thumbnail = getThumbnail(photoId, thumbnailWidth, thumbnailHeight, quality);
-              callbackContext.success(thumbnail);
+              PictureData thumbnail = getThumbnail(photoId, thumbnailWidth, thumbnailHeight, quality);
+              PluginResult pluginResult = new PluginResult(PluginResult.Status.OK,
+                Arrays.asList(
+                  new PluginResult(PluginResult.Status.OK, thumbnail.getBytes()),
+                  new PluginResult(PluginResult.Status.OK, thumbnail.getMimeType())));
+              callbackContext.sendPluginResult(pluginResult);
             } catch (Exception e) {
               e.printStackTrace();
               callbackContext.error(e.getMessage());
@@ -148,7 +155,7 @@ public class PhotoLibrary extends CordovaPlugin {
     return results;
   }
 
-  private byte[] getThumbnail(int photoId, int thumbnailWidth, int thumbnailHeight, double quality) {
+  private PictureData getThumbnail(int photoId, int thumbnailWidth, int thumbnailHeight, double quality) {
 
     // TODO: now only 512 x 384 thumbnails are supported, display error if other size provided, or support custom sizes
 
@@ -157,7 +164,9 @@ public class PhotoLibrary extends CordovaPlugin {
       MediaStore.Images.Thumbnails.MINI_KIND,
       (BitmapFactory.Options) null );
 
-    return getJpegBytesFromBitmap(bitmap, quality);
+    byte[] bytes = getJpegBytesFromBitmap(bitmap, quality);
+
+    return new PictureData(bytes, "image/jpeg");
   }
 
   private void getPhoto() {
@@ -237,5 +246,18 @@ public class PhotoLibrary extends CordovaPlugin {
   }
 
   private SimpleDateFormat dateFormatter;
+
+  private class PictureData {
+    private byte[] bytes;
+    private String mimeType;
+
+    public PictureData(byte[] bytes, String mimeType) {
+      this.bytes = bytes;
+      this.mimeType = mimeType;
+    }
+
+    public byte[] getBytes() { return this.bytes; }
+    public String getMimeType() { return this.mimeType; }
+  }
 
 }
