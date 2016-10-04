@@ -9,6 +9,9 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -151,7 +154,7 @@ public class PhotoLibrary extends CordovaPlugin {
     return results;
   }
 
-  private PictureData getThumbnail(String photoId, int thumbnailWidth, int thumbnailHeight, double quality) {
+  private PictureData getThumbnail(String photoId, int thumbnailWidth, int thumbnailHeight, double quality) throws FileNotFoundException {
 
 //    BitmapFactory.Options options = new BitmapFactory.Options();
 //    options.inJustDecodeBounds = true;
@@ -167,11 +170,20 @@ public class PhotoLibrary extends CordovaPlugin {
         (BitmapFactory.Options) null);
     } else { // No free caching here
       String imageUrl = getImageUrl(photoId);
-      // TODO: inSampleSize
-      bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(imageUrl),
-        thumbnailWidth, thumbnailWidth);
+      Uri imageUri = Uri.fromFile(new File(imageUrl));
+      BitmapFactory.Options options = new BitmapFactory.Options();
+
+      options.inJustDecodeBounds = true;
+      InputStream is = getContext().getContentResolver().openInputStream(imageUri);
+      BitmapFactory.decodeStream(is, null, options);
+
+      options.inJustDecodeBounds = false;
+      options.inSampleSize = options.outHeight / thumbnailHeight;
+      is = getContext().getContentResolver().openInputStream(imageUri);
+      bitmap = BitmapFactory.decodeStream(is, null, options);
     }
 
+    // TODO: cache bytes
     byte[] bytes = getJpegBytesFromBitmap(bitmap, quality);
     String mimeType = "image/jpeg";
 
