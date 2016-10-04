@@ -36,7 +36,7 @@ module.exports = {
       canvas.height = thumbnailHeight;
       context.drawImage(image, 0, 0, thumbnailWidth, thumbnailHeight);
       canvas.toBlob((blob) => {
-        success(blob);
+        success({ data: blob, mimeType: blob.type });
       }, 'image/jpeg', quality);
     });
 
@@ -51,7 +51,7 @@ module.exports = {
     }
 
     let blob = dataURLToBlob(libraryItem.nativeURL);
-    success(blob);
+    success({ data: blob, mimeType: blob.type });
 
   },
 
