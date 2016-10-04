@@ -10,8 +10,12 @@
     "type": "git",
     "url": "git+https://github.com/terikon/cordova-plugin-photo-library.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": {
+    "name": "Roman Viskin",
+    "email": "npm@terikon.com",
+    "url": "http://il.linkedin.com/in/romanviskin"
+  },
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/terikon/cordova-plugin-photo-library/issues"
   },
