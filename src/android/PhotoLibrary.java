@@ -299,7 +299,7 @@ public class PhotoLibrary extends CordovaPlugin {
 
   // photoId is in format "imageid;imageurl"
   private int getImageId(String photoId) {
-    return Integer.parseInt(photoId.substring(0, photoId.indexOf(';') - 1));
+    return Integer.parseInt(photoId.substring(0, photoId.indexOf(';')));
   }
 
   // photoId is in format "imageid;imageurl"
