@@ -5,9 +5,8 @@ Parts are based on
 
 # TODO
 
-- Add Android support
+- iOS: Bug: It seems to ignore png files
 - iOS: Handle cases where image returned by requestImageDataForAsset is null
-- iOS: It seems to ignore png files
 - Browser platform: Separate to multiple files
 - Browser platform: Compile plugin with webpack
 - Android: caching mechanism like [this one](https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html) can be helpful
