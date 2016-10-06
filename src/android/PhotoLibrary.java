@@ -174,7 +174,9 @@ public class PhotoLibrary extends CordovaPlugin {
 
       // resize to exact size needed
       bitmap = Bitmap.createScaledBitmap(sampledBitmap, thumbnailWidth, thumbnailHeight, true);
-      sampledBitmap.recycle();
+      if (sampledBitmap != bitmap) {
+        sampledBitmap.recycle();
+      }
     }
 
     // TODO: cache bytes

@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-photo-library",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Plugin that just gets photos from the gallery",
   "main": "index.js",
   "scripts": {
