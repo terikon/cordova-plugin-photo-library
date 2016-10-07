@@ -7,10 +7,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,6 +26,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class PhotoLibrary extends CordovaPlugin {
+
+  public static final String THUMBNAIL_PROTOCOL = "cdvthumbnail";
 
   public static final String ACTION_GET_LIBRARY = "getLibrary";
   public static final String ACTION_GET_THUMBNAIL= "getThumbnail";
@@ -113,6 +117,26 @@ public class PhotoLibrary extends CordovaPlugin {
       callbackContext.error(e.getMessage());
       return false;
     }
+  }
+
+  @Override
+  public Uri remapUri(Uri uri) {
+    if (!THUMBNAIL_PROTOCOL.equals(uri.getScheme())) {
+      return null;
+    }
+    return toPluginUri(uri);
+  }
+
+  @Override
+  public CordovaResourceApi.OpenForReadResult handleOpenForRead(Uri uri) throws IOException {
+    Uri origUri = fromPluginUri(uri);
+
+    // TODO: implement real code
+
+    String resultText = "Result of handleOpenForRead";
+
+    InputStream is = new ByteArrayInputStream( resultText.getBytes( Charset.defaultCharset() ) );
+    return new CordovaResourceApi.OpenForReadResult(uri, is, "text/plain", is.available(), null);
   }
 
   private ArrayList<JSONObject> getLibrary() throws JSONException {

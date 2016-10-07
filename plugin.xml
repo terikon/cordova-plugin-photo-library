@@ -9,6 +9,7 @@
             <feature name="PhotoLibrary" >
                 <param name="android-package" value="com.terikon.cordova.photolibrary.PhotoLibrary"/>
             </feature>
+            <allow-navigation href="cdvthumbnail:*" />
         </config-file>
         <config-file target="AndroidManifest.xml" parent="/*">
             <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
