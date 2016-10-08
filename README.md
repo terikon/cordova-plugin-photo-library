@@ -1,3 +1,5 @@
+**Work in progress**
+
 Parts are based on
 
 - https://github.com/subitolabs/cordova-gallery-api
@@ -12,6 +14,62 @@ Parts are based on
 - Browser platform: Compile plugin with webpack
 - Android: caching mechanism like [this one](https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html) can be helpful
 - Implement cdvthumbnail schema. Currenly on android added stub that returns text result. It will be something like cdvthumbnail://fileid@widthxheight 
+
+# Usage
+
+```js
+var library = cordova.plugins.photoLibrary.getLibrary(
+  function(library) {
+
+  },
+  function(err) {
+    console.log('Error occured');
+  }
+)
+```
+
+```js
+cordova.plugins.photoLibrary.getThumbnail(
+  libraryItem.id,
+  function(thumbnailBlob) {
+
+  },
+  function(err) {
+    console.log('Error occured');
+  },
+  {
+    thumbnailWidth: 512,
+    thumbnailHeight: 384,
+    quality: 0.8
+  });
+```
+
+```js
+cordova.plugins.photoLibrary.getPhoto(
+  libraryItem.id,
+  function(fullPhotoBlob) {
+
+  },
+  function(err) {
+    console.log('Error occured');
+  });
+```
+
+```js
+var thumbnailUrl = cordova.plugins.photoLibrary.getThumbnailUrl(
+  libraryItem,
+  {
+    thumbnailWidth: 512,
+    thumbnailHeight: 384,
+    quality: 0.8
+  });
+
+image.src = thumbnailUrl; 
+```
+
+# TypeScript
+
+TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/terikon/cordova-plugin-photo-library/blob/master/PhotoLibrary.d.ts)
 
 # References
 
