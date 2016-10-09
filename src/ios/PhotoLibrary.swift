@@ -45,6 +45,20 @@ import Foundation
         cachingImageManager = PHCachingImageManager()
     }
 
+    override func onMemoryWarning() {
+        self.stopCaching()
+    }
+
+    // TODO: handleOpenURL?
+    // override func handleOpenURL(NSNotification notification) {
+    // override to handle urls sent to your app
+    // register your url schemes in your App-Info.plist
+    // NSURL* url = [notification object];
+    // if ([url isKindOfClass:[NSURL class]]) {
+    //     /* Do your thing! */
+    // }
+    // }
+
     // Will sort by creation date
     func getLibrary(command: CDVInvokedUrlCommand) {
         dispatch_async(dispatch_get_main_queue()) {
@@ -161,7 +175,7 @@ import Foundation
 
     func stopCaching(command: CDVInvokedUrlCommand) {
 
-        self.cachingImageManager.stopCachingImagesForAllAssets()
+        self.stopCaching()
 
         let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
         self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
@@ -210,6 +224,10 @@ import Foundation
     private func imageHasAlpha(image: UIImage) -> Bool {
         let alphaInfo = CGImageGetAlphaInfo(image.CGImage)
         return alphaInfo == .First || alphaInfo == .Last || alphaInfo == .PremultipliedFirst || alphaInfo == .PremultipliedLast
+    }
+
+    private func stopCaching() {
+      self.cachingImageManager.stopCachingImagesForAllAssets()
     }
 
 }
