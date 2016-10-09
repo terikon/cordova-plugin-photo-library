@@ -132,11 +132,23 @@ public class PhotoLibrary extends CordovaPlugin {
     Uri origUri = fromPluginUri(uri);
 
     // TODO: implement real code
+    if (origUri.path.toLowerCase() != "/thumbnail") {
+      throw new FileNotFoundException("URI not supported by PhotoLibrary: " + uri);
+    }
 
-    String resultText = "Result of handleOpenForRead";
+    Map<String, String> query = splitQuery(uri.toURL());
+    String photoId = query.get('photoId');
+    int width = Integer.parseInt(query.get('width'));
+    int height = Integer.parseInt(query.get('height'));
+    double quality = Double.parseDouble(query.get('quality'));
 
-    InputStream is = new ByteArrayInputStream( resultText.getBytes( Charset.defaultCharset() ) );
-    return new CordovaResourceApi.OpenForReadResult(uri, is, "text/plain", is.available(), null);
+    //String resultText = "Result of handleOpenForRead: " + width + "," + height + "," + quality;
+    //InputStream is = new ByteArrayInputStream( resultText.getBytes( Charset.defaultCharset() ) );
+    //return new CordovaResourceApi.OpenForReadResult(uri, is, "text/plain", is.available(), null);
+
+    PictureData thumbnailData = getThumbnail(photoId, width, height, quality);
+    InputStream is = new ByteArrayInputStream(thumbnailData.getBytes());
+    return new CordovaResourceApi.OpenForReadResult(uri, is, thumbnailData.getMimeType() , is.available(), null);
   }
 
   private ArrayList<JSONObject> getLibrary() throws JSONException {
@@ -377,6 +389,18 @@ public class PhotoLibrary extends CordovaPlugin {
 
     public byte[] getBytes() { return this.bytes; }
     public String getMimeType() { return this.mimeType; }
+  }
+
+  // From http://stackoverflow.com/a/13592567/1691132
+  public static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
+    Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+    String query = url.getQuery();
+    String[] pairs = query.split("&");
+    for (String pair : pairs) {
+      int idx = pair.indexOf("=");
+      query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+    }
+    return query_pairs;
   }
 
 }
