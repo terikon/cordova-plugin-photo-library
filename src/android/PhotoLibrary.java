@@ -10,9 +10,9 @@ import android.net.Uri;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -131,16 +131,14 @@ public class PhotoLibrary extends CordovaPlugin {
   public CordovaResourceApi.OpenForReadResult handleOpenForRead(Uri uri) throws IOException {
     Uri origUri = fromPluginUri(uri);
 
-    // TODO: implement real code
-    if (origUri.path.toLowerCase() != "/thumbnail") {
+    if (origUri.getPath().toLowerCase() != "/thumbnail") {
       throw new FileNotFoundException("URI not supported by PhotoLibrary: " + uri);
     }
 
-    Map<String, String> query = splitQuery(uri.toURL());
-    String photoId = query.get('photoId');
-    int width = Integer.parseInt(query.get('width'));
-    int height = Integer.parseInt(query.get('height'));
-    double quality = Double.parseDouble(query.get('quality'));
+    String photoId = origUri.getQueryParameter("photoId");
+    int width = Integer.parseInt(origUri.getQueryParameter("width"));
+    int height = Integer.parseInt(origUri.getQueryParameter("height"));
+    double quality = Double.parseDouble(origUri.getQueryParameter("quality"));
 
     //String resultText = "Result of handleOpenForRead: " + width + "," + height + "," + quality;
     //InputStream is = new ByteArrayInputStream( resultText.getBytes( Charset.defaultCharset() ) );
@@ -389,18 +387,6 @@ public class PhotoLibrary extends CordovaPlugin {
 
     public byte[] getBytes() { return this.bytes; }
     public String getMimeType() { return this.mimeType; }
-  }
-
-  // From http://stackoverflow.com/a/13592567/1691132
-  public static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
-    Map<String, String> query_pairs = new LinkedHashMap<String, String>();
-    String query = url.getQuery();
-    String[] pairs = query.split("&");
-    for (String pair : pairs) {
-      int idx = pair.indexOf("=");
-      query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
-    }
-    return query_pairs;
   }
 
 }
