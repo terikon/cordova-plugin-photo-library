@@ -25,7 +25,7 @@ import Foundation
 
     let contentMode = PHImageContentMode.AspectFill
 
-    var service: PhotoLibraryService
+    var service: PhotoLibraryService!
 
     override func pluginInitialize() {
 
