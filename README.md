@@ -13,7 +13,8 @@ Parts are based on
 - Browser platform: Separate to multiple files
 - Browser platform: Compile plugin with webpack
 - Android: caching mechanism like [this one](https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html) can be helpful
-- Implement cdvthumbnail schema. Currenly on android added stub that returns text result. It will be something like cdvthumbnail://fileid@widthxheight 
+- Implement cdvphotolibrary schema. Currenly on android added stub that returns text result. It will be something like cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5
+- Implement cdvphotolibrary upload (post), which will enable efficient file saving to gallery.
 
 # Usage
 

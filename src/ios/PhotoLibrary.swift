@@ -43,6 +43,8 @@ import Foundation
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
 
         cachingImageManager = PHCachingImageManager()
+
+        //[NSURLProtocol registerClass:[CDVFilesystemURLProtocol class]];
     }
 
     override func onMemoryWarning() {
@@ -74,6 +76,18 @@ import Foundation
     // }
     // and this:
     //startLoading
+    // handle self.request
+    // - (void)startLoading
+    // {
+    //   NSURL* *uriRequest = [[self request] URL];
+    //   if(NSOrderedSame == [[*uriRequest scheme] caseInsensitiveCompare:@"file"]){
+    //     NSError * error = [NSError errorWithDomain:@"Forbidden" code:403 userInfo:nil];
+    //     [[self client] URLProtocol:self didFailWithError:error];
+    //     return;
+    //   }
+    //   NSURLConnection *connection = [NSURLConnection connectionWithRequest:[self request] delegate:self];
+    //   [self setConnection:connection];
+    // }
 
     // Will sort by creation date
     func getLibrary(command: CDVInvokedUrlCommand) {

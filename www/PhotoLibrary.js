@@ -33,7 +33,7 @@ exports.getThumbnailUrl = function (photoIdOrLibraryItem, options) {
 
   options = getThumbnailOptionsWithDefaults(options);
 
-  return 'cdvthumbnail://thumbnail?photoId=' + encodeURIComponent(photoId) +
+  return 'cdvphotolibrary://thumbnail?photoId=' + encodeURIComponent(photoId) +
     '&width=' + encodeURIComponent(options.thumbnailWidth) +
     '&height=' + encodeURIComponent(options.thumbnailHeight) +
     '&quality=' + encodeURIComponent(options.quality);

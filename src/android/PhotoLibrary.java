@@ -27,7 +27,7 @@ import org.json.JSONObject;
 
 public class PhotoLibrary extends CordovaPlugin {
 
-  public static final String THUMBNAIL_PROTOCOL = "cdvthumbnail";
+  public static final String PHOTO_LIBRARY_PROTOCOL = "cdvphotolibrary";
 
   public static final String ACTION_GET_LIBRARY = "getLibrary";
   public static final String ACTION_GET_THUMBNAIL= "getThumbnail";
@@ -121,7 +121,7 @@ public class PhotoLibrary extends CordovaPlugin {
 
   @Override
   public Uri remapUri(Uri uri) {
-    if (!THUMBNAIL_PROTOCOL.equals(uri.getScheme())) {
+    if (!PHOTO_LIBRARY_PROTOCOL.equals(uri.getScheme())) {
       return null;
     }
     return toPluginUri(uri);
