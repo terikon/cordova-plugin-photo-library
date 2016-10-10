@@ -25,6 +25,8 @@ import Foundation
 
     let contentMode = PHImageContentMode.AspectFill
 
+    var service: PhotoLibraryService
+
     override func pluginInitialize() {
 
         fetchOptions = PHFetchOptions()
@@ -43,6 +45,8 @@ import Foundation
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
 
         cachingImageManager = PHCachingImageManager()
+
+        service = PhotoLibraryService.instance
 
         //[NSURLProtocol registerClass:[CDVFilesystemURLProtocol class]];
         NSURLProtocol.registerClass(PhotoLibraryProtocol)
