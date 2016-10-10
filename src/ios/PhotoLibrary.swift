@@ -45,6 +45,7 @@ import Foundation
         cachingImageManager = PHCachingImageManager()
 
         //[NSURLProtocol registerClass:[CDVFilesystemURLProtocol class]];
+        NSURLProtocol.registerClass(PhotoLibraryProtocol)
     }
 
     override func onMemoryWarning() {
