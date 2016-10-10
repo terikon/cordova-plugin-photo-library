@@ -59,6 +59,22 @@ import Foundation
     // }
     // }
 
+    // TODO: override this:
+    // - (BOOL)shouldOverrideLoadWithRequest:(NSURLRequest*)request navigationType:(UIWebViewNavigationType)navigationType;
+    // {
+    //     NSURL *url = [request URL];
+    //     NSDictionary *settings = [(CDVViewController *)self.viewController settings];
+    //     if ([[url scheme] isEqualToString:@"maps"] || [[settings objectForKey:@"launchexternalforhost"] isEqualToString:[url host]]) {
+    //         if ([[UIApplication sharedApplication] canOpenURL:url]) {
+    //             [[UIApplication sharedApplication] openURL:url];
+    //             return YES;
+    //         }
+    //     }
+    //     return NO;
+    // }
+    // and this:
+    //startLoading
+
     // Will sort by creation date
     func getLibrary(command: CDVInvokedUrlCommand) {
         dispatch_async(dispatch_get_main_queue()) {
