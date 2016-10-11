@@ -162,25 +162,6 @@ final class PhotoLibraryService {
         return PictureData(data: data, mimeType: mimeType);
     }
     
-    private func image2DataURL(image: UIImage, quality: Float) -> String? {
-        var imageData: NSData?
-        var mimeType: String
-        if (imageHasAlpha(image)){
-            imageData = UIImagePNGRepresentation(image)
-            mimeType = "image/png"
-        } else {
-            imageData = UIImageJPEGRepresentation(image, CGFloat(quality))
-            mimeType = "image/jpeg"
-        }
-        if (imageData != nil) {
-            let encodedString = imageData?.base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
-            if (encodedString != nil) {
-                return String(format: "data:%@;base64,%@", mimeType, encodedString!)
-            }
-        }
-        return nil
-    }
-    
     private func imageHasAlpha(image: UIImage) -> Bool {
         let alphaInfo = CGImageGetAlphaInfo(image.CGImage)
         return alphaInfo == .First || alphaInfo == .Last || alphaInfo == .PremultipliedFirst || alphaInfo == .PremultipliedLast
