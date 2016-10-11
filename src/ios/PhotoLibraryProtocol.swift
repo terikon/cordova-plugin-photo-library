@@ -3,6 +3,9 @@ import Foundation
 @objc(PhotoLibraryProtocol) class PhotoLibraryProtocol : CDVURLProtocol {
 
     static let PHOTO_LIBRARY_PROTOCOL = "cdvphotolibrary"
+    static let DEFAULT_WIDTH = "512"
+    static let DEFAULT_HEIGHT = "384"
+    static let DEFAULT_QUALITY = "0.5"
     
     let service: PhotoLibraryService
 
@@ -22,22 +25,61 @@ import Foundation
     }
     
     override func startLoading() {
-        let url = self.request.URL
- 
-        if url?.path?.lowercaseString == "/thumbnail" {
-         
-            return
+        
+        if let url = self.request.URL {
+            if url.path == "" && url.host?.lowercaseString == "thumbnail" {
+                let urlComponents = NSURLComponents(URL: url, resolvingAgainstBaseURL: false)
+                let queryItems = urlComponents?.queryItems
+                
+                let photoId = queryItems?.filter({$0.name == "photoId"}).first?.value
+                if photoId == nil {
+                    self.sendErrorResponse(422, error: "Missing photoId query parameter")
+                    return
+                }
+                let widthStr = queryItems?.filter({$0.name == "width"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_WIDTH
+                let width = Int(widthStr)
+                if width == nil {
+                    self.sendErrorResponse(422, error: "Incorrect width query parameter")
+                    return
+                }
+                let heightStr = queryItems?.filter({$0.name == "height"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_HEIGHT
+                let height = Int(heightStr)
+                if height == nil {
+                    self.sendErrorResponse(422, error: "Incorrect height query parameter")
+                    return
+                }
+                let qualityStr = queryItems?.filter({$0.name == "quality"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_QUALITY
+                let quality = Float(qualityStr)
+                if quality == nil {
+                    self.sendErrorResponse(422, error: "Incorrect quality query parameter")
+                    return
+                }
+                
+                // TODO: implement returning data
+                
+                let body = "TODO: Access granded"
+                self.sendResponseWithResponseCode(200, data: body.dataUsingEncoding(NSASCIIStringEncoding), mimeType: "image/jpeg")
+                
+                return
+            }
         }
         
         let body = "Access not allowed"
         self.sendResponseWithResponseCode(401, data: body.dataUsingEncoding(NSASCIIStringEncoding), mimeType: nil)
+        
     }
+    
     
     override func stopLoading() {
         // do any cleanup here
     }
     
-    func sendResponseWithResponseCode(statusCode: Int, data: NSData?, mimeType: String?) {
+    private func sendErrorResponse(statusCode: Int, error: String) {
+        self.sendResponseWithResponseCode(statusCode, data: error.dataUsingEncoding(NSASCIIStringEncoding), mimeType: nil)
+    }
+    
+    // Cannot use sendResponseWithResponseCode from CDVURLProtocol, so copied one here.
+    private func sendResponseWithResponseCode(statusCode: Int, data: NSData?, mimeType: String?) {
         
         var mimeType = mimeType
         if mimeType == nil {

@@ -26,7 +26,7 @@ var library = cordova.plugins.photoLibrary.getLibrary(
   function(err) {
     console.log('Error occured');
   }
-)
+);
 ```
 
 ```js
