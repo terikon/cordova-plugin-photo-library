@@ -16,7 +16,7 @@ import Foundation
 //    }
 //}
 
-@objc(PhotoLibrary) class PhotoLibrary : CDVPlugin {
+@objc class PhotoLibrary : CDVPlugin {
 
     var fetchOptions: PHFetchOptions!
     var imageRequestOptions: PHImageRequestOptions!

@@ -1,11 +1,13 @@
 import Foundation
 
-@objc(PhotoLibrary) class PhotoLibraryProtocol : CDVURLProtocol {
+@objc class PhotoLibraryProtocol : CDVURLProtocol {
 
     let service: PhotoLibraryService
 
-    public init() {
-      service = PhotoLibraryService.instance
+    override init(request: NSURLRequest, cachedResponse: NSCachedURLResponse?, client: NSURLProtocolClient?) {
+        self.service = PhotoLibraryService.instance
+        super.init(request: request, cachedResponse: cachedResponse, client: client)
     }
+   
 
 }
