@@ -15,44 +15,6 @@ import Foundation
         self.service.stopCaching()
     }
 
-    // TODO: handleOpenURL?
-    // override func handleOpenURL(NSNotification notification) {
-    // override to handle urls sent to your app
-    // register your url schemes in your App-Info.plist
-    // NSURL* url = [notification object];
-    // if ([url isKindOfClass:[NSURL class]]) {
-    //     /* Do your thing! */
-    // }
-    // }
-
-    // TODO: override this:
-    // - (BOOL)shouldOverrideLoadWithRequest:(NSURLRequest*)request navigationType:(UIWebViewNavigationType)navigationType;
-    // {
-    //     NSURL *url = [request URL];
-    //     NSDictionary *settings = [(CDVViewController *)self.viewController settings];
-    //     if ([[url scheme] isEqualToString:@"maps"] || [[settings objectForKey:@"launchexternalforhost"] isEqualToString:[url host]]) {
-    //         if ([[UIApplication sharedApplication] canOpenURL:url]) {
-    //             [[UIApplication sharedApplication] openURL:url];
-    //             return YES;
-    //         }
-    //     }
-    //     return NO;
-    // }
-    // and this:
-    //startLoading
-    // handle self.request
-    // - (void)startLoading
-    // {
-    //   NSURL* *uriRequest = [[self request] URL];
-    //   if(NSOrderedSame == [[*uriRequest scheme] caseInsensitiveCompare:@"file"]){
-    //     NSError * error = [NSError errorWithDomain:@"Forbidden" code:403 userInfo:nil];
-    //     [[self client] URLProtocol:self didFailWithError:error];
-    //     return;
-    //   }
-    //   NSURLConnection *connection = [NSURLConnection connectionWithRequest:[self request] delegate:self];
-    //   [self setConnection:connection];
-    // }
-
     // Will sort by creation date
     func getLibrary(command: CDVInvokedUrlCommand) {
         dispatch_async(dispatch_get_main_queue()) {

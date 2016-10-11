@@ -33,32 +33,33 @@ import Foundation
                 
                 let photoId = queryItems?.filter({$0.name == "photoId"}).first?.value
                 if photoId == nil {
-                    self.sendErrorResponse(422, error: "Missing photoId query parameter")
+                    self.sendErrorResponse(422, error: "Missing 'photoId' query parameter")
                     return
                 }
                 let widthStr = queryItems?.filter({$0.name == "width"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_WIDTH
                 let width = Int(widthStr)
                 if width == nil {
-                    self.sendErrorResponse(422, error: "Incorrect width query parameter")
+                    self.sendErrorResponse(422, error: "Incorrect 'width' query parameter")
                     return
                 }
                 let heightStr = queryItems?.filter({$0.name == "height"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_HEIGHT
                 let height = Int(heightStr)
                 if height == nil {
-                    self.sendErrorResponse(422, error: "Incorrect height query parameter")
+                    self.sendErrorResponse(422, error: "Incorrect 'height' query parameter")
                     return
                 }
                 let qualityStr = queryItems?.filter({$0.name == "quality"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_QUALITY
                 let quality = Float(qualityStr)
                 if quality == nil {
-                    self.sendErrorResponse(422, error: "Incorrect quality query parameter")
+                    self.sendErrorResponse(422, error: "Incorrect 'quality' query parameter")
                     return
                 }
                 
-                // TODO: implement returning data
-                
-                let body = "TODO: Access granded"
-                self.sendResponseWithResponseCode(200, data: body.dataUsingEncoding(NSASCIIStringEncoding), mimeType: "image/jpeg")
+                dispatch_async(dispatch_get_main_queue()) {
+                    self.service.getThumbnail(photoId!, thumbnailWidth: width!, thumbnailHeight: height!, quality: quality!) { (imageData) in
+                        self.sendResponseWithResponseCode(200, data: imageData.data, mimeType: imageData.mimeType)
+                    }
+                }
                 
                 return
             }
