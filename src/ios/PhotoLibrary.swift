@@ -1,6 +1,6 @@
 import Foundation
 
-@objc class PhotoLibrary : CDVPlugin {
+@objc(PhotoLibrary) class PhotoLibrary : CDVPlugin {
 
     var service: PhotoLibraryService!
 
