@@ -5,10 +5,11 @@ import Foundation
     var service: PhotoLibraryService!
 
     override func pluginInitialize() {
+        
         service = PhotoLibraryService.instance
 
-        //[NSURLProtocol registerClass:[CDVFilesystemURLProtocol class]];
         NSURLProtocol.registerClass(PhotoLibraryProtocol)
+        
     }
 
     override func onMemoryWarning() {
@@ -17,7 +18,7 @@ import Foundation
 
     // Will sort by creation date
     func getLibrary(command: CDVInvokedUrlCommand) {
-        dispatch_async(dispatch_get_main_queue()) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
             
             let options = command.arguments[0] as! NSDictionary
             let thumbnailWidth = options["thumbnailWidth"] as! Int
@@ -36,7 +37,7 @@ import Foundation
     }
 
     func getThumbnail(command: CDVInvokedUrlCommand) {
-        dispatch_async(dispatch_get_main_queue()) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
 
             let photoId = command.arguments[0] as! String
             let options = command.arguments[1] as! NSDictionary
@@ -59,7 +60,7 @@ import Foundation
     }
 
     func getPhoto(command: CDVInvokedUrlCommand) {
-        dispatch_async(dispatch_get_main_queue()) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
 
             let photoId = command.arguments[0] as! String
 

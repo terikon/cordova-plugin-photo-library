@@ -55,7 +55,7 @@ import Foundation
                     return
                 }
                 
-                dispatch_async(dispatch_get_main_queue()) {
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
                     self.service.getThumbnail(photoId!, thumbnailWidth: width!, thumbnailHeight: height!, quality: quality!) { (imageData) in
                         self.sendResponseWithResponseCode(200, data: imageData.data, mimeType: imageData.mimeType)
                     }
