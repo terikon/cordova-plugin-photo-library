@@ -77,9 +77,10 @@ public class PhotoLibraryService {
 
     Bitmap bitmap;
 
+    // TODO: maybe it never worth using MediaStore.Images.Thumbnails.getThumbnail, as it returns sizes less than 512x384?
     if (thumbnailWidth == 512 && thumbnailHeight == 384) { // In such case, thumbnail will be cached by MediaStore
       int imageId = getImageId(photoId);
-      // For some reason and against documentation, MINI_KIND image can be returned in size different from 512*384, so the image will be scaled later if needed
+      // For some reason and against documentation, MINI_KIND image can be returned in size different from 512x384, so the image will be scaled later if needed
       bitmap = MediaStore.Images.Thumbnails.getThumbnail(
         context.getContentResolver(),
         imageId ,
