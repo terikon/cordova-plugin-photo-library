@@ -28,30 +28,33 @@ import Foundation
         
         if let url = self.request.URL {
             if url.path == "" && url.host?.lowercaseString == "thumbnail" {
+                
                 let urlComponents = NSURLComponents(URL: url, resolvingAgainstBaseURL: false)
                 let queryItems = urlComponents?.queryItems
                 
+                // Errors are 404 as android plugin only supports returning 404
+                
                 let photoId = queryItems?.filter({$0.name == "photoId"}).first?.value
                 if photoId == nil {
-                    self.sendErrorResponse(422, error: "Missing 'photoId' query parameter")
+                    self.sendErrorResponse(404, error: "Missing 'photoId' query parameter")
                     return
                 }
                 let widthStr = queryItems?.filter({$0.name == "width"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_WIDTH
                 let width = Int(widthStr)
                 if width == nil {
-                    self.sendErrorResponse(422, error: "Incorrect 'width' query parameter")
+                    self.sendErrorResponse(404, error: "Incorrect 'width' query parameter")
                     return
                 }
                 let heightStr = queryItems?.filter({$0.name == "height"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_HEIGHT
                 let height = Int(heightStr)
                 if height == nil {
-                    self.sendErrorResponse(422, error: "Incorrect 'height' query parameter")
+                    self.sendErrorResponse(404, error: "Incorrect 'height' query parameter")
                     return
                 }
                 let qualityStr = queryItems?.filter({$0.name == "quality"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_QUALITY
                 let quality = Float(qualityStr)
                 if quality == nil {
-                    self.sendErrorResponse(422, error: "Incorrect 'quality' query parameter")
+                    self.sendErrorResponse(404, error: "Incorrect 'quality' query parameter")
                     return
                 }
                 
@@ -65,8 +68,8 @@ import Foundation
             }
         }
         
-        let body = "Access not allowed"
-        self.sendResponseWithResponseCode(401, data: body.dataUsingEncoding(NSASCIIStringEncoding), mimeType: nil)
+        let body = "URI not supported by PhotoLibrary"
+        self.sendResponseWithResponseCode(404, data: body.dataUsingEncoding(NSASCIIStringEncoding), mimeType: nil)
         
     }
     
