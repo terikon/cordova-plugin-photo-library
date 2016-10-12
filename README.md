@@ -8,6 +8,7 @@ So here it is.
 - Works on android, ios and browser (cordova serve).
 - Fast - does not do base64 and uses browser cache.
 - On device, provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5
+- On ios, written in Swift and not Objective-C.
 
 # Usage
 
