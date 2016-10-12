@@ -10,6 +10,8 @@ So here it is.
 - On device, provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5
 - On ios, written in Swift and not Objective-C.
 
+Contributions are welcome.
+
 # Usage
 
 Add cdvphotolibrary protocol to Content-Security-Policy, like this:
