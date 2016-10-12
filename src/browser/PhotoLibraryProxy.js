@@ -30,6 +30,16 @@ var photoLibraryProxy = {
       [photoId, options]);
   },
 
+  _getPhotoUrlBrowser: function (success, error, [photoId, options]) {
+    let photo = photoLibraryProxy.getPhoto(
+      imageData => {
+        let photoUrl = URL.createObjectURL(imageData.data);
+        success(photoUrl);
+      },
+      error,
+      [photoId, options]);
+  },
+
   getThumbnail: function (success, error, [photoId, options]) {
 
     let libraryItem = library.find(li => li.id === photoId);

@@ -29,7 +29,7 @@ exports.getLibrary = function (success, error, options) {
 };
 
 // Generates url that can be accessed directly, so it will work more efficiently than getThumbnail, which does base64 encode/decode.
-// If success callback not provided, will return value immediately, but use success to make it browser-friendly
+// If success callback not provided, will return value immediately, but use overload with success as it browser-friendly
 exports.getThumbnailUrl = function (photoIdOrLibraryItem, success, error, options) {
 
   var photoId = typeof photoIdOrLibraryItem.id !== 'undefined' ? photoIdOrLibraryItem.id : photoIdOrLibraryItem;
@@ -55,6 +55,36 @@ exports.getThumbnailUrl = function (photoIdOrLibraryItem, success, error, option
   } else {
     return thumbnailUrl;
   }
+
+};
+
+// Generates url that can be accessed directly, so it will work more efficiently than getPhoto, which does base64 encode/decode.
+// If success callback not provided, will return value immediately, but use overload with success as it browser-friendly
+exports.getPhotoUrl = function (photoIdOrLibraryItem, success, error, options) {
+
+  var photoId = typeof photoIdOrLibraryItem.id !== 'undefined' ? photoIdOrLibraryItem.id : photoIdOrLibraryItem;
+
+  if (typeof success !== 'function' && typeof options === 'undefined') {
+    options = success;
+    success = undefined;
+  }
+
+  if (!options) {
+    options = {};
+  }
+
+  var photoUrl = 'cdvphotolibrary://photo?photoId=' + encodeURIComponent(photoId);
+
+  if (success) {
+    if (isBrowser) {
+      cordova.exec(success, success, 'PhotoLibrary', '_getPhotoUrlBrowser', [photoId, options]);
+    } else {
+      success(photoUrl);
+    }
+  } else {
+    return photoUrl;
+  }
+
 };
 
 // Provide same size as when calling getLibrary for better performance
@@ -90,8 +120,6 @@ exports.getPhoto = function (photoIdOrLibraryItem, success, error, options) {
   if (!options) {
     options = {};
   }
-
-  options = {};
 
   cordova.exec(
     function (data, mimeType) {

@@ -50,9 +50,23 @@ cordova.plugins.photoLibrary.getThumbnailUrl(
   });
 ```
 
+```js
+cordova.plugins.photoLibrary.getPhotoUrl(
+  libraryItem, // or libraryItem.id 
+  function (photoUrl) {
+
+    image.src = photoUrl;
+
+  },
+  function (err) {
+    console.log('Error occured');
+  });
+```
+
 ## Alternative way:
 
 ```js
+// This method is slower as it does base64
 cordova.plugins.photoLibrary.getThumbnail(
   libraryItem, // or libraryItem.id
   function (thumbnailBlob) {
@@ -69,6 +83,7 @@ cordova.plugins.photoLibrary.getThumbnail(
 ```
 
 ```js
+// This method is slower as it does base64
 cordova.plugins.photoLibrary.getPhoto(
   libraryItem, // or libraryItem.id
   function (fullPhotoBlob) {
