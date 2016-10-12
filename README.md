@@ -15,7 +15,7 @@ So here it is.
 Add cdvphotolibrary protocol to Content-Security-Policy, like this:
 
 ```
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: filesystem: cdvphotolibrary:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: cdvphotolibrary:">
 ```
 
 ```js

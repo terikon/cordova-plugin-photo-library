@@ -79,6 +79,7 @@ public class PhotoLibraryService {
 
     if (thumbnailWidth == 512 && thumbnailHeight == 384) { // In such case, thumbnail will be cached by MediaStore
       int imageId = getImageId(photoId);
+      // For some reason and against documentation, MINI_KIND image can be returned in size different from 512*384, so the image will be scaled later if needed
       bitmap = MediaStore.Images.Thumbnails.getThumbnail(
         context.getContentResolver(),
         imageId ,
@@ -97,18 +98,18 @@ public class PhotoLibraryService {
       options.inSampleSize = calculateInSampleSize(options, thumbnailWidth, thumbnailHeight);
       options.inJustDecodeBounds = false;
       is = context.getContentResolver().openInputStream(imageUri);
-      Bitmap sampledBitmap = BitmapFactory.decodeStream(is, null, options);
+      bitmap = BitmapFactory.decodeStream(is, null, options);
       is.close();
+    }
 
-      // resize to exact size needed
-      bitmap = Bitmap.createScaledBitmap(sampledBitmap, thumbnailWidth, thumbnailHeight, true);
-      if (sampledBitmap != bitmap) {
-        sampledBitmap.recycle();
-      }
+    // resize to exact size needed
+    Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, thumbnailWidth, thumbnailHeight, true);
+    if (bitmap != resizedBitmap) {
+      bitmap.recycle();
     }
 
     // TODO: cache bytes
-    byte[] bytes = getJpegBytesFromBitmap(bitmap, quality);
+    byte[] bytes = getJpegBytesFromBitmap(resizedBitmap, quality);
     String mimeType = "image/jpeg";
 
     bitmap.recycle();
@@ -117,7 +118,7 @@ public class PhotoLibraryService {
 
   }
 
-  public PictureData getPhoto(Context context, String photoId) throws IOException {
+  public PictureAsStream getPhotoAsStream(Context context, String photoId) throws IOException {
 
     int imageId = getImageId(photoId);
     String imageUrl = getImageUrl(photoId);
@@ -126,10 +127,19 @@ public class PhotoLibraryService {
     String mimeType = queryMimeType(context, imageId);
 
     InputStream is = context.getContentResolver().openInputStream(imageUri);
-    byte[] bytes =  readBytes(is);
-    is.close();
 
-    return new PictureData(bytes, mimeType);
+    return new PictureAsStream(is, mimeType);
+
+  }
+
+  public PictureData getPhoto(Context context, String photoId) throws IOException {
+
+    PictureAsStream pictureAsStream = getPhotoAsStream(context, photoId);
+
+    byte[] bytes =  readBytes(pictureAsStream.getStream());
+    pictureAsStream.getStream().close();
+
+    return new PictureData(bytes, pictureAsStream.getMimeType());
 
   }
 
@@ -286,6 +296,22 @@ public class PhotoLibraryService {
     public String getMimeType() { return this.mimeType; }
 
     private byte[] bytes;
+    private String mimeType;
+
+  }
+
+  public class PictureAsStream {
+
+    public PictureAsStream(InputStream stream, String mimeType) {
+      this.stream = stream;
+      this.mimeType = mimeType;
+    }
+
+    public InputStream getStream() { return this.stream; }
+
+    public String getMimeType() { return this.mimeType; }
+
+    private InputStream stream;
     private String mimeType;
 
   }

@@ -127,7 +127,10 @@ public class PhotoLibrary extends CordovaPlugin {
 
     Uri origUri = fromPluginUri(uri);
 
-    if (!origUri.getHost().toLowerCase().equals("thumbnail")) {
+    boolean isThumbnail = origUri.getHost().toLowerCase().equals("thumbnail");
+    boolean isPhoto = origUri.getHost().toLowerCase().equals("photo");
+
+    if (!isThumbnail && !isPhoto) {
       throw new FileNotFoundException("URI not supported by PhotoLibrary");
     }
 
@@ -136,34 +139,45 @@ public class PhotoLibrary extends CordovaPlugin {
       throw new FileNotFoundException("Missing 'photoId' query parameter");
     }
 
-    String widthStr = origUri.getQueryParameter("width");
-    int width;
-    try {
-      width = widthStr == null || widthStr.isEmpty() ? DEFAULT_WIDTH : Integer.parseInt(widthStr);
-    } catch (NumberFormatException e) {
-      throw new FileNotFoundException("Incorrect 'width' query parameter");
+    if (isThumbnail) {
+
+      String widthStr = origUri.getQueryParameter("width");
+      int width;
+      try {
+        width = widthStr == null || widthStr.isEmpty() ? DEFAULT_WIDTH : Integer.parseInt(widthStr);
+      } catch (NumberFormatException e) {
+        throw new FileNotFoundException("Incorrect 'width' query parameter");
+      }
+
+      String heightStr = origUri.getQueryParameter("height");
+      int height;
+      try {
+        height = heightStr == null || heightStr.isEmpty() ? DEFAULT_HEIGHT : Integer.parseInt(heightStr);
+      } catch (NumberFormatException e) {
+        throw new FileNotFoundException("Incorrect 'height' query parameter");
+      }
+
+      String qualityStr = origUri.getQueryParameter("quality");
+      double quality;
+      try {
+        quality = qualityStr == null || qualityStr.isEmpty() ? DEFAULT_QUALITY : Double.parseDouble(qualityStr);
+      } catch (NumberFormatException e) {
+        throw new FileNotFoundException("Incorrect 'quality' query parameter");
+      }
+
+      PhotoLibraryService.PictureData thumbnailData = service.getThumbnail(getContext(), photoId, width, height, quality);
+      InputStream is = new ByteArrayInputStream(thumbnailData.getBytes());
+
+      return new CordovaResourceApi.OpenForReadResult(uri, is, thumbnailData.getMimeType(), is.available(), null);
+
+    } else { // isPhoto == true
+
+      PhotoLibraryService.PictureAsStream pictureAsStream = service.getPhotoAsStream(getContext(), photoId);
+      InputStream is = pictureAsStream.getStream();
+
+      return new CordovaResourceApi.OpenForReadResult(uri, is, pictureAsStream.getMimeType(), is.available(), null);
+
     }
-
-    String heightStr = origUri.getQueryParameter("height");
-    int height;
-    try {
-      height = heightStr == null || heightStr.isEmpty() ? DEFAULT_HEIGHT : Integer.parseInt(heightStr);
-    } catch (NumberFormatException e) {
-      throw new FileNotFoundException("Incorrect 'height' query parameter");
-    }
-
-    String qualityStr = origUri.getQueryParameter("quality");
-    double quality;
-    try {
-      quality = qualityStr == null || qualityStr.isEmpty() ? DEFAULT_QUALITY : Double.parseDouble(qualityStr);
-    } catch (NumberFormatException e) {
-      throw new FileNotFoundException("Incorrect 'quality' query parameter");
-    }
-
-    PhotoLibraryService.PictureData thumbnailData = service.getThumbnail(getContext(), photoId, width, height, quality);
-    InputStream is = new ByteArrayInputStream(thumbnailData.getBytes());
-
-    return new CordovaResourceApi.OpenForReadResult(uri, is, thumbnailData.getMimeType(), is.available(), null);
 
   }
 
