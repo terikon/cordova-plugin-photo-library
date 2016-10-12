@@ -5,6 +5,8 @@ var defaultThumbnailHeight = 384; // optimal for android
 
 var defaultQuality = 0.5;
 
+var isBrowser = cordova.platformId == 'browser';
+
 // Will start caching for specified size
 exports.getLibrary = function (success, error, options) {
 
@@ -27,16 +29,32 @@ exports.getLibrary = function (success, error, options) {
 };
 
 // Generates url that can be accessed directly, so it will work more efficiently than getThumbnail, which does base64 encode/decode.
-exports.getThumbnailUrl = function (photoIdOrLibraryItem, options) {
+// If success callback not provided, will return value immediately, but use success to make it browser-friendly
+exports.getThumbnailUrl = function (photoIdOrLibraryItem, success, error, options) {
 
   var photoId = typeof photoIdOrLibraryItem.id !== 'undefined' ? photoIdOrLibraryItem.id : photoIdOrLibraryItem;
 
+  if (typeof success !== 'function' && typeof options === 'undefined') {
+    options = success;
+    success = undefined;
+  }
+
   options = getThumbnailOptionsWithDefaults(options);
 
-  return 'cdvphotolibrary://thumbnail?photoId=' + encodeURIComponent(photoId) +
-    '&width=' + encodeURIComponent(options.thumbnailWidth) +
-    '&height=' + encodeURIComponent(options.thumbnailHeight) +
-    '&quality=' + encodeURIComponent(options.quality);
+  var thumbnailUrl = 'cdvphotolibrary://thumbnail?photoId=' + encodeURIComponent(photoId) +
+      '&width=' + encodeURIComponent(options.thumbnailWidth) +
+      '&height=' + encodeURIComponent(options.thumbnailHeight) +
+      '&quality=' + encodeURIComponent(options.quality);
+
+  if (success) {
+    if (isBrowser) {
+      cordova.exec(success, success, 'PhotoLibrary', '_getThumbnailUrlBrowser', [photoId, options]);
+    } else {
+      success(thumbnailUrl);
+    }
+  } else {
+    return thumbnailUrl;
+  }
 };
 
 // Provide same size as when calling getLibrary for better performance

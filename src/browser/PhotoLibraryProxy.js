@@ -1,4 +1,5 @@
-module.exports = {
+var photoLibraryProxy = {
+
 
   getLibrary: function (success, error, [options]) {
 
@@ -17,6 +18,16 @@ module.exports = {
 
     }, false);
 
+  },
+
+  _getThumbnailUrlBrowser: function (success, error, [photoId, options]) {
+    let thumbnail = photoLibraryProxy.getThumbnail(
+      imageData => {
+        let thumbnailUrl = URL.createObjectURL(imageData.data);
+        success(thumbnailUrl);
+      },
+      error,
+      [photoId, options]);
   },
 
   getThumbnail: function (success, error, [photoId, options]) {
@@ -61,7 +72,9 @@ module.exports = {
 
 };
 
-require('cordova/exec/proxy').add('PhotoLibrary', module.exports);
+module.exports = photoLibraryProxy;
+
+require('cordova/exec/proxy').add('PhotoLibrary', photoLibraryProxy);
 
 const HIGHEST_POSSIBLE_Z_INDEX = 2147483647;
 

@@ -1,41 +1,63 @@
 **Work in progress**
 
-Parts are based on
+We needed a library that displays photo libraty in HTML. That gets thumbnail of arbitrary sizes, works on multiple platforms, and is fast. 
 
-- https://github.com/subitolabs/cordova-gallery-api
-- https://github.com/SuryaL/cordova-gallery-api
-- https://github.com/ryouaki/Cordova-Plugin-Photos 
+So here it is.
 
-# TODO
-
-- iOS: Bug: It seems to ignore png files
-- iOS: Handle cases where image returned by requestImageDataForAsset is null
-- Browser platform: Separate to multiple files
-- Browser platform: Compile plugin with webpack
-- Android: caching mechanism like [this one](https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html) can be helpful
-- Implement cdvphotolibrary schema. Currenly on android added stub that returns text result. It will be something like cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5
-- Implement cdvphotolibrary upload (post), which will enable efficient file saving to gallery.
+- Displays photo gallery as web page, and not as native screen.
+- Works on android, ios and browser (cordova serve).
+- Fast - does not do base64 and uses browser cache.
+- On device, provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5
 
 # Usage
 
+Add cdvphotolibrary protocol to Content-Security-Policy, like this:
+
+```
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: filesystem: cdvphotolibrary:">
+```
+
 ```js
 var library = cordova.plugins.photoLibrary.getLibrary(
-  function(library) {
-
+  function (library) {
+    // Here we have the library as array
   },
-  function(err) {
+  function (err) {
     console.log('Error occured');
   }
 );
 ```
 
+## Best way:
+
 ```js
-cordova.plugins.photoLibrary.getThumbnail(
-  libraryItem.id,
-  function(thumbnailBlob) {
+// Use this method to get url. It's better to use it and not directly access cdvphotolibrary://, as it will also work on browser.
+cordova.plugins.photoLibrary.getThumbnailUrl(
+  libraryItem, // or libraryItem.id 
+  function (thumbnailUrl) {
+
+    image.src = thumbnailUrl;
 
   },
-  function(err) {
+  function (err) {
+    console.log('Error occured');
+  },
+  {
+    thumbnailWidth: 512,
+    thumbnailHeight: 384,
+    quality: 0.8
+  });
+```
+
+## Alternative way:
+
+```js
+cordova.plugins.photoLibrary.getThumbnail(
+  libraryItem, // or libraryItem.id
+  function (thumbnailBlob) {
+
+  },
+  function (err) {
     console.log('Error occured');
   },
   {
@@ -47,34 +69,36 @@ cordova.plugins.photoLibrary.getThumbnail(
 
 ```js
 cordova.plugins.photoLibrary.getPhoto(
-  libraryItem.id,
-  function(fullPhotoBlob) {
+  libraryItem, // or libraryItem.id
+  function (fullPhotoBlob) {
 
   },
-  function(err) {
+  function (err) {
     console.log('Error occured');
   });
-```
-
-```js
-var thumbnailUrl = cordova.plugins.photoLibrary.getThumbnailUrl(
-  libraryItem,
-  {
-    thumbnailWidth: 512,
-    thumbnailHeight: 384,
-    quality: 0.8
-  });
-
-image.src = thumbnailUrl; 
 ```
 
 # TypeScript
 
 TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/terikon/cordova-plugin-photo-library/blob/master/PhotoLibrary.d.ts)
 
+# TODO
+
+- iOS: Bug: It seems to ignore png files
+- iOS: Handle (theoretical) cases where image returned by requestImageDataForAsset is null
+- Browser platform: Separate to multiple files
+- Browser platform: Compile plugin with webpack
+- Android: caching mechanism like [this one](https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html) can be helpful
+
 # References
 
-## Android relevant documentation
+Parts are based on
+
+- https://github.com/subitolabs/cordova-gallery-api
+- https://github.com/SuryaL/cordova-gallery-api
+- https://github.com/ryouaki/Cordova-Plugin-Photos
+
+## Relevant platform documentation
 
 https://developer.android.com/reference/org/json/JSONObject.html
 https://developer.android.com/reference/android/provider/MediaStore.Images.Media.html
