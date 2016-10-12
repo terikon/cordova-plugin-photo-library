@@ -127,8 +127,8 @@ public class PhotoLibrary extends CordovaPlugin {
 
     Uri origUri = fromPluginUri(uri);
 
-    boolean isThumbnail = origUri.getHost().toLowerCase().equals("thumbnail");
-    boolean isPhoto = origUri.getHost().toLowerCase().equals("photo");
+    boolean isThumbnail = origUri.getHost().toLowerCase().equals("thumbnail") && origUri.getPath().isEmpty();
+    boolean isPhoto = origUri.getHost().toLowerCase().equals("photo") && origUri.getPath().isEmpty();
 
     if (!isThumbnail && !isPhoto) {
       throw new FileNotFoundException("URI not supported by PhotoLibrary");
