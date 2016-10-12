@@ -23,7 +23,7 @@ final class PhotoLibraryService {
     let dateFormatter: NSDateFormatter! //TODO: remove in Swift 3, use JSONRepresentable
     let cachingImageManager: PHCachingImageManager!
     
-    let contentMode = PHImageContentMode.AspectFill
+    let contentMode = PHImageContentMode.AspectFill // AspectFit: can be smaller, AspectFill - can be larger. TODO: resize to exact size
     
     private init() {
         fetchOptions = PHFetchOptions()

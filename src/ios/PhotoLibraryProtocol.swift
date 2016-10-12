@@ -1,14 +1,14 @@
 import Foundation
 
 @objc(PhotoLibraryProtocol) class PhotoLibraryProtocol : CDVURLProtocol {
-
+    
     static let PHOTO_LIBRARY_PROTOCOL = "cdvphotolibrary"
     static let DEFAULT_WIDTH = "512"
     static let DEFAULT_HEIGHT = "384"
     static let DEFAULT_QUALITY = "0.5"
     
     let service: PhotoLibraryService
-
+    
     override init(request: NSURLRequest, cachedResponse: NSCachedURLResponse?, client: NSURLProtocolClient?) {
         self.service = PhotoLibraryService.instance
         super.init(request: request, cachedResponse: cachedResponse, client: client)
@@ -27,7 +27,7 @@ import Foundation
     override func startLoading() {
         
         if let url = self.request.URL {
-            if url.path == "" && url.host?.lowercaseString == "thumbnail" {
+            if url.path == "" {
                 
                 let urlComponents = NSURLComponents(URL: url, resolvingAgainstBaseURL: false)
                 let queryItems = urlComponents?.queryItems
@@ -39,32 +39,49 @@ import Foundation
                     self.sendErrorResponse(404, error: "Missing 'photoId' query parameter")
                     return
                 }
-                let widthStr = queryItems?.filter({$0.name == "width"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_WIDTH
-                let width = Int(widthStr)
-                if width == nil {
-                    self.sendErrorResponse(404, error: "Incorrect 'width' query parameter")
-                    return
-                }
-                let heightStr = queryItems?.filter({$0.name == "height"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_HEIGHT
-                let height = Int(heightStr)
-                if height == nil {
-                    self.sendErrorResponse(404, error: "Incorrect 'height' query parameter")
-                    return
-                }
-                let qualityStr = queryItems?.filter({$0.name == "quality"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_QUALITY
-                let quality = Float(qualityStr)
-                if quality == nil {
-                    self.sendErrorResponse(404, error: "Incorrect 'quality' query parameter")
-                    return
-                }
                 
-                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
-                    self.service.getThumbnail(photoId!, thumbnailWidth: width!, thumbnailHeight: height!, quality: quality!) { (imageData) in
-                        self.sendResponseWithResponseCode(200, data: imageData.data, mimeType: imageData.mimeType)
+                if url.host?.lowercaseString == "thumbnail" {
+                    
+                    let widthStr = queryItems?.filter({$0.name == "width"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_WIDTH
+                    let width = Int(widthStr)
+                    if width == nil {
+                        self.sendErrorResponse(404, error: "Incorrect 'width' query parameter")
+                        return
                     }
+                    
+                    let heightStr = queryItems?.filter({$0.name == "height"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_HEIGHT
+                    let height = Int(heightStr)
+                    if height == nil {
+                        self.sendErrorResponse(404, error: "Incorrect 'height' query parameter")
+                        return
+                    }
+                    
+                    let qualityStr = queryItems?.filter({$0.name == "quality"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_QUALITY
+                    let quality = Float(qualityStr)
+                    if quality == nil {
+                        self.sendErrorResponse(404, error: "Incorrect 'quality' query parameter")
+                        return
+                    }
+                    
+                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+                        self.service.getThumbnail(photoId!, thumbnailWidth: width!, thumbnailHeight: height!, quality: quality!) { (imageData) in
+                            self.sendResponseWithResponseCode(200, data: imageData.data, mimeType: imageData.mimeType)
+                        }
+                    }
+                    
+                    return
+                    
+                } else if url.host?.lowercaseString == "photo" {
+                    
+                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+                        self.service.getPhoto(photoId!) { (imageData) in
+                            self.sendResponseWithResponseCode(200, data: imageData.data, mimeType: imageData.mimeType)
+                        }
+                    }
+                    
+                    return
+                    
                 }
-                
-                return
             }
         }
         
