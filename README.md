@@ -19,7 +19,7 @@ Add cdvphotolibrary protocol to Content-Security-Policy, like this:
 ```
 
 ```js
-var library = cordova.plugins.photoLibrary.getLibrary(
+cordova.plugins.photoLibrary.getLibrary(
   function (library) {
     // Here we have the library as array
   },
