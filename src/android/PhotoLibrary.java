@@ -19,6 +19,10 @@ public class PhotoLibrary extends CordovaPlugin {
 
   public static final String PHOTO_LIBRARY_PROTOCOL = "cdvphotolibrary";
 
+  public static final int DEFAULT_WIDTH = 512;
+  public static final int DEFAULT_HEIGHT = 384;
+  public static final double DEFAULT_QUALITY = 0.5;
+
   public static final String ACTION_GET_LIBRARY = "getLibrary";
   public static final String ACTION_GET_THUMBNAIL= "getThumbnail";
   public static final String ACTION_GET_PHOTO = "getPhoto";
@@ -123,23 +127,43 @@ public class PhotoLibrary extends CordovaPlugin {
 
     Uri origUri = fromPluginUri(uri);
 
-    if (origUri.getPath().toLowerCase() != "/thumbnail") {
-      throw new FileNotFoundException("URI not supported by PhotoLibrary: " + uri);
+    if (!origUri.getHost().toLowerCase().equals("thumbnail")) {
+      throw new FileNotFoundException("URI not supported by PhotoLibrary");
     }
 
     String photoId = origUri.getQueryParameter("photoId");
-    int width = Integer.parseInt(origUri.getQueryParameter("width"));
-    int height = Integer.parseInt(origUri.getQueryParameter("height"));
-    double quality = Double.parseDouble(origUri.getQueryParameter("quality"));
+    if (photoId == null || photoId.isEmpty()) {
+      throw new FileNotFoundException("Missing 'photoId' query parameter");
+    }
 
-    //String resultText = "Result of handleOpenForRead: " + width + "," + height + "," + quality;
-    //InputStream is = new ByteArrayInputStream( resultText.getBytes( Charset.defaultCharset() ) );
-    //return new CordovaResourceApi.OpenForReadResult(uri, is, "text/plain", is.available(), null);
+    String widthStr = origUri.getQueryParameter("width");
+    int width;
+    try {
+      width = widthStr == null || widthStr.isEmpty() ? DEFAULT_WIDTH : Integer.parseInt(widthStr);
+    } catch (NumberFormatException e) {
+      throw new FileNotFoundException("Incorrect 'width' query parameter");
+    }
+
+    String heightStr = origUri.getQueryParameter("height");
+    int height;
+    try {
+      height = heightStr == null || heightStr.isEmpty() ? DEFAULT_HEIGHT : Integer.parseInt(heightStr);
+    } catch (NumberFormatException e) {
+      throw new FileNotFoundException("Incorrect 'height' query parameter");
+    }
+
+    String qualityStr = origUri.getQueryParameter("quality");
+    double quality;
+    try {
+      quality = qualityStr == null || qualityStr.isEmpty() ? DEFAULT_QUALITY : Double.parseDouble(qualityStr);
+    } catch (NumberFormatException e) {
+      throw new FileNotFoundException("Incorrect 'quality' query parameter");
+    }
 
     PhotoLibraryService.PictureData thumbnailData = service.getThumbnail(getContext(), photoId, width, height, quality);
     InputStream is = new ByteArrayInputStream(thumbnailData.getBytes());
 
-    return new CordovaResourceApi.OpenForReadResult(uri, is, thumbnailData.getMimeType() , is.available(), null);
+    return new CordovaResourceApi.OpenForReadResult(uri, is, thumbnailData.getMimeType(), is.available(), null);
 
   }
 
