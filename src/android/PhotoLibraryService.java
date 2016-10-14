@@ -75,7 +75,7 @@ public class PhotoLibraryService {
 
   public PictureData getThumbnail(Context context, String photoId, int thumbnailWidth, int thumbnailHeight, double quality) throws IOException {
 
-    Bitmap bitmap;
+    Bitmap bitmap = null;
 
     // TODO: maybe it never worth using MediaStore.Images.Thumbnails.getThumbnail, as it returns sizes less than 512x384?
     if (thumbnailWidth == 512 && thumbnailHeight == 384) { // In such case, thumbnail will be cached by MediaStore
@@ -86,7 +86,9 @@ public class PhotoLibraryService {
         imageId ,
         MediaStore.Images.Thumbnails.MINI_KIND,
         (BitmapFactory.Options) null);
-    } else { // No free caching here
+    }
+
+    if (bitmap == null) { // No free caching here
       String imageURL = getImageURL(photoId);
       Uri imageUri = Uri.fromFile(new File(imageURL));
       BitmapFactory.Options options = new BitmapFactory.Options();
@@ -103,19 +105,24 @@ public class PhotoLibraryService {
       is.close();
     }
 
-    // resize to exact size needed
-    Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, thumbnailWidth, thumbnailHeight, true);
-    if (bitmap != resizedBitmap) {
+    if (bitmap != null) {
+      // resize to exact size needed
+      Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, thumbnailWidth, thumbnailHeight, true);
+      if (bitmap != resizedBitmap) {
+        bitmap.recycle();
+      }
+
+      // TODO: cache bytes
+      byte[] bytes = getJpegBytesFromBitmap(resizedBitmap, quality);
+      String mimeType = "image/jpeg";
+
       bitmap.recycle();
+
+      return new PictureData(bytes, mimeType);
+
     }
 
-    // TODO: cache bytes
-    byte[] bytes = getJpegBytesFromBitmap(resizedBitmap, quality);
-    String mimeType = "image/jpeg";
-
-    bitmap.recycle();
-
-    return new PictureData(bytes, mimeType);
+    return null;
 
   }
 

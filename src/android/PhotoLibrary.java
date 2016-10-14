@@ -166,6 +166,11 @@ public class PhotoLibrary extends CordovaPlugin {
       }
 
       PhotoLibraryService.PictureData thumbnailData = service.getThumbnail(getContext(), photoId, width, height, quality);
+
+      if (thumbnailData == null) {
+        throw new FileNotFoundException("Could not create thumbnail");
+      }
+
       InputStream is = new ByteArrayInputStream(thumbnailData.getBytes());
 
       return new CordovaResourceApi.OpenForReadResult(uri, is, thumbnailData.getMimeType(), is.available(), null);
