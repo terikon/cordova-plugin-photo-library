@@ -199,6 +199,4 @@ var addUrlsToLibrary = function(library, success, options) {
     photoLibrary.getThumbnailURL(libraryItem, handleThumbnailURL.bind(null, libraryItem), handleUrlError, options);
   }
 
-  success(library);
-
 };
