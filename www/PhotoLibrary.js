@@ -45,10 +45,10 @@ photoLibrary.getThumbnailURL = function (photoIdOrLibraryItem, success, error, o
 
   options = getThumbnailOptionsWithDefaults(options);
 
-  var thumbnailURL = 'cdvphotolibrary://thumbnail?photoId=' + encodeURIComponent(photoId) +
-      '&width=' + encodeURIComponent(options.thumbnailWidth) +
-      '&height=' + encodeURIComponent(options.thumbnailHeight) +
-      '&quality=' + encodeURIComponent(options.quality);
+  var thumbnailURL = 'cdvphotolibrary://thumbnail?photoId=' + fixedEncodeURIComponent(photoId) +
+      '&width=' + fixedEncodeURIComponent(options.thumbnailWidth) +
+      '&height=' + fixedEncodeURIComponent(options.thumbnailHeight) +
+      '&quality=' + fixedEncodeURIComponent(options.quality);
 
   if (success) {
     if (isBrowser) {
@@ -77,7 +77,7 @@ photoLibrary.getPhotoURL = function (photoIdOrLibraryItem, success, error, optio
     options = {};
   }
 
-  var photoURL = 'cdvphotolibrary://photo?photoId=' + encodeURIComponent(photoId);
+  var photoURL = 'cdvphotolibrary://photo?photoId=' + fixedEncodeURIComponent(photoId);
 
   if (success) {
     if (isBrowser) {
@@ -200,3 +200,10 @@ var addUrlsToLibrary = function(library, success, options) {
   }
 
 };
+
+// from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
+function fixedEncodeURIComponent (str) {
+  return encodeURIComponent(str).replace(/[!'()*]/g, function(c) {
+    return '%' + c.charCodeAt(0).toString(16);
+  });
+}
