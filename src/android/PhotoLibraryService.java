@@ -87,8 +87,8 @@ public class PhotoLibraryService {
         MediaStore.Images.Thumbnails.MINI_KIND,
         (BitmapFactory.Options) null);
     } else { // No free caching here
-      String imageUrl = getImageUrl(photoId);
-      Uri imageUri = Uri.fromFile(new File(imageUrl));
+      String imageURL = getImageURL(photoId);
+      Uri imageUri = Uri.fromFile(new File(imageURL));
       BitmapFactory.Options options = new BitmapFactory.Options();
 
       options.inJustDecodeBounds = true;
@@ -122,8 +122,8 @@ public class PhotoLibraryService {
   public PictureAsStream getPhotoAsStream(Context context, String photoId) throws IOException {
 
     int imageId = getImageId(photoId);
-    String imageUrl = getImageUrl(photoId);
-    Uri imageUri = Uri.fromFile(new File(imageUrl));
+    String imageURL = getImageURL(photoId);
+    Uri imageUri = Uri.fromFile(new File(imageURL));
 
     String mimeType = queryMimeType(context, imageId);
 
@@ -281,7 +281,7 @@ public class PhotoLibraryService {
   }
 
   // photoId is in format "imageid;imageurl"
-  private static String getImageUrl(String photoId) {
+  private static String getImageURL(String photoId) {
     return photoId.substring(photoId.indexOf(';') + 1);
   }
 

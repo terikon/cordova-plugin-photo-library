@@ -20,21 +20,21 @@ var photoLibraryProxy = {
 
   },
 
-  _getThumbnailUrlBrowser: function (success, error, [photoId, options]) {
+  _getThumbnailURLBrowser: function (success, error, [photoId, options]) {
     let thumbnail = photoLibraryProxy.getThumbnail(
       imageData => {
-        let thumbnailUrl = URL.createObjectURL(imageData.data);
-        success(thumbnailUrl);
+        let thumbnailURL = URL.createObjectURL(imageData.data);
+        success(thumbnailURL);
       },
       error,
       [photoId, options]);
   },
 
-  _getPhotoUrlBrowser: function (success, error, [photoId, options]) {
+  _getPhotoURLBrowser: function (success, error, [photoId, options]) {
     let photo = photoLibraryProxy.getPhoto(
       imageData => {
-        let photoUrl = URL.createObjectURL(imageData.data);
-        success(photoUrl);
+        let photoURL = URL.createObjectURL(imageData.data);
+        success(photoURL);
       },
       error,
       [photoId, options]);
@@ -50,7 +50,7 @@ var photoLibraryProxy = {
 
     let {thumbnailWidth, thumbnailHeight, quality} = options;
 
-    readDataUrlAsImage(libraryItem.nativeURL).then(image => {
+    readDataURLAsImage(libraryItem.nativeURL).then(image => {
       let canvas = document.createElement('canvas');
       let context = canvas.getContext('2d');
       canvas.width = thumbnailWidth;
@@ -130,7 +130,7 @@ function readFileAsDataURL(file) {
   });
 }
 
-function readDataUrlAsImage(dataURL) {
+function readDataURLAsImage(dataURL) {
   return new Promise((resolve, reject) => {
     var imageObj = new Image();
     imageObj.onload = () => {
@@ -147,7 +147,7 @@ function files2Library(files) {
       return new Promise((resolve, reject) => {
         readFileAsDataURL(f)
           .then(dataURL => {
-            return readDataUrlAsImage(dataURL).then(image => {
+            return readDataURLAsImage(dataURL).then(image => {
               return { dataURL, image };
             });
           })

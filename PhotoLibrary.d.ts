@@ -3,15 +3,15 @@ declare module PhotoLibraryCordova {
   export interface Plugin {
     getLibrary(success: (result: LibraryItem[]) => void, error: (err: any) => void, options: GetLibraryOptions): void;
 
-    getThumbnailUrl(photoId: string, success: (result: string) => void, error: (err: any) => void, options: GetThumbnailOptions): void;
-    getThumbnailUrl(libraryItem: LibraryItem, success: (result: string) => void, error: (err: any) => void, options: GetThumbnailOptions): void;
-    getThumbnailUrl(photoId: string, options: GetThumbnailOptions): string; // Will not work in browser
-    getThumbnailUrl(libraryItem: LibraryItem, options: GetThumbnailOptions): string; // Will not work in browser
+    getThumbnailURL(photoId: string, success: (result: string) => void, error: (err: any) => void, options: GetThumbnailOptions): void;
+    getThumbnailURL(libraryItem: LibraryItem, success: (result: string) => void, error: (err: any) => void, options: GetThumbnailOptions): void;
+    getThumbnailURL(photoId: string, options: GetThumbnailOptions): string; // Will not work in browser
+    getThumbnailURL(libraryItem: LibraryItem, options: GetThumbnailOptions): string; // Will not work in browser
 
-    getPhotoUrl(photoId: string, success: (result: string) => void, error: (err: any) => void, options: GetPhotoOptions): void;
-    getPhotoUrl(libraryItem: LibraryItem, success: (result: string) => void, error: (err: any) => void, options: GetPhotoOptions): void;
-    getPhotoUrl(photoId: string, options: GetPhotoOptions): string; // Will not work in browser
-    getPhotoUrl(libraryItem: LibraryItem, options: GetPhotoOptions): string; // Will not work in browser
+    getPhotoURL(photoId: string, success: (result: string) => void, error: (err: any) => void, options: GetPhotoOptions): void;
+    getPhotoURL(libraryItem: LibraryItem, success: (result: string) => void, error: (err: any) => void, options: GetPhotoOptions): void;
+    getPhotoURL(photoId: string, options: GetPhotoOptions): string; // Will not work in browser
+    getPhotoURL(libraryItem: LibraryItem, options: GetPhotoOptions): string; // Will not work in browser
 
     getThumbnail(photoId: string, success: (result: Photo) => void, error: (err: any) => void, options: GetThumbnailOptions): void;
     getThumbnail(libraryItem: LibraryItem, success: (result: Photo) => void, error: (err: any) => void, options: GetThumbnailOptions): void;

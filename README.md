@@ -23,23 +23,43 @@ Add cdvphotolibrary protocol to Content-Security-Policy, like this:
 ```js
 cordova.plugins.photoLibrary.getLibrary(
   function (library) {
+    
     // Here we have the library as array
+
+    library.forEach(function(libraryItem) {
+      console.log(libraryItem.id);          // Id of the photo
+      console.log(libraryItem.photoURL);    // Cross-platform access to photo
+      console.log(libraryItem.thumbnailURL);// Cross-platform access to thumbnail
+      console.log(libraryItem.filename);
+      console.log(libraryItem.width);
+      console.log(libraryItem.height);
+      console.log(libraryItem.creationDate);
+      console.log(libraryItem.nativeURL);   // Do not use, as it is not accessible on all platforms
+    });
+
   },
   function (err) {
     console.log('Error occured');
+  },
+  {
+    thumbnailWidth: 512,
+    thumbnailHeight: 384,
+    quality: 0.8
   }
 );
 ```
 
-## Best way:
+This method is fast, as thumbails will be generated on demand.
+
+## In addition you can ask thumbnail or full image for each photo separately, as cross-platform url or as blob
 
 ```js
 // Use this method to get url. It's better to use it and not directly access cdvphotolibrary://, as it will also work on browser.
-cordova.plugins.photoLibrary.getThumbnailUrl(
+cordova.plugins.photoLibrary.getThumbnailURL(
   libraryItem, // or libraryItem.id 
-  function (thumbnailUrl) {
+  function (thumbnailURL) {
 
-    image.src = thumbnailUrl;
+    image.src = thumbnailURL;
 
   },
   function (err) {
@@ -53,19 +73,17 @@ cordova.plugins.photoLibrary.getThumbnailUrl(
 ```
 
 ```js
-cordova.plugins.photoLibrary.getPhotoUrl(
+cordova.plugins.photoLibrary.getPhotoURL(
   libraryItem, // or libraryItem.id 
-  function (photoUrl) {
+  function (photoURL) {
 
-    image.src = photoUrl;
+    image.src = photoURL;
 
   },
   function (err) {
     console.log('Error occured');
   });
 ```
-
-## Alternative way:
 
 ```js
 // This method is slower as it does base64
