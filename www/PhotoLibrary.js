@@ -52,7 +52,7 @@ photoLibrary.getThumbnailURL = function (photoIdOrLibraryItem, success, error, o
 
   if (success) {
     if (isBrowser) {
-      cordova.exec(success, success, 'PhotoLibrary', '_getThumbnailURLBrowser', [photoId, options]);
+      cordova.exec(success, error, 'PhotoLibrary', '_getThumbnailURLBrowser', [photoId, options]);
     } else {
       success(thumbnailURL);
     }
