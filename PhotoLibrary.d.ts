@@ -13,11 +13,11 @@ declare module PhotoLibraryCordova {
     getPhotoURL(photoId: string, options: GetPhotoOptions): string; // Will not work in browser
     getPhotoURL(libraryItem: LibraryItem, options: GetPhotoOptions): string; // Will not work in browser
 
-    getThumbnail(photoId: string, success: (result: Photo) => void, error: (err: any) => void, options: GetThumbnailOptions): void;
-    getThumbnail(libraryItem: LibraryItem, success: (result: Photo) => void, error: (err: any) => void, options: GetThumbnailOptions): void;
+    getThumbnail(photoId: string, success: (result: Blob) => void, error: (err: any) => void, options: GetThumbnailOptions): void;
+    getThumbnail(libraryItem: LibraryItem, success: (result: Blob) => void, error: (err: any) => void, options: GetThumbnailOptions): void;
 
-    getPhoto(photoId: string, success: (result: Photo) => void, error: (err: any) => void, options: GetPhotoOptions): void;
-    getPhoto(libraryItem: LibraryItem, success: (result: Photo) => void, error: (err: any) => void, options: GetPhotoOptions): void;
+    getPhoto(photoId: string, success: (result: Blob) => void, error: (err: any) => void, options: GetPhotoOptions): void;
+    getPhoto(libraryItem: LibraryItem, success: (result: Blob) => void, error: (err: any) => void, options: GetPhotoOptions): void;
 
     stopCaching(success: () => void, error: (err: any) => void): void;
   }
@@ -29,11 +29,6 @@ declare module PhotoLibraryCordova {
     width: number,
     height: number,
     creationDate: any,
-  }
-
-  export interface Photo {
-    data: Blob,
-    mimeType: string,
   }
 
   export interface GetLibraryOptions {
