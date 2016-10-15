@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PhotoLibraryService {
 
@@ -77,52 +79,87 @@ public class PhotoLibraryService {
 
     Bitmap bitmap = null;
 
-    // TODO: maybe it never worth using MediaStore.Images.Thumbnails.getThumbnail, as it returns sizes less than 512x384?
-    if (thumbnailWidth == 512 && thumbnailHeight == 384) { // In such case, thumbnail will be cached by MediaStore
-      int imageId = getImageId(photoId);
-      // For some reason and against documentation, MINI_KIND image can be returned in size different from 512x384, so the image will be scaled later if needed
-      bitmap = MediaStore.Images.Thumbnails.getThumbnail(
-        context.getContentResolver(),
-        imageId ,
-        MediaStore.Images.Thumbnails.MINI_KIND,
-        (BitmapFactory.Options) null);
-    }
+    thumbnailLoading.putIfAbsent(photoId, true);
+    // remove effect of previous call to stopThumbnailLoading
+    pendingStopThumbnailLoading.remove(photoId);
 
-    if (bitmap == null) { // No free caching here
-      String imageURL = getImageURL(photoId);
-      Uri imageUri = Uri.fromFile(new File(imageURL));
-      BitmapFactory.Options options = new BitmapFactory.Options();
+    try {
 
-      options.inJustDecodeBounds = true;
-      InputStream is = context.getContentResolver().openInputStream(imageUri);
-      BitmapFactory.decodeStream(is, null, options);
-
-      // get bitmap with size of closest power of 2
-      options.inSampleSize = calculateInSampleSize(options, thumbnailWidth, thumbnailHeight);
-      options.inJustDecodeBounds = false;
-      is = context.getContentResolver().openInputStream(imageUri);
-      bitmap = BitmapFactory.decodeStream(is, null, options);
-      is.close();
-    }
-
-    if (bitmap != null) {
-      // resize to exact size needed
-      Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, thumbnailWidth, thumbnailHeight, true);
-      if (bitmap != resizedBitmap) {
-        bitmap.recycle();
+      // TODO: maybe it never worth using MediaStore.Images.Thumbnails.getThumbnail, as it returns sizes less than 512x384?
+      if (thumbnailWidth == 512 && thumbnailHeight == 384) { // In such case, thumbnail will be cached by MediaStore
+        int imageId = getImageId(photoId);
+        // For some reason and against documentation, MINI_KIND image can be returned in size different from 512x384, so the image will be scaled later if needed
+        bitmap = MediaStore.Images.Thumbnails.getThumbnail(
+          context.getContentResolver(),
+          imageId,
+          MediaStore.Images.Thumbnails.MINI_KIND,
+          (BitmapFactory.Options) null);
       }
 
-      // TODO: cache bytes
-      byte[] bytes = getJpegBytesFromBitmap(resizedBitmap, quality);
-      String mimeType = "image/jpeg";
+      if (pendingStopThumbnailLoading.containsKey(photoId)) { // if there was call to stopThumbnailLoading
+        if (bitmap != null) {
+          bitmap.recycle();
+        }
+        Log.v("PhotoLibrary", "getThumbnail process stopped by stopThumbnailLoading");
+        return null;
+      }
 
-      bitmap.recycle();
+      if (bitmap == null) { // No free caching here
+        String imageURL = getImageURL(photoId);
+        Uri imageUri = Uri.fromFile(new File(imageURL));
+        BitmapFactory.Options options = new BitmapFactory.Options();
 
-      return new PictureData(bytes, mimeType);
+        options.inJustDecodeBounds = true;
+        InputStream is = context.getContentResolver().openInputStream(imageUri);
+        BitmapFactory.decodeStream(is, null, options);
 
+        // get bitmap with size of closest power of 2
+        options.inSampleSize = calculateInSampleSize(options, thumbnailWidth, thumbnailHeight);
+        options.inJustDecodeBounds = false;
+        is = context.getContentResolver().openInputStream(imageUri);
+        bitmap = BitmapFactory.decodeStream(is, null, options);
+        is.close();
+      }
+
+      if (pendingStopThumbnailLoading.containsKey(photoId)) { // if there was call to stopThumbnailLoading
+        if (bitmap != null) {
+          bitmap.recycle();
+        }
+        Log.v("PhotoLibrary", "getThumbnail process stopped by stopThumbnailLoading");
+        return null;
+      }
+
+      if (bitmap != null) {
+        // resize to exact size needed
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, thumbnailWidth, thumbnailHeight, true);
+        if (bitmap != resizedBitmap) {
+          bitmap.recycle();
+        }
+
+        if (pendingStopThumbnailLoading.containsKey(photoId)) { // if there was call to stopThumbnailLoading
+          if (resizedBitmap != null) {
+            resizedBitmap.recycle();
+          }
+          Log.v("PhotoLibrary", "getThumbnail process stopped by stopThumbnailLoading");
+          return null;
+        }
+
+        // TODO: cache bytes
+        byte[] bytes = getJpegBytesFromBitmap(resizedBitmap, quality);
+        String mimeType = "image/jpeg";
+
+        bitmap.recycle();
+
+        return new PictureData(bytes, mimeType);
+
+      }
+
+      return null;
+
+    } finally {
+      thumbnailLoading.remove(photoId);
+      pendingStopThumbnailLoading.remove(photoId);
     }
-
-    return null;
 
   }
 
@@ -151,9 +188,19 @@ public class PhotoLibraryService {
 
   }
 
+  public void stopThumbnailLoading(String photoId) {
+    //Log.v("PhotoLibrary", "stopThumbnailLoading called");
+    if (thumbnailLoading.containsValue(photoId)) {
+      pendingStopThumbnailLoading.putIfAbsent(photoId, true);
+    }
+  }
+
   private static PhotoLibraryService instance = null;
 
   private SimpleDateFormat dateFormatter;
+
+  private final ConcurrentHashMap<String, Boolean> thumbnailLoading = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, Boolean> pendingStopThumbnailLoading = new ConcurrentHashMap<>();
 
   private ArrayList<JSONObject> queryContentProvider(Context context, Uri collection, JSONObject columns, String whereClause) throws JSONException {
 

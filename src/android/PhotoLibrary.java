@@ -27,6 +27,7 @@ public class PhotoLibrary extends CordovaPlugin {
   public static final String ACTION_GET_THUMBNAIL= "getThumbnail";
   public static final String ACTION_GET_PHOTO = "getPhoto";
   public static final String ACTION_STOP_CACHING = "stopCaching";
+  public static final String ACTION_STOP_THUMBNAIL_LOADING = "stopThumbnailLoading";
 
   private PhotoLibraryService service;
 
@@ -101,6 +102,17 @@ public class PhotoLibrary extends CordovaPlugin {
         callbackContext.success();
         return true;
 
+      } else if (ACTION_STOP_THUMBNAIL_LOADING.equals(action)) {
+
+        final String photoId = args.getString(0);
+
+        cordova.getThreadPool().execute(new Runnable() {
+          public void run() {
+            service.stopThumbnailLoading(photoId);
+            callbackContext.success();
+          }
+        });
+        return true;
       }
 
       return false;

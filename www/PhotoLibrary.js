@@ -52,7 +52,7 @@ photoLibrary.getThumbnailURL = function (photoIdOrLibraryItem, success, error, o
 
   if (success) {
     if (isBrowser) {
-      cordova.exec(success, success, 'PhotoLibrary', '_getThumbnailURLBrowser', [photoId, options]);
+      cordova.exec(success, error, 'PhotoLibrary', '_getThumbnailURLBrowser', [photoId, options]);
     } else {
       success(thumbnailURL);
     }
@@ -153,6 +153,20 @@ photoLibrary.stopCaching = function (success, error) {
     'PhotoLibrary',
     'stopCaching', []
   );
+
+};
+
+// Call when thumbnail being loaded by url no longer needed, so processing of it will stop
+photoLibrary.stopThumbnailLoading = function (photoIdOrLibraryItem, success, error) {
+
+  var photoId = typeof photoIdOrLibraryItem.id !== 'undefined' ? photoIdOrLibraryItem.id : photoIdOrLibraryItem;
+
+  cordova.exec(
+    success,
+    error,
+    'PhotoLibrary',
+    'stopThumbnailLoading',
+    [photoId]);
 
 };
 

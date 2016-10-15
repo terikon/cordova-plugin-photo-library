@@ -80,6 +80,10 @@ var photoLibraryProxy = {
     // Nothing to do
   },
 
+  stopThumbnailLoading: function (success, error, [photoId]) {
+    // Nothing to do
+  },
+
 };
 
 module.exports = photoLibraryProxy;
