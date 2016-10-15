@@ -4,6 +4,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.provider.MediaStore;
 
@@ -107,7 +110,7 @@ public class PhotoLibraryService {
 
     if (bitmap != null) {
       // resize to exact size needed
-      Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, thumbnailWidth, thumbnailHeight, true);
+      Bitmap resizedBitmap = resizeBitmap(bitmap, thumbnailWidth, thumbnailHeight);
       if (bitmap != resizedBitmap) {
         bitmap.recycle();
       }
@@ -290,6 +293,27 @@ public class PhotoLibraryService {
   // photoId is in format "imageid;imageurl"
   private static String getImageURL(String photoId) {
     return photoId.substring(photoId.indexOf(';') + 1);
+  }
+
+  // from http://stackoverflow.com/a/15441311/1691132
+  private static Bitmap resizeBitmap(Bitmap bitmap, int width, int height) {
+
+    if (bitmap.getWidth() == width && bitmap.getHeight() == height) {
+      return bitmap;
+    }
+
+    Bitmap result = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    float originalWidth = bitmap.getWidth(), originalHeight = bitmap.getHeight();
+    Canvas canvas = new Canvas(result);
+    float scale = width/originalWidth;
+    float xTranslation = 0.0f, yTranslation = (height - originalHeight * scale)/2.0f;
+    Matrix transformation = new Matrix();
+    transformation.postTranslate(xTranslation, yTranslation);
+    transformation.preScale(scale, scale);
+    Paint paint = new Paint();
+    paint.setFilterBitmap(true);
+    canvas.drawBitmap(bitmap, transformation, paint);
+    return result;
   }
 
   public class PictureData {
