@@ -53,7 +53,8 @@ final class PhotoLibraryService {
         return SingletonWrapper.singleton
     }
     
-    func getLibrary(thumbnailWidth: Int, thumbnailHeight: Int) -> [NSDictionary] {
+    // Returns nil if permissions not granted
+    func getLibrary(thumbnailWidth: Int, thumbnailHeight: Int) -> [NSDictionary]? {
         
         let fetchResult = PHAsset.fetchAssetsWithMediaType(.Image, options: self.fetchOptions)
         
@@ -91,6 +92,11 @@ final class PhotoLibraryService {
         if library.count > 0 {
             // To prevent getting NSObjectInaccessibleException, do not count cache started if there are no items in it
             self.cacheActive = true
+        } else {
+            // No photos returned, let's check permissions
+            if PHPhotoLibrary.authorizationStatus() != .Authorized {
+                return nil
+            }
         }
         
         return library

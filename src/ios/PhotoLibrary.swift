@@ -26,11 +26,15 @@ import Foundation
             
             let library = self.service.getLibrary(thumbnailWidth, thumbnailHeight: thumbnailHeight)
             
-            let pluginResult = CDVPluginResult(
-                status: CDVCommandStatus_OK,
-                messageAsArray: library
-            )
-
+            let pluginResult = library != nil ?
+                CDVPluginResult(
+                    status: CDVCommandStatus_OK,
+                    messageAsArray: library)
+            :
+                CDVPluginResult(
+                    status: CDVCommandStatus_ERROR,
+                    messageAsString: "Permission Denial: This application is not allowed to access Photo data.");
+            
             self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId)
             
         }
