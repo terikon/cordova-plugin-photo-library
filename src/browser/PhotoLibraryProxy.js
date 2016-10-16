@@ -78,7 +78,13 @@ var photoLibraryProxy = {
 
   stopCaching: function (success, error) {
     // Nothing to do
+    success();
   },
+
+  requestAuthorization: function (success, error) {
+    // Nothing to do
+    success();
+  }
 
 };
 

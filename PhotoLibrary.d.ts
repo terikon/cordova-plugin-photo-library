@@ -20,6 +20,8 @@ declare module PhotoLibraryCordova {
     getPhoto(libraryItem: LibraryItem, success: (result: Blob) => void, error: (err: any) => void, options: GetPhotoOptions): void;
 
     stopCaching(success: () => void, error: (err: any) => void): void;
+
+    requestAuthorization(success: () => void, error: (err: any) => void): void;
   }
 
   export interface LibraryItem {
