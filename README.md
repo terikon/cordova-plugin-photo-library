@@ -12,6 +12,10 @@ So here it is.
 
 Contributions are welcome.
 
+# Install
+
+    cordova plugin add cordova-plugin-photo-library --variable PHOTO_LIBRARY_USAGE_DESCRIPTION="To choose photos" --save
+
 # Usage
 
 Add cdvphotolibrary protocol to Content-Security-Policy, like this:
