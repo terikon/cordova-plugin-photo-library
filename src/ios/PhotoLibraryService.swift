@@ -27,6 +27,8 @@ final class PhotoLibraryService {
     
     var cacheActive = false
     
+    let PERMISSION_ERROR = "Permission Denial: This application is not allowed to access Photo data."
+    
     private init() {
         fetchOptions = PHFetchOptions()
         fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
@@ -65,8 +67,16 @@ final class PhotoLibraryService {
             assets.append(obj as! PHAsset)
         }
         
-        self.stopCaching()
-        self.cachingImageManager.startCachingImagesForAssets(assets, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions)
+        if assets.count > 0 {
+            self.stopCaching()
+            self.cachingImageManager.startCachingImagesForAssets(assets, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions)
+            self.cacheActive = true
+        } else {
+            // No photos returned, let's check permissions
+            if PHPhotoLibrary.authorizationStatus() != .Authorized {
+                return nil
+            }
+        }
         
         assets.forEach { (asset: PHAsset) in
             
@@ -89,25 +99,24 @@ final class PhotoLibraryService {
             }
         }
         
-        if library.count > 0 {
-            // To prevent getting NSObjectInaccessibleException, do not count cache started if there are no items in it
-            self.cacheActive = true
-        } else {
-            // No photos returned, let's check permissions
-            if PHPhotoLibrary.authorizationStatus() != .Authorized {
-                return nil
-            }
-        }
-        
         return library
 
     }
     
-    func getThumbnail(photoId: String, thumbnailWidth: Int, thumbnailHeight: Int, quality: Float, resultCallback: (result: PictureData) -> Void) {
+    // Result will be null if permissions not granted, or result.data will be empty if processing of image failed
+    func getThumbnail(photoId: String, thumbnailWidth: Int, thumbnailHeight: Int, quality: Float, resultCallback: (result: PictureData?) -> Void) {
         
         let fetchResult = PHAsset.fetchAssetsWithLocalIdentifiers([photoId], options: self.fetchOptions)
         
-        // TODO: why enumeration needed for one asset?
+        if fetchResult.count == 0 {
+            if PHPhotoLibrary.authorizationStatus() != .Authorized {
+                resultCallback(result: nil)
+                return
+            }
+            resultCallback(result: PictureData(data:nil, mimeType: nil))
+            return
+        }
+        
         fetchResult.enumerateObjectsUsingBlock {
             (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
             
@@ -115,6 +124,11 @@ final class PhotoLibraryService {
             
             self.cachingImageManager.requestImageForAsset(asset, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions) {
                 (image: UIImage?, imageInfo: [NSObject : AnyObject]?) in
+                
+                if image == nil {
+                    resultCallback(result: PictureData(data:nil, mimeType: nil))
+                    return
+                }
                 
                 let imageData = self.image2PictureData(image!, quality: quality)
                 
@@ -124,9 +138,19 @@ final class PhotoLibraryService {
 
     }
     
-    func getPhoto(photoId: String, resultCallback: (result: PictureData) -> Void) {
+    // Result will be null if permissions not granted, or result.data will be empty if processing of image failed
+    func getPhoto(photoId: String, resultCallback: (result: PictureData?) -> Void) {
         
         let fetchResult = PHAsset.fetchAssetsWithLocalIdentifiers([photoId], options: self.fetchOptions)
+        
+        if fetchResult.count == 0 {
+            if PHPhotoLibrary.authorizationStatus() != .Authorized {
+                resultCallback(result: nil)
+                return
+            }
+            resultCallback(result: PictureData(data:nil, mimeType: nil))
+            return
+        }
         
         fetchResult.enumerateObjectsUsingBlock {
             (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
@@ -137,6 +161,11 @@ final class PhotoLibraryService {
                 (imageData: NSData?, dataUTI: String?, orientation: UIImageOrientation, info: [NSObject : AnyObject]?) in
                 
                 let image = imageData != nil ? UIImage(data: imageData!) : nil
+
+                if image == nil {
+                    resultCallback(result: PictureData(data:nil, mimeType: nil))
+                    return
+                }
                 
                 let imageData = self.image2PictureData(image!, quality: 1.0)
                 

@@ -65,7 +65,11 @@ import Foundation
                     
                     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
                         self.service.getThumbnail(photoId!, thumbnailWidth: width!, thumbnailHeight: height!, quality: quality!) { (imageData) in
-                            self.sendResponseWithResponseCode(200, data: imageData.data, mimeType: imageData.mimeType)
+                            if (imageData == nil) {
+                                self.sendErrorResponse(404, error: self.service.PERMISSION_ERROR)
+                                return
+                            }
+                            self.sendResponseWithResponseCode(200, data: imageData!.data, mimeType: imageData!.mimeType)
                         }
                     }
                     
@@ -75,7 +79,11 @@ import Foundation
                     
                     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
                         self.service.getPhoto(photoId!) { (imageData) in
-                            self.sendResponseWithResponseCode(200, data: imageData.data, mimeType: imageData.mimeType)
+                            if (imageData == nil) {
+                                self.sendErrorResponse(404, error: self.service.PERMISSION_ERROR)
+                                return
+                            }
+                            self.sendResponseWithResponseCode(200, data: imageData!.data, mimeType: imageData!.mimeType)
                         }
                     }
                     

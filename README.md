@@ -125,7 +125,6 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 # TODO
 
 - iOS: Bug: It seems to ignore png files
-- iOS: Handle (theoretical) cases where image returned by requestImageDataForAsset is null
 - iOS: PHImageContentMode.AspectFill returns images that larger than requested. Perform manual resizing.
 - iOS: convert to Swift 3
 - Browser platform: Separate to multiple files

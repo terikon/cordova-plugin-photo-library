@@ -33,7 +33,7 @@ import Foundation
             :
                 CDVPluginResult(
                     status: CDVCommandStatus_ERROR,
-                    messageAsString: "Permission Denial: This application is not allowed to access Photo data.");
+                    messageAsString: self.service.PERMISSION_ERROR);
             
             self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId)
             
@@ -51,10 +51,14 @@ import Foundation
 
             self.service.getThumbnail(photoId, thumbnailWidth: thumbnailWidth, thumbnailHeight: thumbnailHeight, quality: quality) { (imageData) in
                 
-                let pluginResult = CDVPluginResult(
-                    status: CDVCommandStatus_OK,
-                    messageAsMultipart: [imageData.data ?? NSNull(), imageData.mimeType ?? NSNull()]
-                )
+                let pluginResult = imageData != nil ?
+                    CDVPluginResult(
+                        status: CDVCommandStatus_OK,
+                        messageAsMultipart: [imageData!.data ?? NSNull(), imageData!.mimeType ?? NSNull()])
+                    :
+                    CDVPluginResult(
+                        status: CDVCommandStatus_ERROR,
+                        messageAsString: self.service.PERMISSION_ERROR);
                 
                 self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId )
                 
@@ -70,10 +74,14 @@ import Foundation
 
             self.service.getPhoto(photoId) { (imageData) in
                 
-                let pluginResult = CDVPluginResult(
-                    status: CDVCommandStatus_OK,
-                    messageAsMultipart: [imageData.data ?? NSNull(), imageData.mimeType ?? NSNull()]
-                )
+                let pluginResult = imageData != nil ?
+                    CDVPluginResult(
+                        status: CDVCommandStatus_OK,
+                        messageAsMultipart: [imageData!.data ?? NSNull(), imageData!.mimeType ?? NSNull()])
+                    :
+                    CDVPluginResult(
+                        status: CDVCommandStatus_ERROR,
+                        messageAsString: self.service.PERMISSION_ERROR);
                 
                 self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
 
