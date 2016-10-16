@@ -101,14 +101,13 @@ import Foundation
 
     func requestAuthorization(command: CDVInvokedUrlCommand) {
 
-        let settingsUrl = NSURL(string: UIApplicationOpenSettingsURLString)
-        if let url = settingsUrl {
-            UIApplication.sharedApplication().openURL(url)
-            // TODO: run callback only when return ?
-        }
-
-        let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
-        self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
+        self.service.requestAuthorization({
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
+                self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
+            }, failure: { (err) in
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAsString: err)
+                self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
+            })
 
     }
 

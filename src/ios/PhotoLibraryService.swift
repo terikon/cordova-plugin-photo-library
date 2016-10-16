@@ -182,6 +182,35 @@ final class PhotoLibraryService {
         }
     }
     
+    func requestAuthorization(success: () -> Void, failure: (err: String) -> Void ) {
+        
+        let status = PHPhotoLibrary.authorizationStatus()
+        
+        if status == .NotDetermined {
+            // Ask for permission
+            PHPhotoLibrary.requestAuthorization() { (status) -> Void in
+                switch status {
+                case .Authorized:
+                    success()
+                default:
+                    failure(err: "requestAuthorization denied by user")
+                }
+            }
+            return
+        }
+        
+        // Permission was manually denied by user, open settings screen
+        let settingsUrl = NSURL(string: UIApplicationOpenSettingsURLString)
+        if let url = settingsUrl {
+            UIApplication.sharedApplication().openURL(url)
+            // TODO: run callback only when return ?
+            success()
+        } else {
+            failure(err: "could not open settings url")
+        }
+        
+    }
+    
     struct PictureData {
         var data: NSData?
         var mimeType: String?
