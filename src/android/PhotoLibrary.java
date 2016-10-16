@@ -27,6 +27,7 @@ public class PhotoLibrary extends CordovaPlugin {
   public static final String ACTION_GET_THUMBNAIL= "getThumbnail";
   public static final String ACTION_GET_PHOTO = "getPhoto";
   public static final String ACTION_STOP_CACHING = "stopCaching";
+  public static final String ACTION_REQUEST_AUTHORIZATION = "requestAuthorization";
 
   private PhotoLibraryService service;
 
@@ -101,6 +102,14 @@ public class PhotoLibrary extends CordovaPlugin {
         callbackContext.success();
         return true;
 
+      } else if (ACTION_REQUEST_AUTHORIZATION.equals(action)) {
+        try {
+          service.requestAuthorization();
+          callbackContext.success();
+        } catch (Exception e) {
+          e.printStackTrace();
+          callbackContext.error(e.getMessage());
+        }
       }
 
       return false;
