@@ -25,6 +25,8 @@ final class PhotoLibraryService {
     
     let contentMode = PHImageContentMode.AspectFill // AspectFit: can be smaller, AspectFill - can be larger. TODO: resize to exact size
     
+    var cacheActive = false
+    
     private init() {
         fetchOptions = PHFetchOptions()
         fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
@@ -86,6 +88,11 @@ final class PhotoLibraryService {
             }
         }
         
+        if library.count > 0 {
+            // To prevent getting NSObjectInaccessibleException, do not count cache started if there are no items in it
+            self.cacheActive = true
+        }
+        
         return library
 
     }
@@ -134,7 +141,10 @@ final class PhotoLibraryService {
     }
     
     func stopCaching() {
-        self.cachingImageManager.stopCachingImagesForAllAssets()
+        if self.cacheActive {
+            self.cachingImageManager.stopCachingImagesForAllAssets()
+            self.cacheActive = false
+        }
     }
     
     struct PictureData {

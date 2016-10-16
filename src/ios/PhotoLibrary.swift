@@ -12,9 +12,9 @@ import Foundation
         
     }
 
-    override func onMemoryWarning() {
-        self.service.stopCaching()
-    }
+//    override func onMemoryWarning() {
+//        self.service.stopCaching()
+//    }
 
     // Will sort by creation date
     func getLibrary(command: CDVInvokedUrlCommand) {
