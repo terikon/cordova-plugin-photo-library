@@ -127,6 +127,7 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 - iOS: Bug: It seems to ignore png files
 - iOS: Handle (theoretical) cases where image returned by requestImageDataForAsset is null
 - iOS: PHImageContentMode.AspectFill returns images that larger than requested. Perform manual resizing.
+- iOS: convert to Swift 3
 - Browser platform: Separate to multiple files
 - Browser platform: Compile plugin with webpack
 - Android: caching mechanism like [this one](https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html) can be helpful
