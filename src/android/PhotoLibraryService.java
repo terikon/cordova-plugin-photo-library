@@ -154,10 +154,6 @@ public class PhotoLibraryService {
 
   }
 
-  public void requestAuthorization() {
-
-  }
-
   private static PhotoLibraryService instance = null;
 
   private SimpleDateFormat dateFormatter;

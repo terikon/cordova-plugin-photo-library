@@ -1,6 +1,7 @@
 package com.terikon.cordova.photolibrary;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 
 import java.io.ByteArrayInputStream;
@@ -29,7 +30,7 @@ public class PhotoLibrary extends CordovaPlugin {
   public static final String ACTION_STOP_CACHING = "stopCaching";
   public static final String ACTION_REQUEST_AUTHORIZATION = "requestAuthorization";
 
-  private PhotoLibraryService service;
+  public CallbackContext callbackContext;
 
   @Override
   protected void pluginInitialize() {
@@ -41,6 +42,9 @@ public class PhotoLibrary extends CordovaPlugin {
 
   @Override
   public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
+
+    this.callbackContext = callbackContext;
+
     try {
 
       if (ACTION_GET_LIBRARY.equals(action)) {
@@ -104,12 +108,16 @@ public class PhotoLibrary extends CordovaPlugin {
 
       } else if (ACTION_REQUEST_AUTHORIZATION.equals(action)) {
         try {
-          service.requestAuthorization();
-          callbackContext.success();
+          if (!cordova.hasPermission(READ_EXTERNAL_STORAGE)) {
+            requestAuthorization();
+          } else {
+            callbackContext.success();
+          }
         } catch (Exception e) {
           e.printStackTrace();
           callbackContext.error(e.getMessage());
         }
+        return true;
       }
 
       return false;
@@ -195,6 +203,28 @@ public class PhotoLibrary extends CordovaPlugin {
 
   }
 
+  @Override
+  public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
+    super.onRequestPermissionResult(requestCode, permissions, grantResults);
+
+    for(int r:grantResults)
+    {
+      if(r == PackageManager.PERMISSION_DENIED)
+      {
+        this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, PERMISSION_DENIED_ERROR));
+        return;
+      }
+    }
+
+    this.callbackContext.success();
+  }
+
+  private static final String READ_EXTERNAL_STORAGE = android.Manifest.permission.READ_EXTERNAL_STORAGE;
+  private static final int REQUEST_AUTHORIZATION_REQ_CODE = 0;
+  public static final int PERMISSION_DENIED_ERROR = 20;
+
+  private PhotoLibraryService service;
+
   private Context getContext() {
 
     return this.cordova.getActivity().getApplicationContext();
@@ -208,6 +238,10 @@ public class PhotoLibrary extends CordovaPlugin {
         new PluginResult(status, pictureData.getBytes()),
         new PluginResult(status, pictureData.getMimeType())));
 
+  }
+
+  private void requestAuthorization() {
+    cordova.requestPermission(this, REQUEST_AUTHORIZATION_REQ_CODE, READ_EXTERNAL_STORAGE);
   }
 
 }
