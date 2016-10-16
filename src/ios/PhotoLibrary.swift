@@ -13,7 +13,11 @@ import Foundation
     }
 
     override func onMemoryWarning() {
-        self.service.stopCaching()
+        do {
+            try self.service.stopCaching()
+        } catch {
+            // nothing to do
+        }
     }
 
     // Will sort by creation date
@@ -80,10 +84,17 @@ import Foundation
 
     func stopCaching(command: CDVInvokedUrlCommand) {
 
-        self.service.stopCaching()
-
-        let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
-        self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
+        var pluginResult: CDVPluginResult?
+        
+        do {
+            try self.service.stopCaching()
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
+        } catch {
+            let message = "" //error.domain == NSObjectInaccessibleException ? "" : ""
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAsString: message)
+        }
+        
+        self.commandDelegate!.sendPluginResult(pluginResult!, callbackId: command.callbackId	)
 
     }
 

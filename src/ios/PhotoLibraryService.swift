@@ -62,7 +62,9 @@ final class PhotoLibraryService {
             assets.append(obj as! PHAsset)
         }
         
-        self.stopCaching()
+        do {
+            try self.stopCaching()
+        } catch { }
         self.cachingImageManager.startCachingImagesForAssets(assets, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions)
         
         assets.forEach { (asset: PHAsset) in
@@ -133,8 +135,10 @@ final class PhotoLibraryService {
         
     }
     
-    func stopCaching() {
-        self.cachingImageManager.stopCachingImagesForAllAssets()
+    func stopCaching() throws {
+        try ObjCTry.doTry {
+            self.cachingImageManager.stopCachingImagesForAllAssets()
+        }
     }
     
     struct PictureData {
