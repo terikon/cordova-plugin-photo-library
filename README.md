@@ -55,6 +55,37 @@ cordova.plugins.photoLibrary.getLibrary(
 
 This method is fast, as thumbails will be generated on demand.
 
+## Permissions
+
+The library handles tricky parts of aquiring permissions to photo library.
+
+If any of methods fail because lack of permissions, error string will be returned that begins with 'Permission'. So, to process on aquiring permissions, do the following:
+```js
+cordova.plugins.photoLibrary.getLibrary(
+  function (library) { },
+  function (err) {
+    if (err.startsWith('Permission')) {
+      // call requestAuthorization, and retry
+    }
+    // Handle error - it's not permission-related
+  }
+);
+```
+
+requestAuthorization is cross-platform method, that works in following way:
+- on android, will ask user to allow access to storage
+- on ios, will open setting page of your app, where user should enable access to Photos
+```js
+cordova.plugins.photoLibrary.requestAuthorization(
+  function () {
+    // User gave us permission to his library, retry reading it!
+  },
+  function (err) {
+    // User denied the access
+  }
+);
+``` 
+
 ## In addition you can ask thumbnail or full image for each photo separately, as cross-platform url or as blob
 
 ```js
