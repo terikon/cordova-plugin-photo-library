@@ -161,6 +161,7 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 - Browser platform: Separate to multiple files
 - Browser platform: Compile plugin with webpack
 - Android: caching mechanism like [this one](https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html) can be helpful
+- Add unit tests
 
 # References
 
@@ -177,3 +178,5 @@ https://developer.android.com/reference/android/provider/MediaStore.Images.Media
 https://developer.android.com/reference/android/provider/MediaStore.Images.Thumbnails.html
 https://developer.android.com/reference/android/graphics/BitmapFactory.Options.html
 https://developer.android.com/reference/android/media/ThumbnailUtils.html
+
+https://www.raywenderlich.com/76735/using-nsurlprotocol-swift
