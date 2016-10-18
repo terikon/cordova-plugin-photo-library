@@ -168,7 +168,7 @@ photoLibrary.requestAuthorization = function (success, error) {
 
 };
 
-// url is dataURL or blob
+// url is file url or dataURL
 photoLibrary.saveImage = function (url, imageName, album, success, error) {
 
   cordova.exec(
@@ -180,6 +180,7 @@ photoLibrary.saveImage = function (url, imageName, album, success, error) {
 
 };
 
+// url is file url or dataURL
 photoLibrary.saveVideo = function (url, videoName, album, success, error) {
 
   cordova.exec(
