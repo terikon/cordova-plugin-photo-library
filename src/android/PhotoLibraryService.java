@@ -19,9 +19,13 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -159,19 +163,42 @@ public class PhotoLibraryService {
 
   }
 
-  public void saveImage(CordovaInterface cordova, String url, String album, String imageFileName) {
+  public void saveImage(CordovaInterface cordova, String url, String album, String imageFileName) throws IOException {
+
+    File albumDirectory = makeAlbumInPhotoLibrary(album);
+    File targetFile = new File(albumDirectory, imageFileName);
 
     if (url.startsWith("data:")) {
+
       String base64 = url.replaceFirst("data:.+;base64,", "");
       byte[] decoded = Base64.decode(base64, Base64.DEFAULT);
 
-      File albumDirectory = makeAlbumInPhotoLibrary(album);
-      File imageFile = new File(albumDirectory, imageFileName);
+      if (decoded == null) {
+        throw new IllegalArgumentException("The dataURL could not be decoded");
+      }
 
-//      FileOutputStream out = new FileOutputStream(imageFile);
-//
-//      addFileToMediaLibrary(cordova, file);
+      FileOutputStream os = new FileOutputStream(targetFile);
+
+      os.write(decoded);
+
+      os.flush();
+      os.close();
+
+    } else {
+
+      File sourceFile = new File(url);
+      FileInputStream is = new FileInputStream(sourceFile);
+      FileOutputStream os = new FileOutputStream(targetFile);
+
+      copyStream(is, os);
+
+      os.flush();
+      os.close();
+      is.close();
+
     }
+
+    addFileToMediaLibrary(cordova, targetFile);
 
   }
 
@@ -326,6 +353,18 @@ public class PhotoLibraryService {
 
   }
 
+  private static void copyStream(InputStream source, OutputStream target) throws IOException {
+
+    int bufferSize = 1024;
+    byte[] buffer = new byte[bufferSize];
+
+    int len;
+    while ((len = source.read(buffer)) != -1) {
+      target.write(buffer, 0, len);
+    }
+
+  }
+
   private static byte[] readBytes(InputStream inputStream) throws IOException {
 
     ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
@@ -333,7 +372,7 @@ public class PhotoLibraryService {
     int bufferSize = 1024;
     byte[] buffer = new byte[bufferSize];
 
-    int len = 0;
+    int len;
     while ((len = inputStream.read(buffer)) != -1) {
       byteBuffer.write(buffer, 0, len);
     }
