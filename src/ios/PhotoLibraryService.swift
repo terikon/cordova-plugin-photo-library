@@ -211,6 +211,14 @@ final class PhotoLibraryService {
         
     }
     
+    func saveImage(url: String, imageName: String, album: String) {
+        
+    }
+    
+    func saveVideo(url: String, videoName: String, album: String) {
+        
+    }
+    
     struct PictureData {
         var data: NSData?
         var mimeType: String?
