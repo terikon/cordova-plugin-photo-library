@@ -154,6 +154,14 @@ public class PhotoLibraryService {
 
   }
 
+  public void saveImage(String url, String imageName, String album) {
+
+  }
+
+  public void saveVideo(String url, String videoName, String album) {
+
+  }
+
   private static PhotoLibraryService instance = null;
 
   private SimpleDateFormat dateFormatter;

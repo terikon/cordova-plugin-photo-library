@@ -25,10 +25,12 @@ public class PhotoLibrary extends CordovaPlugin {
   public static final double DEFAULT_QUALITY = 0.5;
 
   public static final String ACTION_GET_LIBRARY = "getLibrary";
-  public static final String ACTION_GET_THUMBNAIL= "getThumbnail";
+  public static final String ACTION_GET_THUMBNAIL = "getThumbnail";
   public static final String ACTION_GET_PHOTO = "getPhoto";
   public static final String ACTION_STOP_CACHING = "stopCaching";
   public static final String ACTION_REQUEST_AUTHORIZATION = "requestAuthorization";
+  public static final String ACTION_SAVE_IMAGE = "saveImage";
+  public static final String ACTION_SAVE_VIDEO = "saveVideo";
 
   public CallbackContext callbackContext;
 
@@ -118,11 +120,50 @@ public class PhotoLibrary extends CordovaPlugin {
           callbackContext.error(e.getMessage());
         }
         return true;
+
+      } else if (ACTION_SAVE_IMAGE.equals(action)) {
+
+        final String url = args.getString(0);
+        final String imageName = args.getString(1);
+        final String album = args.getString(2);
+
+        try {
+          cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
+              service.saveImage(url, imageName, album);
+              callbackContext.success();
+            }
+          });
+        } catch (Exception e) {
+          e.printStackTrace();
+          callbackContext.error(e.getMessage());
+        }
+        return true;
+
+      } else if (ACTION_SAVE_VIDEO.equals(action)) {
+        try {
+
+          final String url = args.getString(0);
+          final String videoName = args.getString(1);
+          final String album = args.getString(2);
+
+          cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
+              service.saveVideo(url, videoName, album);
+              callbackContext.success();
+            }
+          });
+        } catch (Exception e) {
+          e.printStackTrace();
+          callbackContext.error(e.getMessage());
+        }
+        return true;
+
       }
 
       return false;
 
-    } catch(Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
       callbackContext.error(e.getMessage());
       return false;
@@ -207,10 +248,8 @@ public class PhotoLibrary extends CordovaPlugin {
   public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
     super.onRequestPermissionResult(requestCode, permissions, grantResults);
 
-    for(int r:grantResults)
-    {
-      if(r == PackageManager.PERMISSION_DENIED)
-      {
+    for (int r : grantResults) {
+      if (r == PackageManager.PERMISSION_DENIED) {
         this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, PERMISSION_DENIED_ERROR));
         return;
       }
