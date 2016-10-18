@@ -46,9 +46,9 @@ photoLibrary.getThumbnailURL = function (photoIdOrLibraryItem, success, error, o
   options = getThumbnailOptionsWithDefaults(options);
 
   var thumbnailURL = 'cdvphotolibrary://thumbnail?photoId=' + fixedEncodeURIComponent(photoId) +
-      '&width=' + fixedEncodeURIComponent(options.thumbnailWidth) +
-      '&height=' + fixedEncodeURIComponent(options.thumbnailHeight) +
-      '&quality=' + fixedEncodeURIComponent(options.quality);
+    '&width=' + fixedEncodeURIComponent(options.thumbnailWidth) +
+    '&height=' + fixedEncodeURIComponent(options.thumbnailHeight) +
+    '&quality=' + fixedEncodeURIComponent(options.quality);
 
   if (success) {
     if (isBrowser) {
@@ -168,6 +168,29 @@ photoLibrary.requestAuthorization = function (success, error) {
 
 };
 
+// url is dataURL or blob
+photoLibrary.saveImage = function (url, imageName, album, success, error) {
+
+  cordova.exec(
+    success,
+    error,
+    'PhotoLibrary',
+    'saveImage', [url, imageName, album]
+  );
+
+};
+
+photoLibrary.saveVideo = function (url, videoName, album, success, error) {
+
+  cordova.exec(
+    success,
+    error,
+    'PhotoLibrary',
+    'saveVideo', [url, videoName, album]
+  );
+
+};
+
 module.exports = photoLibrary;
 
 var getThumbnailOptionsWithDefaults = function (options) {
@@ -186,7 +209,7 @@ var getThumbnailOptionsWithDefaults = function (options) {
 
 };
 
-var addUrlsToLibrary = function(library, success, options) {
+var addUrlsToLibrary = function (library, success, options) {
 
   var urlsLeft = library.length;
 
@@ -206,7 +229,7 @@ var addUrlsToLibrary = function(library, success, options) {
   var handleUrlError = function () {}; // Should never happen
 
   var i;
-  for (i = 0; i<library.length; i++) {
+  for (i = 0; i < library.length; i++) {
     var libraryItem = library[i];
     photoLibrary.getThumbnailURL(libraryItem, handleThumbnailURL.bind(null, libraryItem), handleUrlError, options);
   }
@@ -214,8 +237,8 @@ var addUrlsToLibrary = function(library, success, options) {
 };
 
 // from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
-function fixedEncodeURIComponent (str) {
-  return encodeURIComponent(str).replace(/[!'()*]/g, function(c) {
+function fixedEncodeURIComponent(str) {
+  return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
     return '%' + c.charCodeAt(0).toString(16);
   });
 }
