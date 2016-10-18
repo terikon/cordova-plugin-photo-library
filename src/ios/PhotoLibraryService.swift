@@ -1,5 +1,6 @@
 import Photos
 import Foundation
+import AssetsLibrary // TODO: needed for deprecated functionality
 
 //TODO: Swift 3
 //extension NSDate: JSONRepresentable {
@@ -100,7 +101,7 @@ final class PhotoLibraryService {
         }
         
         return library
-
+        
     }
     
     // Result will be null if permissions not granted, or result.data will be empty if processing of image failed
@@ -135,7 +136,7 @@ final class PhotoLibraryService {
                 resultCallback(result: imageData)
             }
         }
-
+        
     }
     
     // Result will be null if permissions not granted, or result.data will be empty if processing of image failed
@@ -161,7 +162,7 @@ final class PhotoLibraryService {
                 (imageData: NSData?, dataUTI: String?, orientation: UIImageOrientation, info: [NSObject : AnyObject]?) in
                 
                 let image = imageData != nil ? UIImage(data: imageData!) : nil
-
+                
                 if image == nil {
                     resultCallback(result: PictureData(data:nil, mimeType: nil))
                     return
@@ -211,12 +212,72 @@ final class PhotoLibraryService {
         
     }
     
-    func saveImage(url: String, album: String, imageFileName: String) {
+    func saveImage(url: String, album: String, imageFileName: String, completionBlock: (url: NSURL?, error: PhotoLibraryError?)->Void) {
+        
+        var sourceData: NSData
+        
         if url.hasPrefix("data:") {
-            let regex = try? NSRegularExpression(pattern: "data:.+;base64,", options: .CaseInsensitive)
+            
+            let regex = try? NSRegularExpression(pattern: "data:.+;base64,", options: NSRegularExpressionOptions(rawValue: 0))
             let base64 = regex?.stringByReplacingMatchesInString(url, options: .WithTransparentBounds, range: NSMakeRange(0, url.characters.count), withTemplate: "")
+            if (base64 == nil) {
+                completionBlock(url: nil, error: PhotoLibraryError.ArgumentError(description: "The dataURL could not be parsed"))
+                return
+            }
+            let decoded = NSData(base64EncodedString: base64!, options: NSDataBase64DecodingOptions(rawValue: 0))
+            if (decoded == nil) {
+                completionBlock(url: nil, error: PhotoLibraryError.ArgumentError(description: "The dataURL could not be decoded"))
+                return
+            }
+            
+            sourceData = decoded!
+            
+        } else {
+            
+            let fileContent = NSData(contentsOfURL: NSURL(fileURLWithPath: url))
+            if (fileContent == nil) {
+                completionBlock(url: nil, error: PhotoLibraryError.ArgumentError(description: "The url could not be read: " + url))
+                return
+            }
+            sourceData = fileContent!
             
         }
+        
+        let assetsLibrary = ALAssetsLibrary()
+        
+        func writeImageDataToSavedPhotosAlbum (sourceData: NSData, group: ALAssetsGroup) {
+            assetsLibrary.writeImageDataToSavedPhotosAlbum(sourceData, metadata: nil) { (url: NSURL?, error: NSError?) in
+                if error != nil {
+                    assetsLibrary.assetForURL(url, resultBlock: { (asset: ALAsset!) in
+                        group.addAsset(asset)
+                        }, failureBlock: { (error: NSError!) in
+                            completionBlock(url: nil, error: PhotoLibraryError.IOError(description: "Could not retrieve saved asset"))
+                    })
+                    completionBlock(url: nil, error: PhotoLibraryError.IOError(description: "Could not write image to album"))
+                    return
+                }
+                completionBlock(url: url, error: nil)
+            }
+        }
+        
+        assetsLibrary.addAssetsGroupAlbumWithName(album, resultBlock: { (group: ALAssetsGroup?) in
+            
+            if group == nil { // i.e. group previously created
+                assetsLibrary.enumerateGroupsWithTypes(ALAssetsGroupAlbum, usingBlock: { (group: ALAssetsGroup?, _: UnsafeMutablePointer<ObjCBool>) in
+                    if (group!.valueForProperty(ALAssetsGroupPropertyName)) as! String? == album {
+                        writeImageDataToSavedPhotosAlbum(sourceData, group: group!)
+                    }
+                    }, failureBlock: { (error: NSError!) in
+                        completionBlock(url: nil, error: PhotoLibraryError.IOError(description: "Could not enumerate albums"))
+                })
+            } else { // group added
+                writeImageDataToSavedPhotosAlbum(sourceData, group: group!)
+            }
+            
+            }, failureBlock: { (error: NSError!) in
+                completionBlock(url: nil, error: PhotoLibraryError.IOError(description: "Could not add album"))
+        })
+        
     }
     
     func saveVideo(url: String, album: String, videoFileName: String) {
@@ -226,6 +287,11 @@ final class PhotoLibraryService {
     struct PictureData {
         var data: NSData?
         var mimeType: String?
+    }
+    
+    enum PhotoLibraryError: ErrorType {
+        case ArgumentError(description: String)
+        case IOError(description: String)
     }
     
     private func image2PictureData(image: UIImage, quality: Float) -> PictureData {
@@ -252,6 +318,6 @@ final class PhotoLibraryService {
         let alphaInfo = CGImageGetAlphaInfo(image.CGImage)
         return alphaInfo == .First || alphaInfo == .Last || alphaInfo == .PremultipliedFirst || alphaInfo == .PremultipliedLast
     }
-
+    
     
 }
