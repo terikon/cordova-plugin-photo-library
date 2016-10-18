@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -163,7 +164,7 @@ public class PhotoLibraryService {
 
   }
 
-  public void saveImage(CordovaInterface cordova, String url, String album, String imageFileName) throws IOException {
+  public void saveImage(CordovaInterface cordova, String url, String album, String imageFileName) throws IOException, URISyntaxException {
 
     File albumDirectory = makeAlbumInPhotoLibrary(album);
     File targetFile = new File(albumDirectory, imageFileName);
@@ -186,7 +187,7 @@ public class PhotoLibraryService {
 
     } else {
 
-      File sourceFile = new File(url);
+      File sourceFile = new File(new URI(url));
       FileInputStream is = new FileInputStream(sourceFile);
       FileOutputStream os = new FileOutputStream(targetFile);
 
