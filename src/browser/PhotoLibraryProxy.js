@@ -84,7 +84,17 @@ var photoLibraryProxy = {
   requestAuthorization: function (success, error) {
     // Nothing to do
     success();
-  }
+  },
+
+  saveImage: function (url, imageName, album, success, error) {
+    // TODO - implement saving on browser
+    error('not implemented');
+  },
+
+  saveImage: function (url, videoName, album, success, error) {
+    // TODO - implement saving on browser
+    error('not implemented');
+  },
 
 };
 
