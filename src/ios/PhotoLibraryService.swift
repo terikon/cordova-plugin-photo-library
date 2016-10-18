@@ -161,14 +161,12 @@ final class PhotoLibraryService {
             PHImageManager.defaultManager().requestImageDataForAsset(asset, options: self.imageRequestOptions) {
                 (imageData: NSData?, dataUTI: String?, orientation: UIImageOrientation, info: [NSObject : AnyObject]?) in
                 
-                let image = imageData != nil ? UIImage(data: imageData!) : nil
-                
-                if image == nil {
+                guard let image = imageData != nil ? UIImage(data: imageData!) : nil else {
                     resultCallback(result: PictureData(data:nil, mimeType: nil))
                     return
                 }
                 
-                let imageData = self.image2PictureData(image!, quality: 1.0)
+                let imageData = self.image2PictureData(image, quality: 1.0)
                 
                 resultCallback(result: imageData)
             }
@@ -219,27 +217,29 @@ final class PhotoLibraryService {
         if url.hasPrefix("data:") {
             
             let regex = try? NSRegularExpression(pattern: "data:.+;base64,", options: NSRegularExpressionOptions(rawValue: 0))
-            let base64 = regex?.stringByReplacingMatchesInString(url, options: .WithTransparentBounds, range: NSMakeRange(0, url.characters.count), withTemplate: "")
-            if (base64 == nil) {
+            guard let base64 = regex?.stringByReplacingMatchesInString(url, options: .WithTransparentBounds, range: NSMakeRange(0, url.characters.count), withTemplate: "") else {
                 completionBlock(url: nil, error: PhotoLibraryError.ArgumentError(description: "The dataURL could not be parsed"))
                 return
             }
-            let decoded = NSData(base64EncodedString: base64!, options: NSDataBase64DecodingOptions(rawValue: 0))
-            if (decoded == nil) {
+            guard let decoded = NSData(base64EncodedString: base64, options: NSDataBase64DecodingOptions(rawValue: 0)) else {
                 completionBlock(url: nil, error: PhotoLibraryError.ArgumentError(description: "The dataURL could not be decoded"))
                 return
             }
             
-            sourceData = decoded!
+            sourceData = decoded
             
         } else {
             
-            let fileContent = NSData(contentsOfURL: NSURL(fileURLWithPath: url))
-            if (fileContent == nil) {
+            guard let nsURL = NSURL(string: url) else {
+                completionBlock(url: nil, error: PhotoLibraryError.ArgumentError(description: "The url could not be decoded: " + url))
+                return
+            }
+            guard let fileContent = NSData(contentsOfURL: nsURL) else {
                 completionBlock(url: nil, error: PhotoLibraryError.ArgumentError(description: "The url could not be read: " + url))
                 return
             }
-            sourceData = fileContent!
+            
+            sourceData = fileContent
             
         }
         
