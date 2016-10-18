@@ -210,6 +210,9 @@ final class PhotoLibraryService {
         
     }
     
+    // TODO: implement with PHPhotoLibrary instead of deprecated ALAssetsLibrary,
+    // as described here: http://stackoverflow.com/questions/11972185/ios-save-photo-in-an-app-specific-album
+    // but first find a way to save animated gif with it.
     func saveImage(url: String, album: String, imageFileName: String, completionBlock: (url: NSURL?, error: PhotoLibraryError?)->Void) {
         
         var sourceData: NSData
@@ -246,17 +249,25 @@ final class PhotoLibraryService {
         let assetsLibrary = ALAssetsLibrary()
         
         func writeImageDataToSavedPhotosAlbum (sourceData: NSData, group: ALAssetsGroup) {
-            assetsLibrary.writeImageDataToSavedPhotosAlbum(sourceData, metadata: nil) { (url: NSURL?, error: NSError?) in
-                if error != nil {
-                    assetsLibrary.assetForURL(url, resultBlock: { (asset: ALAsset!) in
+            let tiffMedata = NSMutableDictionary()
+            tiffMedata.setValue(imageFileName, forKey: kCGImagePropertyTIFFImageDescription as String)
+            let metadata = NSMutableDictionary()
+            metadata.setValue(tiffMedata, forKey: kCGImagePropertyTIFFDictionary as String)
+            assetsLibrary.writeImageDataToSavedPhotosAlbum(sourceData, metadata: metadata as [NSObject : AnyObject]) { (url: NSURL?, error: NSError?) in
+                if error == nil {
+                    assetsLibrary.assetForURL(url, resultBlock: { (asset: ALAsset?) in
+                        if (asset == nil) {
+                            completionBlock(url: nil, error: PhotoLibraryError.IOError(description: "Retrieved asset is nil"))
+                            return
+                        }
                         group.addAsset(asset)
+                        completionBlock(url: url, error: nil)
                         }, failureBlock: { (error: NSError!) in
                             completionBlock(url: nil, error: PhotoLibraryError.IOError(description: "Could not retrieve saved asset"))
                     })
-                    completionBlock(url: nil, error: PhotoLibraryError.IOError(description: "Could not write image to album"))
                     return
                 }
-                completionBlock(url: url, error: nil)
+                completionBlock(url: nil, error: PhotoLibraryError.IOError(description: "Could not write image to album"))
             }
         }
         
@@ -264,7 +275,7 @@ final class PhotoLibraryService {
             
             if group == nil { // i.e. group previously created
                 assetsLibrary.enumerateGroupsWithTypes(ALAssetsGroupAlbum, usingBlock: { (group: ALAssetsGroup?, _: UnsafeMutablePointer<ObjCBool>) in
-                    if (group!.valueForProperty(ALAssetsGroupPropertyName)) as! String? == album {
+                    if (group?.valueForProperty(ALAssetsGroupPropertyName)) as? String == album {
                         writeImageDataToSavedPhotosAlbum(sourceData, group: group!)
                     }
                     }, failureBlock: { (error: NSError!) in
