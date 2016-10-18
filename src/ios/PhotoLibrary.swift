@@ -114,20 +114,20 @@ import Foundation
     func saveImage(command: CDVInvokedUrlCommand) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
             let url = command.arguments[0] as! String
-            let imageName = command.arguments[1] as! String
-            let album = command.arguments[2] as! String
+            let album = command.arguments[1] as! String
+            let imageFileName = command.arguments[2] as! String
             
-            self.service.saveImage(url, imageName: imageName, album: album);
+            self.service.saveImage(url, album: album, imageFileName: imageFileName);
         }
     }
     
     func saveVideo(command: CDVInvokedUrlCommand) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
             let url = command.arguments[0] as! String
-            let videoName = command.arguments[1] as! String
-            let album = command.arguments[2] as! String
+            let album = command.arguments[1] as! String
+            let videoFileName = command.arguments[2] as! String
             
-            self.service.saveVideo(url, videoName: videoName, album: album);
+            self.service.saveVideo(url, album: album, videoFileName: videoFileName);
         }
     }
 

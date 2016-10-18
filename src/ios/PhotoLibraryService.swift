@@ -211,11 +211,15 @@ final class PhotoLibraryService {
         
     }
     
-    func saveImage(url: String, imageName: String, album: String) {
-        
+    func saveImage(url: String, album: String, imageFileName: String) {
+        if url.hasPrefix("data:") {
+            let regex = try? NSRegularExpression(pattern: "data:.+;base64,", options: .CaseInsensitive)
+            let base64 = regex?.stringByReplacingMatchesInString(url, options: .WithTransparentBounds, range: NSMakeRange(0, url.characters.count), withTemplate: "")
+            
+        }
     }
     
-    func saveVideo(url: String, videoName: String, album: String) {
+    func saveVideo(url: String, album: String, videoFileName: String) {
         
     }
     
