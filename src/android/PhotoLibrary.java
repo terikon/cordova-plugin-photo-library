@@ -124,13 +124,13 @@ public class PhotoLibrary extends CordovaPlugin {
       } else if (ACTION_SAVE_IMAGE.equals(action)) {
 
         final String url = args.getString(0);
-        final String imageName = args.getString(1);
-        final String album = args.getString(2);
+        final String album = args.getString(1);
+        final String imageFileName = args.getString(2);
 
         try {
           cordova.getThreadPool().execute(new Runnable() {
             public void run() {
-              service.saveImage(url, imageName, album);
+              service.saveImage(cordova, url, album, imageFileName);
               callbackContext.success();
             }
           });
@@ -144,12 +144,12 @@ public class PhotoLibrary extends CordovaPlugin {
         try {
 
           final String url = args.getString(0);
-          final String videoName = args.getString(1);
-          final String album = args.getString(2);
+          final String album = args.getString(1);
+          final String videoFileName = args.getString(2);
 
           cordova.getThreadPool().execute(new Runnable() {
             public void run() {
-              service.saveVideo(url, videoName, album);
+              service.saveVideo(cordova, url, album, videoFileName);
               callbackContext.success();
             }
           });

@@ -1,6 +1,7 @@
 package com.terikon.cordova.photolibrary;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,13 +9,17 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Base64;
 
+import org.apache.cordova.CordovaInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -154,11 +159,55 @@ public class PhotoLibraryService {
 
   }
 
-  public void saveImage(String url, String imageName, String album) {
+  public void saveImage(CordovaInterface cordova, String url, String album, String imageFileName) {
+
+    if (url.startsWith("data:")) {
+      String base64 = url.replaceFirst("data:.+;base64,", "");
+      byte[] decoded = Base64.decode(base64, Base64.DEFAULT);
+
+      File albumDirectory = makeAlbumInPhotoLibrary(album);
+      File imageFile = new File(albumDirectory, imageFileName);
+
+//      FileOutputStream out = new FileOutputStream(imageFile);
+//
+//      addFileToMediaLibrary(cordova, file);
+    }
 
   }
 
-  public void saveVideo(String url, String videoName, String album) {
+  public void saveVideo(CordovaInterface cordova, String url, String album, String videoFileName) {
+
+  }
+
+  public class PictureData {
+
+    public PictureData(byte[] bytes, String mimeType) {
+      this.bytes = bytes;
+      this.mimeType = mimeType;
+    }
+
+    public byte[] getBytes() { return this.bytes; }
+
+    public String getMimeType() { return this.mimeType; }
+
+    private byte[] bytes;
+    private String mimeType;
+
+  }
+
+  public class PictureAsStream {
+
+    public PictureAsStream(InputStream stream, String mimeType) {
+      this.stream = stream;
+      this.mimeType = mimeType;
+    }
+
+    public InputStream getStream() { return this.stream; }
+
+    public String getMimeType() { return this.mimeType; }
+
+    private InputStream stream;
+    private String mimeType;
 
   }
 
@@ -324,36 +373,19 @@ public class PhotoLibraryService {
     return result;
   }
 
-  public class PictureData {
-
-    public PictureData(byte[] bytes, String mimeType) {
-      this.bytes = bytes;
-      this.mimeType = mimeType;
+  private File makeAlbumInPhotoLibrary(String album) {
+    File albumDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), album);
+    if (!albumDirectory.exists()) {
+      albumDirectory.mkdirs();
     }
-
-    public byte[] getBytes() { return this.bytes; }
-
-    public String getMimeType() { return this.mimeType; }
-
-    private byte[] bytes;
-    private String mimeType;
-
+    return albumDirectory;
   }
 
-  public class PictureAsStream {
-
-    public PictureAsStream(InputStream stream, String mimeType) {
-      this.stream = stream;
-      this.mimeType = mimeType;
-    }
-
-    public InputStream getStream() { return this.stream; }
-
-    public String getMimeType() { return this.mimeType; }
-
-    private InputStream stream;
-    private String mimeType;
-
+  private void addFileToMediaLibrary(CordovaInterface cordova, File file) {
+    Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+    Uri contentUri = Uri.fromFile(file);
+    mediaScanIntent.setData(contentUri);
+    cordova.getActivity().sendBroadcast(mediaScanIntent);
   }
 
 }
