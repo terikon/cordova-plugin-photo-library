@@ -162,6 +162,7 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 - Browser platform: Compile plugin with webpack
 - Android: caching mechanism like [this one](https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html) can be helpful
 - Add unit tests
+- Implement save protocol with HTTP POST, so no base64 transformation will be needed for saving
 
 # References
 

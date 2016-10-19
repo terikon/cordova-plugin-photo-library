@@ -29,9 +29,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PhotoLibraryService {
 
@@ -164,19 +167,29 @@ public class PhotoLibraryService {
 
   }
 
-  public void saveImage(CordovaInterface cordova, String url, String album, String imageFileName) throws IOException, URISyntaxException {
+  public void saveImage(CordovaInterface cordova, String url, String album) throws IOException, URISyntaxException {
 
     File albumDirectory = makeAlbumInPhotoLibrary(album);
-    File targetFile = new File(albumDirectory, imageFileName);
+    File targetFile;
 
     if (url.startsWith("data:")) {
 
-      String base64 = url.replaceFirst("data:.+;base64,", "");
+      Matcher matcher = dataURLPattern.matcher(url);
+      if (!matcher.find()) {
+        throw new IllegalArgumentException("The dataURL is in incorrect format");
+      }
+      String mime = matcher.group(2);
+      int dataPos = matcher.end();
+
+      String base64 = url.substring(dataPos); // Use substing and not replace to keep memory footprint small
       byte[] decoded = Base64.decode(base64, Base64.DEFAULT);
 
       if (decoded == null) {
         throw new IllegalArgumentException("The dataURL could not be decoded");
       }
+
+      String extension = mime.equals("jpeg") ? ".jpg" : "." + mime;
+      targetFile = getImageFileName(albumDirectory, extension);
 
       FileOutputStream os = new FileOutputStream(targetFile);
 
@@ -186,6 +199,9 @@ public class PhotoLibraryService {
       os.close();
 
     } else {
+
+      String extension = url.contains(".") ? url.substring(url.lastIndexOf(".")) : "";
+      targetFile = getImageFileName(albumDirectory, extension);
 
       File sourceFile = new File(new URI(url));
       FileInputStream is = new FileInputStream(sourceFile);
@@ -203,8 +219,8 @@ public class PhotoLibraryService {
 
   }
 
-  public void saveVideo(CordovaInterface cordova, String url, String album, String videoFileName) {
-
+  public void saveVideo(CordovaInterface cordova, String url, String album) {
+    // TODO
   }
 
   public class PictureData {
@@ -242,6 +258,8 @@ public class PhotoLibraryService {
   private static PhotoLibraryService instance = null;
 
   private SimpleDateFormat dateFormatter;
+
+  private Pattern dataURLPattern = Pattern.compile("^data:(.+?)/(.+?);base64,");
 
   private ArrayList<JSONObject> queryContentProvider(Context context, Uri collection, JSONObject columns, String whereClause) throws JSONException {
 
@@ -419,6 +437,20 @@ public class PhotoLibraryService {
       albumDirectory.mkdirs();
     }
     return albumDirectory;
+  }
+
+  private File getImageFileName(File albumDirectory, String extension) {
+    Calendar calendar = Calendar.getInstance();
+    String dateStr = calendar.get(Calendar.YEAR) +
+      "-" + calendar.get(Calendar.MONTH) +
+      "-" + calendar.get(Calendar.DAY_OF_MONTH);
+    int i = 1;
+    File result;
+    do {
+      String fileName = dateStr + "-" + i + extension;
+      result = new File(albumDirectory, fileName);
+    } while (result.exists());
+    return result;
   }
 
   private void addFileToMediaLibrary(CordovaInterface cordova, File file) {
