@@ -213,7 +213,7 @@ final class PhotoLibraryService {
     // TODO: implement with PHPhotoLibrary instead of deprecated ALAssetsLibrary,
     // as described here: http://stackoverflow.com/questions/11972185/ios-save-photo-in-an-app-specific-album
     // but first find a way to save animated gif with it.
-    func saveImage(url: String, album: String, imageFileName: String, completionBlock: (url: NSURL?, error: PhotoLibraryError?)->Void) {
+    func saveImage(url: String, album: String, completionBlock: (url: NSURL?, error: PhotoLibraryError?)->Void) {
         
         var sourceData: NSData
         
@@ -249,11 +249,15 @@ final class PhotoLibraryService {
         let assetsLibrary = ALAssetsLibrary()
         
         func writeImageDataToSavedPhotosAlbum (sourceData: NSData, group: ALAssetsGroup) {
-            let tiffMedata = NSMutableDictionary()
-            tiffMedata.setValue(imageFileName, forKey: kCGImagePropertyTIFFImageDescription as String)
-            let metadata = NSMutableDictionary()
-            metadata.setValue(tiffMedata, forKey: kCGImagePropertyTIFFDictionary as String)
-            assetsLibrary.writeImageDataToSavedPhotosAlbum(sourceData, metadata: metadata as [NSObject : AnyObject]) { (url: NSURL?, error: NSError?) in
+            
+            // TODO: maybe some metadata is worth adding, in following way:
+//          let nsTiffMedata = NSMutableDictionary()
+//          nsTiffMedata.setValue(imageFileName, forKey: kCGImagePropertyTIFFImageDescription as String)
+//          let nsMetadata = NSMutableDictionary()
+//          metadata.setValue(nsTiffMedata, forKey: kCGImagePropertyTIFFDictionary as String)
+//          let metadata = nsMetadata as [NSObject : AnyObject]
+            
+            assetsLibrary.writeImageDataToSavedPhotosAlbum(sourceData, metadata: nil) { (url: NSURL?, error: NSError?) in
                 if error == nil {
                     assetsLibrary.assetForURL(url, resultBlock: { (asset: ALAsset?) in
                         if (asset == nil) {
@@ -291,7 +295,7 @@ final class PhotoLibraryService {
         
     }
     
-    func saveVideo(url: String, album: String, videoFileName: String) {
+    func saveVideo(url: String, album: String) {
         
     }
     
