@@ -30,6 +30,8 @@ final class PhotoLibraryService {
     
     let PERMISSION_ERROR = "Permission Denial: This application is not allowed to access Photo data."
     
+    let dataURLPattern = try! NSRegularExpression(pattern: "^data:.+?;base64,", options: NSRegularExpressionOptions(rawValue: 0))
+    
     private init() {
         fetchOptions = PHFetchOptions()
         fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
@@ -210,7 +212,7 @@ final class PhotoLibraryService {
         
     }
     
-    // TODO: implement with PHPhotoLibrary instead of deprecated ALAssetsLibrary,
+    // TODO: implement with PHPhotoLibrary (UIImageWriteToSavedPhotosAlbum) instead of deprecated ALAssetsLibrary,
     // as described here: http://stackoverflow.com/questions/11972185/ios-save-photo-in-an-app-specific-album
     // but first find a way to save animated gif with it.
     func saveImage(url: String, album: String, completionBlock: (url: NSURL?, error: PhotoLibraryError?)->Void) {
@@ -219,11 +221,12 @@ final class PhotoLibraryService {
         
         if url.hasPrefix("data:") {
             
-            let regex = try? NSRegularExpression(pattern: "data:.+;base64,", options: NSRegularExpressionOptions(rawValue: 0))
-            guard let base64 = regex?.stringByReplacingMatchesInString(url, options: .WithTransparentBounds, range: NSMakeRange(0, url.characters.count), withTemplate: "") else {
+            guard let match = self.dataURLPattern.firstMatchInString(url, options: NSMatchingOptions(rawValue: 0), range: NSMakeRange(0, url.characters.count)) else { // TODO: firstMatchInString seems to be slow for unknown reason
                 completionBlock(url: nil, error: PhotoLibraryError.ArgumentError(description: "The dataURL could not be parsed"))
                 return
             }
+            let dataPos = match.rangeAtIndex(0).length
+            let base64 = (url as NSString).substringFromIndex(dataPos)
             guard let decoded = NSData(base64EncodedString: base64, options: NSDataBase64DecodingOptions(rawValue: 0)) else {
                 completionBlock(url: nil, error: PhotoLibraryError.ArgumentError(description: "The dataURL could not be decoded"))
                 return
