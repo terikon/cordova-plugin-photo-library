@@ -432,46 +432,4 @@ final class PhotoLibraryService {
         
     }
     
-    //    private static func putImageToAlbum(fileURL: NSURL, album: PHAssetCollection, completion: (PHAsset?, PhotoLibraryError?)->()) {
-    //
-    //        var placeholder: PHObjectPlaceholder?
-    //
-    //        PHPhotoLibrary.sharedPhotoLibrary().performChanges({
-    //
-    //            guard let createAssetRequest = PHAssetChangeRequest.creationRequestForAssetFromImageAtFileURL(fileURL) else {
-    //                completion(nil, PhotoLibraryError.IOError(description: "Creating change request failed"))
-    //                return
-    //            }
-    //
-    //            guard let albumChangeRequest = PHAssetCollectionChangeRequest(forAssetCollection: album) else {
-    //                completion(nil, PhotoLibraryError.IOError(description: "Album change request failed"))
-    //                return
-    //            }
-    //
-    //            guard let photoPlaceholder = createAssetRequest.placeholderForCreatedAsset else {
-    //                completion(nil, PhotoLibraryError.IOError(description: "photoPlaceholder is nil"))
-    //                return
-    //            }
-    //
-    //            placeholder = photoPlaceholder
-    //
-    //            albumChangeRequest.addAssets([photoPlaceholder])
-    //
-    //            }, completionHandler: { success, error in
-    //
-    //                guard let placeholder = placeholder else {
-    //                    completion(nil, PhotoLibraryError.IOError(description: "placeholder is nil"))
-    //                    return
-    //                }
-    //
-    //                if success {
-    //                    //completion(PHAsset.ah_fetchAssetWithLocalIdentifier(placeholder.localIdentifier, options:nil), nil)
-    //                    completion(nil, nil)
-    //                }
-    //                else {
-    //                    completion(nil, PhotoLibraryError.IOError(description: "\(error)"))
-    //                }
-    //        })
-    //    }
-    
 }
