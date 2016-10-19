@@ -118,7 +118,7 @@ import Foundation
             
             self.service.saveImage(url, album: album) { (url: NSURL?, error: PhotoLibraryService.PhotoLibraryError?) in
                 if (error != nil) {
-                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAsString: "\(error)")
+                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAsString: error!.description)
                     self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId)
                 } else {
                     let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
@@ -133,7 +133,15 @@ import Foundation
             let url = command.arguments[0] as! String
             let album = command.arguments[1] as! String
             
-            self.service.saveVideo(url, album: album)
+            self.service.saveVideo(url, album: album) { (url: NSURL?, error: PhotoLibraryService.PhotoLibraryError?) in
+                if (error != nil) {
+                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAsString: error!.description)
+                    self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId)
+                } else {
+                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
+                    self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
+                }
+            }
         }
     }
 

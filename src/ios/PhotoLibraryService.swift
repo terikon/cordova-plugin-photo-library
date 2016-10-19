@@ -217,6 +217,11 @@ final class PhotoLibraryService {
     // but first find a way to save animated gif with it.
     func saveImage(url: String, album: String, completionBlock: (url: NSURL?, error: PhotoLibraryError?)->Void) {
         
+        if PHPhotoLibrary.authorizationStatus() != .Authorized {
+            completionBlock(url: nil, error: PhotoLibraryError.IOError(description: PERMISSION_ERROR))
+            return
+        }
+        
         var sourceData: NSData
         
         if url.hasPrefix("data:") {
@@ -298,7 +303,12 @@ final class PhotoLibraryService {
         
     }
     
-    func saveVideo(url: String, album: String) {
+    func saveVideo(url: String, album: String, completionBlock: (url: NSURL?, error: PhotoLibraryError?)->Void) {
+        
+        if PHPhotoLibrary.authorizationStatus() != .Authorized {
+            completionBlock(url: nil, error: PhotoLibraryError.IOError(description: PERMISSION_ERROR))
+            return
+        }
         
     }
     
@@ -307,9 +317,16 @@ final class PhotoLibraryService {
         var mimeType: String?
     }
     
-    enum PhotoLibraryError: ErrorType {
+    enum PhotoLibraryError: ErrorType, CustomStringConvertible {
         case ArgumentError(description: String)
         case IOError(description: String)
+        
+        var description: String {
+            switch self {
+            case .ArgumentError(let description): return description
+            case .IOError(let description): return description
+            }
+        }
     }
     
     private func image2PictureData(image: UIImage, quality: Float) -> PictureData {
