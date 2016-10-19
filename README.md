@@ -7,8 +7,9 @@ So here it is.
 - Displays photo gallery as web page, and not as native screen.
 - Works on android, ios and browser (cordova serve).
 - Fast - does not do base64 and uses browser cache.
-- On device, provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5
-- Can save photos (jpg, png, animated gifs) and videos to specified album on device 
+- On device, provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5 .
+- Can save photos (jpg, png, animated gifs) and videos to specified album on device.
+- Handles permissions. 
 - On ios, written in Swift and not Objective-C.
 
 Contributions are welcome.
