@@ -46,6 +46,8 @@ public class PhotoLibraryService {
     dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
 	}
 
+  public static final String PERMISSION_ERROR = "Permission Denial: This application is not allowed to access Photo data.";
+
 	public static PhotoLibraryService getInstance() {
 		if (instance == null) {
 			synchronized (PhotoLibraryService.class) {

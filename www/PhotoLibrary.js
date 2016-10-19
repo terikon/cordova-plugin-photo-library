@@ -159,12 +159,7 @@ photoLibrary.stopCaching = function (success, error) {
 // Call when getting errors that begin with 'Permission Denial'
 photoLibrary.requestAuthorization = function (success, error, options) {
 
-  if (!options) {
-    options = {
-      read: false,
-      write: false,
-    };
-  }
+  options = getRequestAuthenticationOptionsWithDefaults(options);
 
   cordova.exec(
     success,
@@ -208,9 +203,24 @@ var getThumbnailOptionsWithDefaults = function (options) {
   }
 
   options = {
-    thumbnailWidth: options.thumbnailWidth ? options.thumbnailWidth : defaultThumbnailWidth,
-    thumbnailHeight: options.thumbnailHeight ? options.thumbnailHeight : defaultThumbnailHeight,
-    quality: options.quality ? options.quality : defaultQuality,
+    thumbnailWidth: options.thumbnailWidth || defaultThumbnailWidth,
+    thumbnailHeight: options.thumbnailHeight || defaultThumbnailHeight,
+    quality: options.quality || defaultQuality,
+  };
+
+  return options;
+
+};
+
+var getRequestAuthenticationOptionsWithDefaults = function (options) {
+
+  if (!options) {
+    options = {};
+  }
+
+  options = {
+    read: options.read || false,
+    write: options.write || false,
   };
 
   return options;
