@@ -8,6 +8,7 @@ So here it is.
 - Works on android, ios and browser (cordova serve).
 - Fast - does not do base64 and uses browser cache.
 - On device, provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5
+- Can save photos and videos to specified album on device 
 - On ios, written in Swift and not Objective-C.
 
 Contributions are welcome.
@@ -23,6 +24,8 @@ Add cdvphotolibrary protocol to Content-Security-Policy, like this:
 ```
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: cdvphotolibrary:">
 ```
+
+## Displaying photos
 
 ```js
 cordova.plugins.photoLibrary.getLibrary(
@@ -55,6 +58,19 @@ cordova.plugins.photoLibrary.getLibrary(
 
 This method is fast, as thumbails will be generated on demand.
 
+## Saving photos and videos
+
+``` js
+var url = 'file:///...'; // or url can be dataURL
+var album = 'MyAppName';
+cordova.plugins.photoLibrary.saveImage(url, album, function () {}, function (err) {});
+```
+
+```js
+cordova.plugins.photoLibrary.saveVideo(url, album, function () {}, function (err) {}); // TODO
+```
+
+
 ## Permissions
 
 The library handles tricky parts of aquiring permissions to photo library.
@@ -73,8 +89,10 @@ cordova.plugins.photoLibrary.getLibrary(
 ```
 
 requestAuthorization is cross-platform method, that works in following way:
+
 - on android, will ask user to allow access to storage
 - on ios, will open setting page of your app, where user should enable access to Photos
+
 ```js
 cordova.plugins.photoLibrary.requestAuthorization(
   function () {
@@ -82,6 +100,10 @@ cordova.plugins.photoLibrary.requestAuthorization(
   },
   function (err) {
     // User denied the access
+  }, // if options not provided, defaults to {read: true}. 
+  {
+    read: true,
+    write: true
   }
 );
 ``` 
@@ -163,6 +185,7 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 - Android: caching mechanism like [this one](https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html) can be helpful
 - Add unit tests
 - Implement save protocol with HTTP POST, so no base64 transformation will be needed for saving
+- Browser - implement saving to folder
 
 # References
 

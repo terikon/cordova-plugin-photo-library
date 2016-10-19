@@ -157,13 +157,20 @@ photoLibrary.stopCaching = function (success, error) {
 };
 
 // Call when getting errors that begin with 'Permission Denial'
-photoLibrary.requestAuthorization = function (success, error) {
+photoLibrary.requestAuthorization = function (success, error, options) {
+
+  if (!options) {
+    options = {
+      read: false,
+      write: false,
+    };
+  }
 
   cordova.exec(
     success,
     error,
     'PhotoLibrary',
-    'requestAuthorization', []
+    'requestAuthorization', [options]
   );
 
 };
