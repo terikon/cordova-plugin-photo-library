@@ -86,12 +86,12 @@ var photoLibraryProxy = {
     success();
   },
 
-  saveImage: function (url, album, imageFileName, success, error) {
+  saveImage: function (url, album, success, error) {
     // TODO - implement saving on browser
     error('not implemented');
   },
 
-  saveImage: function (url, album, videoFileName, success, error) {
+  saveImage: function (url, album, success, error) {
     // TODO - implement saving on browser
     error('not implemented');
   },

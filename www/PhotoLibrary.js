@@ -169,25 +169,25 @@ photoLibrary.requestAuthorization = function (success, error) {
 };
 
 // url is file url or dataURL
-photoLibrary.saveImage = function (url, album, imageFileName, success, error) {
+photoLibrary.saveImage = function (url, album, success, error) {
 
   cordova.exec(
     success,
     error,
     'PhotoLibrary',
-    'saveImage', [url, album, imageFileName]
+    'saveImage', [url, album]
   );
 
 };
 
 // url is file url or dataURL
-photoLibrary.saveVideo = function (url, album, videoFileName, success, error) {
+photoLibrary.saveVideo = function (url, album, success, error) {
 
   cordova.exec(
     success,
     error,
     'PhotoLibrary',
-    'saveVideo', [url, album, videoFileName]
+    'saveVideo', [url, album]
   );
 
 };
