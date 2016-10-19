@@ -68,7 +68,7 @@ cordova.plugins.photoLibrary.saveImage(url, album, function () {}, function (err
 ```
 
 ```js
-cordova.plugins.photoLibrary.saveVideo(url, album, function () {}, function (err) {}); // TODO
+cordova.plugins.photoLibrary.saveVideo(url, album, function () {}, function (err) {});
 ```
 
 
@@ -187,6 +187,7 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 - Add unit tests
 - Implement save protocol with HTTP POST, so no base64 transformation will be needed for saving
 - Browser - implement saving to folder
+- saveImage and saveVideo should return saved libraryItem
 
 # References
 

@@ -20,7 +20,6 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +31,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -170,59 +171,11 @@ public class PhotoLibraryService {
   }
 
   public void saveImage(CordovaInterface cordova, String url, String album) throws IOException, URISyntaxException {
-
-    File albumDirectory = makeAlbumInPhotoLibrary(album);
-    File targetFile;
-
-    if (url.startsWith("data:")) {
-
-      Matcher matcher = dataURLPattern.matcher(url);
-      if (!matcher.find()) {
-        throw new IllegalArgumentException("The dataURL is in incorrect format");
-      }
-      String mime = matcher.group(2);
-      int dataPos = matcher.end();
-
-      String base64 = url.substring(dataPos); // Use substing and not replace to keep memory footprint small
-      byte[] decoded = Base64.decode(base64, Base64.DEFAULT);
-
-      if (decoded == null) {
-        throw new IllegalArgumentException("The dataURL could not be decoded");
-      }
-
-      String extension = mime.equals("jpeg") ? ".jpg" : "." + mime;
-      targetFile = getImageFileName(albumDirectory, extension);
-
-      FileOutputStream os = new FileOutputStream(targetFile);
-
-      os.write(decoded);
-
-      os.flush();
-      os.close();
-
-    } else {
-
-      String extension = url.contains(".") ? url.substring(url.lastIndexOf(".")) : "";
-      targetFile = getImageFileName(albumDirectory, extension);
-
-      File sourceFile = new File(new URI(url));
-      FileInputStream is = new FileInputStream(sourceFile);
-      FileOutputStream os = new FileOutputStream(targetFile);
-
-      copyStream(is, os);
-
-      os.flush();
-      os.close();
-      is.close();
-
-    }
-
-    addFileToMediaLibrary(cordova, targetFile);
-
+    saveMedia(cordova, url, album, imageMimeToExtension);
   }
 
-  public void saveVideo(CordovaInterface cordova, String url, String album) {
-    // TODO
+  public void saveVideo(CordovaInterface cordova, String url, String album) throws IOException, URISyntaxException {
+    saveMedia(cordova, url, album, videMimeToExtension);
   }
 
   public class PictureData {
@@ -460,6 +413,71 @@ public class PhotoLibraryService {
     Uri contentUri = Uri.fromFile(file);
     mediaScanIntent.setData(contentUri);
     cordova.getActivity().sendBroadcast(mediaScanIntent);
+  }
+
+  private Map<String, String> imageMimeToExtension = new HashMap<String, String>(){{
+    put("jpeg", "jpg");
+  }};
+
+  private Map<String, String> videMimeToExtension = new HashMap<String, String>(){{
+    put("quicktime", ".mov");
+    put("ogg", ".ogv");
+  }};
+
+  private void saveMedia(CordovaInterface cordova, String url, String album, Map<String, String> mimeToExtension) throws IOException, URISyntaxException {
+
+    File albumDirectory = makeAlbumInPhotoLibrary(album);
+    File targetFile;
+
+    if (url.startsWith("data:")) {
+
+      Matcher matcher = dataURLPattern.matcher(url);
+      if (!matcher.find()) {
+        throw new IllegalArgumentException("The dataURL is in incorrect format");
+      }
+      String mime = matcher.group(2);
+      int dataPos = matcher.end();
+
+      String base64 = url.substring(dataPos); // Use substring and not replace to keep memory footprint small
+      byte[] decoded = Base64.decode(base64, Base64.DEFAULT);
+
+      if (decoded == null) {
+        throw new IllegalArgumentException("The dataURL could not be decoded");
+      }
+
+      String extension = mimeToExtension.get(mime);
+      if (extension == null) {
+        extension = "." + mime;
+      }
+
+      targetFile = getImageFileName(albumDirectory, extension);
+
+      FileOutputStream os = new FileOutputStream(targetFile);
+
+      os.write(decoded);
+
+      os.flush();
+      os.close();
+
+    } else {
+
+      String extension = url.contains(".") ? url.substring(url.lastIndexOf(".")) : "";
+      targetFile = getImageFileName(albumDirectory, extension);
+
+      File sourceFile = new File(new URI(url));
+      FileInputStream is = new FileInputStream(sourceFile);
+      FileOutputStream os = new FileOutputStream(targetFile);
+
+      copyStream(is, os);
+
+      os.flush();
+      os.close();
+      is.close();
+
+    }
+
+    addFileToMediaLibrary(cordova, targetFile);
+
   }
 
 }

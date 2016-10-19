@@ -184,9 +184,10 @@ public class PhotoLibrary extends CordovaPlugin {
                 callbackContext.error(service.PERMISSION_ERROR);
                 return;
               }
-              
+
               service.saveVideo(cordova, url, album);
               callbackContext.success();
+
             } catch (Exception e) {
               e.printStackTrace();
               callbackContext.error(e.getMessage());
