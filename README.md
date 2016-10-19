@@ -62,12 +62,13 @@ This method is fast, as thumbails will be generated on demand.
 ## Saving photos and videos
 
 ``` js
-var url = 'file:///...'; // or url can be dataURL
+var url = 'file:///...'; // url can also be dataURL, but giving it a file path is much faster
 var album = 'MyAppName';
 cordova.plugins.photoLibrary.saveImage(url, album, function () {}, function (err) {});
 ```
 
 ```js
+// iOS quirks: video provided cannot be .webm . Use .mov or .mp4 .
 cordova.plugins.photoLibrary.saveVideo(url, album, function () {}, function (err) {});
 ```
 
