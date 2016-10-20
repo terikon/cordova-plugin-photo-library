@@ -403,6 +403,7 @@ public class PhotoLibraryService {
     File result;
     do {
       String fileName = dateStr + "-" + i + extension;
+      i += 1;
       result = new File(albumDirectory, fileName);
     } while (result.exists());
     return result;

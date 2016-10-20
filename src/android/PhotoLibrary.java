@@ -328,7 +328,7 @@ public class PhotoLibrary extends CordovaPlugin {
       permissions.add(WRITE_EXTERNAL_STORAGE);
     }
 
-    cordova.requestPermissions(this, REQUEST_AUTHORIZATION_REQ_CODE, (String[])permissions.toArray());
+    cordova.requestPermissions(this, REQUEST_AUTHORIZATION_REQ_CODE, permissions.toArray(new String[0]));
   }
 
 }
