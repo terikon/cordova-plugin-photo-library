@@ -417,7 +417,7 @@ public class PhotoLibraryService {
   }
 
   private Map<String, String> imageMimeToExtension = new HashMap<String, String>(){{
-    put("jpeg", "jpg");
+    put("jpeg", ".jpg");
   }};
 
   private Map<String, String> videMimeToExtension = new HashMap<String, String>(){{
