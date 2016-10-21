@@ -190,6 +190,7 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 - Implement save protocol with HTTP POST, so no base64 transformation will be needed for saving
 - Browser - implement saving to folder
 - saveImage and saveVideo should return saved libraryItem
+- Improve documentation
 
 # References
 
