@@ -1,16 +1,18 @@
-**Work in progress**
+[![That's how it looks in real app](https://img.youtube.com/vi/qHnnRsZ7klE/0.jpg)](https://www.youtube.com/watch?v=qHnnRsZ7klE)
 
-We needed a library that displays photo libraty in HTML. That gets thumbnail of arbitrary sizes, works on multiple platforms, and is fast. 
+We needed a code to displays photo library on HTML page. That gets thumbnail of arbitrary sizes, works on multiple platforms, and is fast. 
 
 So here it is.
 
 - Displays photo gallery as web page, and not as native screen.
-- Works on android, ios and browser (cordova serve).
+- Works on Android, iOS and browser (cordova serve).
 - Fast - does not do base64 and uses browser cache.
 - On device, provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5 .
 - Can save photos (jpg, png, animated gifs) and videos to specified album on device.
 - Handles permissions. 
-- On ios, written in Swift and not Objective-C.
+- On iOS, written in Swift and not Objective-C.
+
+**Work in progress**
 
 Contributions are welcome.
 
