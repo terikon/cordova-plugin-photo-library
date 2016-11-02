@@ -116,7 +116,7 @@ final class PhotoLibraryService {
                 completion(nil)
                 return
             }
-            completion(PictureData(data:nil, mimeType: nil))
+            completion(nil)
             return
         }
         
@@ -129,7 +129,7 @@ final class PhotoLibraryService {
                 (image: UIImage?, imageInfo: [AnyHashable: Any]?) in
                 
                 guard let image = image else {
-                    completion(PictureData(data:nil, mimeType: nil))
+                    completion(nil)
                     return
                 }
                 
@@ -151,7 +151,7 @@ final class PhotoLibraryService {
                 completion(nil)
                 return
             }
-            completion(PictureData(data:nil, mimeType: nil))
+            completion(nil)
             return
         }
         
@@ -164,7 +164,7 @@ final class PhotoLibraryService {
                 (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
                 
                 guard let image = imageData != nil ? UIImage(data: imageData!) : nil else {
-                    completion(PictureData(data:nil, mimeType: nil))
+                    completion(nil)
                     return
                 }
                 
@@ -347,8 +347,8 @@ final class PhotoLibraryService {
     }
     
     struct PictureData {
-        var data: Data?
-        var mimeType: String?
+        var data: Data
+        var mimeType: String
     }
     
     // TODO: currently seems useless
@@ -417,7 +417,7 @@ final class PhotoLibraryService {
         
     }
     
-    fileprivate static func image2PictureData(_ image: UIImage, quality: Float) -> PictureData {
+    fileprivate static func image2PictureData(_ image: UIImage, quality: Float) -> PictureData? {
         //        This returns raw data, but mime type is unknown. Anyway, crodova performs base64 for messageAsArrayBuffer, so there's no performance gain visible
         //        let provider: CGDataProvider = CGImageGetDataProvider(image.CGImage)!
         //        let data = CGDataProviderCopyData(provider)
@@ -433,8 +433,11 @@ final class PhotoLibraryService {
             data = UIImageJPEGRepresentation(image, CGFloat(quality))
             mimeType = data != nil ? "image/jpeg" : nil
         }
-        
-        return PictureData(data: data, mimeType: mimeType);
+
+        if data != nil && mimeType != nil {
+            return PictureData(data: data!, mimeType: mimeType!)
+        }
+        return nil
     }
     
     fileprivate static func imageHasAlpha(_ image: UIImage) -> Bool {
