@@ -8,7 +8,7 @@ import Foundation
 
         service = PhotoLibraryService.instance
 
-        NSURLProtocol.registerClass(PhotoLibraryProtocol)
+        URLProtocol.registerClass(PhotoLibraryProtocol.self)
 
     }
 
@@ -17,8 +17,8 @@ import Foundation
 //    }
 
     // Will sort by creation date
-    func getLibrary(command: CDVInvokedUrlCommand) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+    func getLibrary(_ command: CDVInvokedUrlCommand) {
+        DispatchQueue.global(qos: .default).async {
 
             let options = command.arguments[0] as! NSDictionary
             let thumbnailWidth = options["thumbnailWidth"] as! Int
@@ -29,20 +29,20 @@ import Foundation
             let pluginResult = library != nil ?
                 CDVPluginResult(
                     status: CDVCommandStatus_OK,
-                    messageAsArray: library)
+                    messageAs: library)
             :
                 CDVPluginResult(
                     status: CDVCommandStatus_ERROR,
-                    messageAsString: self.service.PERMISSION_ERROR);
+                    messageAs: self.service.PERMISSION_ERROR)
 
-            self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId)
+            self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
 
         }
     }
 
-    func getThumbnail(command: CDVInvokedUrlCommand) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
-
+    func getThumbnail(_ command: CDVInvokedUrlCommand) {
+        DispatchQueue.global(qos: .default).async {
+            
             let photoId = command.arguments[0] as! String
             let options = command.arguments[1] as! NSDictionary
             let thumbnailWidth = options["thumbnailWidth"] as! Int
@@ -54,22 +54,22 @@ import Foundation
                 let pluginResult = imageData != nil ?
                     CDVPluginResult(
                         status: CDVCommandStatus_OK,
-                        messageAsMultipart: [imageData!.data ?? NSNull(), imageData!.mimeType ?? NSNull()])
+                        messageAsMultipart: [imageData!.data, imageData!.mimeType])
                     :
                     CDVPluginResult(
                         status: CDVCommandStatus_ERROR,
-                        messageAsString: self.service.PERMISSION_ERROR);
+                        messageAs: self.service.PERMISSION_ERROR)
 
-                self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId )
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId )
 
             }
 
         }
     }
 
-    func getPhoto(command: CDVInvokedUrlCommand) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
-
+    func getPhoto(_ command: CDVInvokedUrlCommand) {
+        DispatchQueue.global(qos: .default).async {
+            
             let photoId = command.arguments[0] as! String
 
             self.service.getPhoto(photoId) { (imageData) in
@@ -77,69 +77,69 @@ import Foundation
                 let pluginResult = imageData != nil ?
                     CDVPluginResult(
                         status: CDVCommandStatus_OK,
-                        messageAsMultipart: [imageData!.data ?? NSNull(), imageData!.mimeType ?? NSNull()])
+                        messageAsMultipart: [imageData!.data, imageData!.mimeType])
                     :
                     CDVPluginResult(
                         status: CDVCommandStatus_ERROR,
-                        messageAsString: self.service.PERMISSION_ERROR);
+                        messageAs: self.service.PERMISSION_ERROR)
 
-                self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
 
             }
 
         }
     }
 
-    func stopCaching(command: CDVInvokedUrlCommand) {
+    func stopCaching(_ command: CDVInvokedUrlCommand) {
 
         self.service.stopCaching()
 
         let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
-        self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
+        self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
 
     }
 
-    func requestAuthorization(command: CDVInvokedUrlCommand) {
+    func requestAuthorization(_ command: CDVInvokedUrlCommand) {
 
         self.service.requestAuthorization({
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
-                self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
             }, failure: { (err) in
-                let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAsString: err)
-                self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: err)
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
             })
 
     }
     
-    func saveImage(command: CDVInvokedUrlCommand) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+    func saveImage(_ command: CDVInvokedUrlCommand) {
+        DispatchQueue.global(qos: .default).async {
             let url = command.arguments[0] as! String
             let album = command.arguments[1] as! String
             
-            self.service.saveImage(url, album: album) { (url: NSURL?, error: String?) in
+            self.service.saveImage(url, album: album) { (url: URL?, error: String?) in
                 if (error != nil) {
-                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAsString: error)
-                    self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId)
+                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: error)
+                    self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
                 } else {
                     let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
-                    self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
+                    self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
                 }
             }
         }
     }
     
-    func saveVideo(command: CDVInvokedUrlCommand) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+    func saveVideo(_ command: CDVInvokedUrlCommand) {
+        DispatchQueue.global(qos: .default).async {
             let url = command.arguments[0] as! String
             let album = command.arguments[1] as! String
             
-            self.service.saveVideo(url, album: album) { (url: NSURL?, error: String?) in
+            self.service.saveVideo(url, album: album) { (url: URL?, error: String?) in
                 if (error != nil) {
-                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAsString: error)
-                    self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId)
+                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: error)
+                    self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
                 } else {
                     let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
-                    self.commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId	)
+                    self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
                 }
             }
         }
