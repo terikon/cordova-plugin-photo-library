@@ -183,7 +183,6 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 
 - iOS: Bug: It seems to ignore png files.
 - iOS: PHImageContentMode.AspectFill returns images that larger than requested. Perform manual resizing.
-- iOS: convert to Swift 3.
 - iOS: it seems regex causes slowdown with dataURL, and (possibly) uses too much memory - check how to do regex on iOS better.
 - iOS: should take into account image rotation. 
 - Browser platform: Separate to multiple files.
