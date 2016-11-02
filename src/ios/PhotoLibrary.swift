@@ -33,7 +33,7 @@ import Foundation
             :
                 CDVPluginResult(
                     status: CDVCommandStatus_ERROR,
-                    messageAs: self.service.PERMISSION_ERROR);
+                    messageAs: self.service.PERMISSION_ERROR)
 
             self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
 
@@ -58,7 +58,7 @@ import Foundation
                     :
                     CDVPluginResult(
                         status: CDVCommandStatus_ERROR,
-                        messageAs: self.service.PERMISSION_ERROR);
+                        messageAs: self.service.PERMISSION_ERROR)
 
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId )
 
@@ -81,7 +81,7 @@ import Foundation
                     :
                     CDVPluginResult(
                         status: CDVCommandStatus_ERROR,
-                        messageAs: self.service.PERMISSION_ERROR);
+                        messageAs: self.service.PERMISSION_ERROR)
 
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
 
