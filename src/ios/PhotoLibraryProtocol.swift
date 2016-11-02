@@ -63,7 +63,7 @@ import Foundation
                         return
                     }
                     
-                    DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.default).async {
+                    DispatchQueue.global(qos: .default).async {
                         self.service.getThumbnail(photoId!, thumbnailWidth: width!, thumbnailHeight: height!, quality: quality!) { (imageData) in
                             if (imageData == nil) {
                                 self.sendErrorResponse(404, error: self.service.PERMISSION_ERROR)
@@ -77,7 +77,7 @@ import Foundation
                     
                 } else if url.host?.lowercased() == "photo" {
                     
-                    DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.default).async {
+                    DispatchQueue.global(qos: .default).async {
                         self.service.getPhoto(photoId!) { (imageData) in
                             if (imageData == nil) {
                                 self.sendErrorResponse(404, error: self.service.PERMISSION_ERROR)

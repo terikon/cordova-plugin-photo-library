@@ -18,7 +18,7 @@ import Foundation
 
     // Will sort by creation date
     func getLibrary(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(qos: .background).async {
+        DispatchQueue.global(qos: .default).async {
 
             let options = command.arguments[0] as! NSDictionary
             let thumbnailWidth = options["thumbnailWidth"] as! Int
@@ -41,7 +41,7 @@ import Foundation
     }
 
     func getThumbnail(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(qos: .background).async {
+        DispatchQueue.global(qos: .default).async {
             
             let photoId = command.arguments[0] as! String
             let options = command.arguments[1] as! NSDictionary
@@ -68,7 +68,7 @@ import Foundation
     }
 
     func getPhoto(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(qos: .background).async {
+        DispatchQueue.global(qos: .default).async {
             
             let photoId = command.arguments[0] as! String
 
@@ -112,7 +112,7 @@ import Foundation
     }
     
     func saveImage(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(qos: .background).async {
+        DispatchQueue.global(qos: .default).async {
             let url = command.arguments[0] as! String
             let album = command.arguments[1] as! String
             
@@ -129,7 +129,7 @@ import Foundation
     }
     
     func saveVideo(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(qos: .background).async {
+        DispatchQueue.global(qos: .default).async {
             let url = command.arguments[0] as! String
             let album = command.arguments[1] as! String
             
