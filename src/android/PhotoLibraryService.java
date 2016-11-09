@@ -75,7 +75,7 @@ public class PhotoLibraryService {
 
     final ArrayList<JSONObject> queryResults = queryContentProvider(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, "");
 
-    ArrayList<JSONObject> results = new ArrayList<>();
+    ArrayList<JSONObject> results = new ArrayList<JSONObject>();
 
     for (JSONObject queryResult : queryResults) {
       if (queryResult.getInt("height") <=0 || queryResult.getInt("width") <= 0) {
