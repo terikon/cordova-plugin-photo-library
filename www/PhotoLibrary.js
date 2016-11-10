@@ -16,10 +16,9 @@ photoLibrary.getLibrary = function (success, error, options) {
     options = {};
   }
 
-  options = {
-    thumbnailWidth: options.thumbnailWidth ? options.thumbnailWidth : defaultThumbnailWidth,
-    thumbnailHeight: options.thumbnailHeight ? options.thumbnailHeight : defaultThumbnailHeight,
-  };
+  options.thumbnailWidth = options.thumbnailWidth !== undefined ? options.thumbnailWidth : defaultThumbnailWidth;
+  options.thumbnailHeight = options.thumbnailHeight !== undefined ? options.thumbnailHeight : defaultThumbnailHeight;
+  options.quality = options.quality !== undefined ? options.quality : defaultQuality;
 
   cordova.exec(
     function (library) {
