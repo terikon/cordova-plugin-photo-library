@@ -71,6 +71,7 @@ public class PhotoLibraryService {
       put("int.width", MediaStore.Images.ImageColumns.WIDTH);
       put("int.height", MediaStore.Images.ImageColumns.HEIGHT);
       put("date.creationDate", MediaStore.Images.ImageColumns.DATE_TAKEN);
+      put("int.orientation", MediaStore.Images.ImageColumns.ORIENTATION);
     }};
 
     final ArrayList<JSONObject> queryResults = queryContentProvider(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, "");
