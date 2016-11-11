@@ -2,11 +2,9 @@ import Foundation
 
 @objc(PhotoLibrary) class PhotoLibrary : CDVPlugin {
 
-    var service: PhotoLibraryService!
-
     override func pluginInitialize() {
 
-        service = PhotoLibraryService.instance
+        // Do not call PhotoLibraryService here, as it will cause permission prompt to appear on app start.
 
         URLProtocol.registerClass(PhotoLibraryProtocol.self)
 
@@ -20,11 +18,13 @@ import Foundation
     func getLibrary(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
 
+            let service = PhotoLibraryService.instance
+
             let options = command.arguments[0] as! NSDictionary
             let thumbnailWidth = options["thumbnailWidth"] as! Int
             let thumbnailHeight = options["thumbnailHeight"] as! Int
 
-            let library = self.service.getLibrary(thumbnailWidth, thumbnailHeight: thumbnailHeight)
+            let library = service.getLibrary(thumbnailWidth, thumbnailHeight: thumbnailHeight)
 
             let pluginResult = library != nil ?
                 CDVPluginResult(
@@ -33,7 +33,7 @@ import Foundation
             :
                 CDVPluginResult(
                     status: CDVCommandStatus_ERROR,
-                    messageAs: self.service.PERMISSION_ERROR)
+                    messageAs: service.PERMISSION_ERROR)
 
             self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
 
@@ -42,14 +42,16 @@ import Foundation
 
     func getThumbnail(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
-            
+
+            let service = PhotoLibraryService.instance
+
             let photoId = command.arguments[0] as! String
             let options = command.arguments[1] as! NSDictionary
             let thumbnailWidth = options["thumbnailWidth"] as! Int
             let thumbnailHeight = options["thumbnailHeight"] as! Int
             let quality = options["quality"] as! Float
 
-            self.service.getThumbnail(photoId, thumbnailWidth: thumbnailWidth, thumbnailHeight: thumbnailHeight, quality: quality) { (imageData) in
+            service.getThumbnail(photoId, thumbnailWidth: thumbnailWidth, thumbnailHeight: thumbnailHeight, quality: quality) { (imageData) in
 
                 let pluginResult = imageData != nil ?
                     CDVPluginResult(
@@ -58,7 +60,7 @@ import Foundation
                     :
                     CDVPluginResult(
                         status: CDVCommandStatus_ERROR,
-                        messageAs: self.service.PERMISSION_ERROR)
+                        messageAs: service.PERMISSION_ERROR)
 
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId )
 
@@ -69,10 +71,12 @@ import Foundation
 
     func getPhoto(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
-            
+
+            let service = PhotoLibraryService.instance
+
             let photoId = command.arguments[0] as! String
 
-            self.service.getPhoto(photoId) { (imageData) in
+            service.getPhoto(photoId) { (imageData) in
 
                 let pluginResult = imageData != nil ?
                     CDVPluginResult(
@@ -81,7 +85,7 @@ import Foundation
                     :
                     CDVPluginResult(
                         status: CDVCommandStatus_ERROR,
-                        messageAs: self.service.PERMISSION_ERROR)
+                        messageAs: service.PERMISSION_ERROR)
 
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
 
@@ -92,7 +96,9 @@ import Foundation
 
     func stopCaching(_ command: CDVInvokedUrlCommand) {
 
-        self.service.stopCaching()
+        let service = PhotoLibraryService.instance
+
+        service.stopCaching()
 
         let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
         self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
@@ -101,7 +107,9 @@ import Foundation
 
     func requestAuthorization(_ command: CDVInvokedUrlCommand) {
 
-        self.service.requestAuthorization({
+        let service = PhotoLibraryService.instance
+
+        service.requestAuthorization({
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
             }, failure: { (err) in
@@ -110,13 +118,16 @@ import Foundation
             })
 
     }
-    
+
     func saveImage(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
+
+            let service = PhotoLibraryService.instance
+
             let url = command.arguments[0] as! String
             let album = command.arguments[1] as! String
-            
-            self.service.saveImage(url, album: album) { (url: URL?, error: String?) in
+
+            service.saveImage(url, album: album) { (url: URL?, error: String?) in
                 if (error != nil) {
                     let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: error)
                     self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
@@ -125,15 +136,19 @@ import Foundation
                     self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
                 }
             }
+
         }
     }
-    
+
     func saveVideo(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
+
+            let service = PhotoLibraryService.instance
+
             let url = command.arguments[0] as! String
             let album = command.arguments[1] as! String
-            
-            self.service.saveVideo(url, album: album) { (url: URL?, error: String?) in
+
+            service.saveVideo(url, album: album) { (url: URL?, error: String?) in
                 if (error != nil) {
                     let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: error)
                     self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
@@ -142,6 +157,7 @@ import Foundation
                     self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
                 }
             }
+
         }
     }
 
