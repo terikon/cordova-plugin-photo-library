@@ -75,6 +75,14 @@ public class PhotoLibraryService {
     String imageURL = getImageURL(photoId);
     File imageFile = new File(imageURL);
 
+    // if image is rotated by 90 or 270 degrees, swap provided width and height
+    boolean swapDimensions = getSwapFromPhotoID(photoId);
+    if (swapDimensions) {
+      int tempWidth = thumbnailWidth;
+      thumbnailWidth = thumbnailHeight;
+      thumbnailHeight = tempWidth;
+    }
+
     // TODO: maybe it never worth using MediaStore.Images.Thumbnails.getThumbnail, as it returns sizes less than 512x384?
     if (thumbnailWidth == 512 && thumbnailHeight == 384) { // In such case, thumbnail will be cached by MediaStore
       int imageId = getImageId(photoId);
@@ -309,7 +317,7 @@ public class PhotoLibraryService {
         System.err.println(queryResult);
       } else {
 
-        queryResult.put("id", queryResult.get("id") + ";" + queryResult.get("nativeURL")); // photoId is in format "imageid;imageurl"
+        boolean swapDimensions = false;
 
         // swap width and height if needed
         try {
@@ -318,10 +326,17 @@ public class PhotoLibraryService {
             int tempWidth = queryResult.getInt("width");
             queryResult.put("width", queryResult.getInt("height"));
             queryResult.put("height", tempWidth);
+            swapDimensions = true;
           }
         } catch (IOException e) {
           // Do nothing
         }
+
+        // photoId is in format "imageid;imageurl;" or "imageid;imageurl;swap"
+        queryResult.put("id",
+            queryResult.get("id") + ";" +
+            queryResult.get("nativeURL") + ";" +
+            (swapDimensions ? "swap" : ""));
 
         results.add(queryResult);
       }
@@ -416,14 +431,20 @@ public class PhotoLibraryService {
 
   }
 
-  // photoId is in format "imageid;imageurl"
+  // photoId is in format "imageid;imageurl;[swap]"
   private static int getImageId(String photoId) {
-    return Integer.parseInt(photoId.substring(0, photoId.indexOf(';')));
+    return Integer.parseInt(photoId.split(";")[0]);
   }
 
-  // photoId is in format "imageid;imageurl"
+  // photoId is in format "imageid;imageurl;[swap]"
   private static String getImageURL(String photoId) {
-    return photoId.substring(photoId.indexOf(';') + 1);
+    return photoId.split(";")[1];
+  }
+
+  // photoId is in format "imageid;imageurl;[swap]"
+  private static boolean getSwapFromPhotoID(String photoId) {
+    String[] split = photoId.split(";");
+    return split.length >=3 && split[2].equals("swap");
   }
 
   // from http://stackoverflow.com/a/15441311/1691132
