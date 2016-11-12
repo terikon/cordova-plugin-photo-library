@@ -308,7 +308,21 @@ public class PhotoLibraryService {
       if (queryResult.getInt("height") <=0 || queryResult.getInt("width") <= 0) {
         System.err.println(queryResult);
       } else {
+
         queryResult.put("id", queryResult.get("id") + ";" + queryResult.get("nativeURL")); // photoId is in format "imageid;imageurl"
+
+        // swap width and height if needed
+        try {
+          int orientation = getImageOrientation(new File(queryResult.getString("nativeURL")));
+          if (isOrientationSwapsDimensions(orientation)) { // swap width and height
+            int tempWidth = queryResult.getInt("width");
+            queryResult.put("width", queryResult.getInt("height"));
+            queryResult.put("height", tempWidth);
+          }
+        } catch (IOException e) {
+          // Do nothing
+        }
+
         results.add(queryResult);
       }
     }
@@ -433,7 +447,7 @@ public class PhotoLibraryService {
     return result;
   }
 
-  private int getImageOrientation(File imageFile) throws IOException {
+  private static int getImageOrientation(File imageFile) throws IOException {
 
     ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
     int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
@@ -481,7 +495,15 @@ public class PhotoLibraryService {
 
   }
 
-  private File makeAlbumInPhotoLibrary(String album) {
+  // Returns true if orientation rotates image by 90 or 270 degrees.
+  private static boolean isOrientationSwapsDimensions(int orientation) {
+    return orientation == ExifInterface.ORIENTATION_TRANSPOSE // 5
+      || orientation == ExifInterface.ORIENTATION_ROTATE_90 // 6
+      || orientation == ExifInterface.ORIENTATION_TRANSVERSE // 7
+      || orientation == ExifInterface.ORIENTATION_ROTATE_270; // 8
+  }
+
+  private static File makeAlbumInPhotoLibrary(String album) {
     File albumDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), album);
     if (!albumDirectory.exists()) {
       albumDirectory.mkdirs();
