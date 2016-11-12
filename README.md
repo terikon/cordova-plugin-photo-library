@@ -113,6 +113,11 @@ cordova.plugins.photoLibrary.requestAuthorization(
 );
 ``` 
 
+On iOS, first access to photo-library API after installation of an app will bring permission dialog. This dialog will appear before 'Permission' error returned from API.
+If user does not allow access, you will receive 'Permission' error.
+
+On Android, for newly installed app 'Permission' error will be returned without any prompt.
+
 ## In addition you can ask thumbnail or full image for each photo separately, as cross-platform url or as blob
 
 ```js
