@@ -62,33 +62,7 @@ public class PhotoLibraryService {
 
   public ArrayList<JSONObject> getLibrary(Context context) throws JSONException {
 
-    // All columns here: https://developer.android.com/reference/android/provider/MediaStore.Images.ImageColumns.html,
-    // https://developer.android.com/reference/android/provider/MediaStore.MediaColumns.html
-    JSONObject columns = new JSONObject() {{
-      put("int.id", MediaStore.Images.Media._ID);
-      put("filename", MediaStore.Images.ImageColumns.DISPLAY_NAME);
-      put("nativeURL", MediaStore.MediaColumns.DATA);
-      put("int.width", MediaStore.Images.ImageColumns.WIDTH);
-      put("int.height", MediaStore.Images.ImageColumns.HEIGHT);
-      put("date.creationDate", MediaStore.Images.ImageColumns.DATE_TAKEN);
-    }};
-
-    final ArrayList<JSONObject> queryResults = queryContentProvider(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, "");
-
-    ArrayList<JSONObject> results = new ArrayList<JSONObject>();
-
-    for (JSONObject queryResult : queryResults) {
-      if (queryResult.getInt("height") <=0 || queryResult.getInt("width") <= 0) {
-        System.err.println(queryResult);
-      } else {
-        queryResult.put("id", queryResult.get("id") + ";" + queryResult.get("nativeURL")); // photoId is in format "imageid;imageurl"
-        results.add(queryResult);
-      }
-    }
-
-    Collections.reverse(results);
-
-    return results;
+    return queryLibrary(context, "");
 
   }
 
@@ -171,11 +145,19 @@ public class PhotoLibraryService {
   }
 
   public void saveImage(CordovaInterface cordova, String url, String album) throws IOException, URISyntaxException {
+
     saveMedia(cordova, url, album, imageMimeToExtension);
+
+    // TODO: call queryLibrary and return libraryItem of what was saved
+
   }
 
   public void saveVideo(CordovaInterface cordova, String url, String album) throws IOException, URISyntaxException {
+
     saveMedia(cordova, url, album, videMimeToExtension);
+
+    // TODO: call queryLibrary and return libraryItem of what was saved
+
   }
 
   public class PictureData {
@@ -269,6 +251,38 @@ public class PhotoLibraryService {
     cursor.close();
 
     return buffer;
+
+  }
+
+  private ArrayList<JSONObject> queryLibrary(Context context, String whereClause) throws JSONException {
+
+    // All columns here: https://developer.android.com/reference/android/provider/MediaStore.Images.ImageColumns.html,
+    // https://developer.android.com/reference/android/provider/MediaStore.MediaColumns.html
+    JSONObject columns = new JSONObject() {{
+      put("int.id", MediaStore.Images.Media._ID);
+      put("filename", MediaStore.Images.ImageColumns.DISPLAY_NAME);
+      put("nativeURL", MediaStore.MediaColumns.DATA);
+      put("int.width", MediaStore.Images.ImageColumns.WIDTH);
+      put("int.height", MediaStore.Images.ImageColumns.HEIGHT);
+      put("date.creationDate", MediaStore.Images.ImageColumns.DATE_TAKEN);
+    }};
+
+    final ArrayList<JSONObject> queryResults = queryContentProvider(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, whereClause);
+
+    ArrayList<JSONObject> results = new ArrayList<JSONObject>();
+
+    for (JSONObject queryResult : queryResults) {
+      if (queryResult.getInt("height") <=0 || queryResult.getInt("width") <= 0) {
+        System.err.println(queryResult);
+      } else {
+        queryResult.put("id", queryResult.get("id") + ";" + queryResult.get("nativeURL")); // photoId is in format "imageid;imageurl"
+        results.add(queryResult);
+      }
+    }
+
+    Collections.reverse(results);
+
+    return results;
 
   }
 
