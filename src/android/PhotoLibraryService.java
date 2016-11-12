@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -70,6 +71,9 @@ public class PhotoLibraryService {
 
     Bitmap bitmap = null;
 
+    String imageURL = getImageURL(photoId);
+    File imageFile = new File(imageURL);
+
     // TODO: maybe it never worth using MediaStore.Images.Thumbnails.getThumbnail, as it returns sizes less than 512x384?
     if (thumbnailWidth == 512 && thumbnailHeight == 384) { // In such case, thumbnail will be cached by MediaStore
       int imageId = getImageId(photoId);
@@ -82,8 +86,7 @@ public class PhotoLibraryService {
     }
 
     if (bitmap == null) { // No free caching here
-      String imageURL = getImageURL(photoId);
-      Uri imageUri = Uri.fromFile(new File(imageURL));
+      Uri imageUri = Uri.fromFile(imageFile);
       BitmapFactory.Options options = new BitmapFactory.Options();
 
       options.inJustDecodeBounds = true;
@@ -99,17 +102,26 @@ public class PhotoLibraryService {
     }
 
     if (bitmap != null) {
+
       // resize to exact size needed
       Bitmap resizedBitmap = resizeBitmap(bitmap, thumbnailWidth, thumbnailHeight);
       if (bitmap != resizedBitmap) {
         bitmap.recycle();
       }
 
-      // TODO: cache bytes
-      byte[] bytes = getJpegBytesFromBitmap(resizedBitmap, quality);
+      // correct image orientation
+      int orientation = getImageOrientation(imageFile);
+      Bitmap rotatedBitmap = rotateImage(resizedBitmap, orientation);
+      if (resizedBitmap != rotatedBitmap) {
+        resizedBitmap.recycle();
+      }
+
+      // TODO: cache bytes for performance
+
+      byte[] bytes = getJpegBytesFromBitmap(rotatedBitmap, quality);
       String mimeType = "image/jpeg";
 
-      bitmap.recycle();
+      rotatedBitmap.recycle();
 
       return new PictureData(bytes, mimeType);
 
@@ -398,6 +410,54 @@ public class PhotoLibraryService {
     paint.setFilterBitmap(true);
     canvas.drawBitmap(bitmap, transformation, paint);
     return result;
+  }
+
+  private int getImageOrientation(File imageFile) throws IOException {
+
+    ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
+    int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+    return orientation;
+
+  }
+
+  private static Bitmap rotateImage(Bitmap source, int orientation) {
+
+    Matrix matrix = new Matrix();
+
+    switch (orientation) {
+      case ExifInterface.ORIENTATION_NORMAL: // 1
+        return source;
+      case ExifInterface.ORIENTATION_FLIP_HORIZONTAL: // 2
+        matrix.setScale(-1, 1);
+        break;
+      case ExifInterface.ORIENTATION_ROTATE_180: // 3
+        matrix.setRotate(180);
+        break;
+      case ExifInterface.ORIENTATION_FLIP_VERTICAL: // 4
+        matrix.setRotate(180);
+        matrix.postScale(-1, 1);
+        break;
+      case ExifInterface.ORIENTATION_TRANSPOSE: // 5
+        matrix.setRotate(90);
+        matrix.postScale(-1, 1);
+        break;
+      case ExifInterface.ORIENTATION_ROTATE_90: // 6
+        matrix.setRotate(90);
+        break;
+      case ExifInterface.ORIENTATION_TRANSVERSE: // 7
+        matrix.setRotate(-90);
+        matrix.postScale(-1, 1);
+        break;
+      case ExifInterface.ORIENTATION_ROTATE_270: // 8
+        matrix.setRotate(-90);
+        break;
+      default:
+        return source;
+    }
+
+    return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, false);
+
   }
 
   private File makeAlbumInPhotoLibrary(String album) {
