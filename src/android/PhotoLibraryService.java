@@ -18,6 +18,7 @@ import org.apache.cordova.CordovaInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -135,11 +136,31 @@ public class PhotoLibraryService {
 
     int imageId = getImageId(photoId);
     String imageURL = getImageURL(photoId);
-    Uri imageUri = Uri.fromFile(new File(imageURL));
+    File imageFile = new File(imageURL);
+    Uri imageUri = Uri.fromFile(imageFile);
 
     String mimeType = queryMimeType(context, imageId);
 
     InputStream is = context.getContentResolver().openInputStream(imageUri);
+
+    if (mimeType.equals("image/jpeg")) {
+      int orientation = getImageOrientation(imageFile);
+      if (orientation > 1) { // Image should be rotated
+
+        Bitmap bitmap = BitmapFactory.decodeStream(is, null, null);
+        is.close();
+
+        Bitmap rotatedBitmap = rotateImage(bitmap, orientation);
+
+        bitmap.recycle();
+
+        // Here we perform conversion with data loss, but it seems better than handling orientation in JavaScript.
+        // Converting to PNG can be an option to prevent data loss, but in price of very large files.
+        byte[] bytes = getJpegBytesFromBitmap(rotatedBitmap, 1.0); // minimize data loss with 1.0 quality
+
+        is = new ByteArrayInputStream(bytes);
+      }
+    }
 
     return new PictureAsStream(is, mimeType);
 
