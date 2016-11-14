@@ -10,6 +10,7 @@ So here it is.
 - On device, provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5 .
 - Can save photos (jpg, png, animated gifs) and videos to specified album on device.
 - Handles permissions. 
+- Handles images [EXIF rotation hell](http://www.daveperrett.com/articles/2012/07/28/exif-orientation-handling-is-a-ghetto/).
 - On iOS, written in Swift and not Objective-C.
 
 **Work in progress**
@@ -112,6 +113,11 @@ cordova.plugins.photoLibrary.requestAuthorization(
 );
 ``` 
 
+On iOS, first access to photo-library API after installation of an app will bring permission dialog. This dialog will appear before 'Permission' error returned from API.
+If user does not allow access, you will receive 'Permission' error.
+
+On Android, for newly installed app 'Permission' error will be returned without any prompt.
+
 ## In addition you can ask thumbnail or full image for each photo separately, as cross-platform url or as blob
 
 ```js
@@ -193,6 +199,7 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 - Browser - implement saving to folder.
 - saveImage and saveVideo should return saved libraryItem.
 - Improve documentation.
+- EXIF rotation hell is not handled on browser platform.
 
 # References
 

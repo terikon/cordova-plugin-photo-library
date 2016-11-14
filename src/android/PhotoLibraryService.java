@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -17,6 +18,7 @@ import org.apache.cordova.CordovaInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -62,39 +64,24 @@ public class PhotoLibraryService {
 
   public ArrayList<JSONObject> getLibrary(Context context) throws JSONException {
 
-    // All columns here: https://developer.android.com/reference/android/provider/MediaStore.Images.ImageColumns.html,
-    // https://developer.android.com/reference/android/provider/MediaStore.MediaColumns.html
-    JSONObject columns = new JSONObject() {{
-      put("int.id", MediaStore.Images.Media._ID);
-      put("filename", MediaStore.Images.ImageColumns.DISPLAY_NAME);
-      put("nativeURL", MediaStore.MediaColumns.DATA);
-      put("int.width", MediaStore.Images.ImageColumns.WIDTH);
-      put("int.height", MediaStore.Images.ImageColumns.HEIGHT);
-      put("date.creationDate", MediaStore.Images.ImageColumns.DATE_TAKEN);
-    }};
-
-    final ArrayList<JSONObject> queryResults = queryContentProvider(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, "");
-
-    ArrayList<JSONObject> results = new ArrayList<JSONObject>();
-
-    for (JSONObject queryResult : queryResults) {
-      if (queryResult.getInt("height") <=0 || queryResult.getInt("width") <= 0) {
-        System.err.println(queryResult);
-      } else {
-        queryResult.put("id", queryResult.get("id") + ";" + queryResult.get("nativeURL")); // photoId is in format "imageid;imageurl"
-        results.add(queryResult);
-      }
-    }
-
-    Collections.reverse(results);
-
-    return results;
+    return queryLibrary(context, "");
 
   }
 
   public PictureData getThumbnail(Context context, String photoId, int thumbnailWidth, int thumbnailHeight, double quality) throws IOException {
 
     Bitmap bitmap = null;
+
+    String imageURL = getImageURL(photoId);
+    File imageFile = new File(imageURL);
+
+    // if image is rotated by 90 or 270 degrees, swap provided width and height
+    boolean swapDimensions = getSwapFromPhotoID(photoId);
+    if (swapDimensions) {
+      int tempWidth = thumbnailWidth;
+      thumbnailWidth = thumbnailHeight;
+      thumbnailHeight = tempWidth;
+    }
 
     // TODO: maybe it never worth using MediaStore.Images.Thumbnails.getThumbnail, as it returns sizes less than 512x384?
     if (thumbnailWidth == 512 && thumbnailHeight == 384) { // In such case, thumbnail will be cached by MediaStore
@@ -108,8 +95,7 @@ public class PhotoLibraryService {
     }
 
     if (bitmap == null) { // No free caching here
-      String imageURL = getImageURL(photoId);
-      Uri imageUri = Uri.fromFile(new File(imageURL));
+      Uri imageUri = Uri.fromFile(imageFile);
       BitmapFactory.Options options = new BitmapFactory.Options();
 
       options.inJustDecodeBounds = true;
@@ -125,17 +111,26 @@ public class PhotoLibraryService {
     }
 
     if (bitmap != null) {
+
       // resize to exact size needed
       Bitmap resizedBitmap = resizeBitmap(bitmap, thumbnailWidth, thumbnailHeight);
       if (bitmap != resizedBitmap) {
         bitmap.recycle();
       }
 
-      // TODO: cache bytes
-      byte[] bytes = getJpegBytesFromBitmap(resizedBitmap, quality);
+      // correct image orientation
+      int orientation = getImageOrientation(imageFile);
+      Bitmap rotatedBitmap = rotateImage(resizedBitmap, orientation);
+      if (resizedBitmap != rotatedBitmap) {
+        resizedBitmap.recycle();
+      }
+
+      // TODO: cache bytes for performance
+
+      byte[] bytes = getJpegBytesFromBitmap(rotatedBitmap, quality);
       String mimeType = "image/jpeg";
 
-      bitmap.recycle();
+      rotatedBitmap.recycle();
 
       return new PictureData(bytes, mimeType);
 
@@ -149,11 +144,31 @@ public class PhotoLibraryService {
 
     int imageId = getImageId(photoId);
     String imageURL = getImageURL(photoId);
-    Uri imageUri = Uri.fromFile(new File(imageURL));
+    File imageFile = new File(imageURL);
+    Uri imageUri = Uri.fromFile(imageFile);
 
     String mimeType = queryMimeType(context, imageId);
 
     InputStream is = context.getContentResolver().openInputStream(imageUri);
+
+    if (mimeType.equals("image/jpeg")) {
+      int orientation = getImageOrientation(imageFile);
+      if (orientation > 1) { // Image should be rotated
+
+        Bitmap bitmap = BitmapFactory.decodeStream(is, null, null);
+        is.close();
+
+        Bitmap rotatedBitmap = rotateImage(bitmap, orientation);
+
+        bitmap.recycle();
+
+        // Here we perform conversion with data loss, but it seems better than handling orientation in JavaScript.
+        // Converting to PNG can be an option to prevent data loss, but in price of very large files.
+        byte[] bytes = getJpegBytesFromBitmap(rotatedBitmap, 1.0); // minimize data loss with 1.0 quality
+
+        is = new ByteArrayInputStream(bytes);
+      }
+    }
 
     return new PictureAsStream(is, mimeType);
 
@@ -171,11 +186,19 @@ public class PhotoLibraryService {
   }
 
   public void saveImage(CordovaInterface cordova, String url, String album) throws IOException, URISyntaxException {
+
     saveMedia(cordova, url, album, imageMimeToExtension);
+
+    // TODO: call queryLibrary and return libraryItem of what was saved
+
   }
 
   public void saveVideo(CordovaInterface cordova, String url, String album) throws IOException, URISyntaxException {
+
     saveMedia(cordova, url, album, videMimeToExtension);
+
+    // TODO: call queryLibrary and return libraryItem of what was saved
+
   }
 
   public class PictureData {
@@ -272,6 +295,59 @@ public class PhotoLibraryService {
 
   }
 
+  private ArrayList<JSONObject> queryLibrary(Context context, String whereClause) throws JSONException {
+
+    // All columns here: https://developer.android.com/reference/android/provider/MediaStore.Images.ImageColumns.html,
+    // https://developer.android.com/reference/android/provider/MediaStore.MediaColumns.html
+    JSONObject columns = new JSONObject() {{
+      put("int.id", MediaStore.Images.Media._ID);
+      put("filename", MediaStore.Images.ImageColumns.DISPLAY_NAME);
+      put("nativeURL", MediaStore.MediaColumns.DATA);
+      put("int.width", MediaStore.Images.ImageColumns.WIDTH);
+      put("int.height", MediaStore.Images.ImageColumns.HEIGHT);
+      put("date.creationDate", MediaStore.Images.ImageColumns.DATE_TAKEN);
+    }};
+
+    final ArrayList<JSONObject> queryResults = queryContentProvider(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, whereClause);
+
+    ArrayList<JSONObject> results = new ArrayList<JSONObject>();
+
+    for (JSONObject queryResult : queryResults) {
+      if (queryResult.getInt("height") <=0 || queryResult.getInt("width") <= 0) {
+        System.err.println(queryResult);
+      } else {
+
+        boolean swapDimensions = false;
+
+        // swap width and height if needed
+        try {
+          int orientation = getImageOrientation(new File(queryResult.getString("nativeURL")));
+          if (isOrientationSwapsDimensions(orientation)) { // swap width and height
+            int tempWidth = queryResult.getInt("width");
+            queryResult.put("width", queryResult.getInt("height"));
+            queryResult.put("height", tempWidth);
+            swapDimensions = true;
+          }
+        } catch (IOException e) {
+          // Do nothing
+        }
+
+        // photoId is in format "imageid;imageurl;" or "imageid;imageurl;swap"
+        queryResult.put("id",
+            queryResult.get("id") + ";" +
+            queryResult.get("nativeURL") + ";" +
+            (swapDimensions ? "swap" : ""));
+
+        results.add(queryResult);
+      }
+    }
+
+    Collections.reverse(results);
+
+    return results;
+
+  }
+
   private String queryMimeType(Context context, int imageId) {
 
     Cursor cursor = context.getContentResolver().query(
@@ -355,14 +431,20 @@ public class PhotoLibraryService {
 
   }
 
-  // photoId is in format "imageid;imageurl"
+  // photoId is in format "imageid;imageurl;[swap]"
   private static int getImageId(String photoId) {
-    return Integer.parseInt(photoId.substring(0, photoId.indexOf(';')));
+    return Integer.parseInt(photoId.split(";")[0]);
   }
 
-  // photoId is in format "imageid;imageurl"
+  // photoId is in format "imageid;imageurl;[swap]"
   private static String getImageURL(String photoId) {
-    return photoId.substring(photoId.indexOf(';') + 1);
+    return photoId.split(";")[1];
+  }
+
+  // photoId is in format "imageid;imageurl;[swap]"
+  private static boolean getSwapFromPhotoID(String photoId) {
+    String[] split = photoId.split(";");
+    return split.length >=3 && split[2].equals("swap");
   }
 
   // from http://stackoverflow.com/a/15441311/1691132
@@ -386,7 +468,63 @@ public class PhotoLibraryService {
     return result;
   }
 
-  private File makeAlbumInPhotoLibrary(String album) {
+  private static int getImageOrientation(File imageFile) throws IOException {
+
+    ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
+    int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+    return orientation;
+
+  }
+
+  private static Bitmap rotateImage(Bitmap source, int orientation) {
+
+    Matrix matrix = new Matrix();
+
+    switch (orientation) {
+      case ExifInterface.ORIENTATION_NORMAL: // 1
+        return source;
+      case ExifInterface.ORIENTATION_FLIP_HORIZONTAL: // 2
+        matrix.setScale(-1, 1);
+        break;
+      case ExifInterface.ORIENTATION_ROTATE_180: // 3
+        matrix.setRotate(180);
+        break;
+      case ExifInterface.ORIENTATION_FLIP_VERTICAL: // 4
+        matrix.setRotate(180);
+        matrix.postScale(-1, 1);
+        break;
+      case ExifInterface.ORIENTATION_TRANSPOSE: // 5
+        matrix.setRotate(90);
+        matrix.postScale(-1, 1);
+        break;
+      case ExifInterface.ORIENTATION_ROTATE_90: // 6
+        matrix.setRotate(90);
+        break;
+      case ExifInterface.ORIENTATION_TRANSVERSE: // 7
+        matrix.setRotate(-90);
+        matrix.postScale(-1, 1);
+        break;
+      case ExifInterface.ORIENTATION_ROTATE_270: // 8
+        matrix.setRotate(-90);
+        break;
+      default:
+        return source;
+    }
+
+    return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, false);
+
+  }
+
+  // Returns true if orientation rotates image by 90 or 270 degrees.
+  private static boolean isOrientationSwapsDimensions(int orientation) {
+    return orientation == ExifInterface.ORIENTATION_TRANSPOSE // 5
+      || orientation == ExifInterface.ORIENTATION_ROTATE_90 // 6
+      || orientation == ExifInterface.ORIENTATION_TRANSVERSE // 7
+      || orientation == ExifInterface.ORIENTATION_ROTATE_270; // 8
+  }
+
+  private static File makeAlbumInPhotoLibrary(String album) {
     File albumDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), album);
     if (!albumDirectory.exists()) {
       albumDirectory.mkdirs();
