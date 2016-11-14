@@ -20,6 +20,7 @@ import AssetsLibrary // TODO: needed for deprecated functionality
 final class PhotoLibraryService {
     
     let fetchOptions: PHFetchOptions!
+    let thumbnailRequestOptions: PHImageRequestOptions!
     let imageRequestOptions: PHImageRequestOptions!
     let dateFormatter: DateFormatter! //TODO: remove in Swift 3, use JSONRepresentable
     let cachingImageManager: PHCachingImageManager!
@@ -39,11 +40,19 @@ final class PhotoLibraryService {
             fetchOptions.includeAssetSourceTypes = [.typeUserLibrary, .typeiTunesSynced, .typeCloudShared]
         }
         
+        thumbnailRequestOptions = PHImageRequestOptions()
+        thumbnailRequestOptions.isSynchronous = false
+        thumbnailRequestOptions.resizeMode = .exact
+        thumbnailRequestOptions.deliveryMode = .fastFormat
+        thumbnailRequestOptions.version = .current
+        thumbnailRequestOptions.isNetworkAccessAllowed = true
+        
         imageRequestOptions = PHImageRequestOptions()
-        imageRequestOptions.isSynchronous = true
-        imageRequestOptions.resizeMode = .fast
-        imageRequestOptions.deliveryMode = .fastFormat
+        imageRequestOptions.isSynchronous = false
+        imageRequestOptions.resizeMode = .exact
+        imageRequestOptions.deliveryMode = .highQualityFormat
         imageRequestOptions.version = .current
+        imageRequestOptions.isNetworkAccessAllowed = true
         
         dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
@@ -67,26 +76,30 @@ final class PhotoLibraryService {
         
     }
     
-    func getLibrary(_ thumbnailWidth: Int, thumbnailHeight: Int) -> [NSDictionary] {
+    func getLibrary(_ thumbnailWidth: Int, thumbnailHeight: Int, completion: @escaping (_ result: [NSDictionary]) -> Void) {
         
         let fetchResult = PHAsset.fetchAssets(with: .image, options: self.fetchOptions)
         
-        var library = [NSDictionary]()
-        
-        var assets = [PHAsset]()
-        fetchResult.enumerateObjects({(obj, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) in
-            assets.append(obj)
-        })
-        
-        if assets.count > 0 {
+        if fetchResult.count > 0 {
+            
+            var assets = [PHAsset]()
+            fetchResult.enumerateObjects({(asset, index, stop) in
+                assets.append(asset)
+            })
+            
             self.stopCaching()
             self.cachingImageManager.startCachingImages(for: assets, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions)
             self.cacheActive = true
         }
         
-        assets.forEach { (asset: PHAsset) in
+        var library = [NSDictionary?](repeating: nil, count: fetchResult.count)
+        
+        var requestsLeft = fetchResult.count
+        
+        fetchResult.enumerateObjects({ (asset: PHAsset, index, stop) in
             
-            PHImageManager.default().requestImageData(for: asset, options: self.imageRequestOptions) {
+            // requestImageData call is async
+            PHImageManager.default().requestImageData(for: asset, options: self.thumbnailRequestOptions) {
                 (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
                 
                 let imageURL = info?["PHImageFileURLKey"] as? URL
@@ -101,11 +114,15 @@ final class PhotoLibraryService {
                 libraryItem["creationDate"] = self.dateFormatter.string(from: asset.creationDate!) //TODO: in Swift 3, use JSONRepresentable
                 // TODO: asset.faceRegions, asset.locationData
                 
-                library.append(libraryItem)
+                library[index] = libraryItem
+                
+                requestsLeft -= 1
+                
+                if requestsLeft == 0 {
+                    completion(library as! [NSDictionary])
+                }
             }
-        }
-        
-        return library
+        })
         
     }
     
@@ -123,7 +140,7 @@ final class PhotoLibraryService {
             
             let asset = obj as! PHAsset
             
-            self.cachingImageManager.requestImage(for: asset, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions) {
+            self.cachingImageManager.requestImage(for: asset, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: self.contentMode, options: self.thumbnailRequestOptions) {
                 (image: UIImage?, imageInfo: [AnyHashable: Any]?) in
                 
                 guard let image = image else {
