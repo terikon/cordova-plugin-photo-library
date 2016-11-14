@@ -28,7 +28,7 @@ final class PhotoLibraryService {
     
     var cacheActive = false
     
-    let PERMISSION_ERROR = "Permission Denial: This application is not allowed to access Photo data."
+    static let PERMISSION_ERROR = "Permission Denial: This application is not allowed to access Photo data."
     
     let dataURLPattern = try! NSRegularExpression(pattern: "^data:.+?;base64,", options: NSRegularExpression.Options(rawValue: 0))
     
@@ -52,14 +52,22 @@ final class PhotoLibraryService {
     }
     
     class var instance: PhotoLibraryService {
+        
         struct SingletonWrapper {
             static let singleton = PhotoLibraryService()
         }
+        
         return SingletonWrapper.singleton
+        
     }
     
-    // Returns nil if permissions not granted
-    func getLibrary(_ thumbnailWidth: Int, thumbnailHeight: Int) -> [NSDictionary]? {
+    static func hasPermission() -> Bool {
+        
+        return PHPhotoLibrary.authorizationStatus() == .authorized
+        
+    }
+    
+    func getLibrary(_ thumbnailWidth: Int, thumbnailHeight: Int) -> [NSDictionary] {
         
         let fetchResult = PHAsset.fetchAssets(with: .image, options: self.fetchOptions)
         
@@ -74,11 +82,6 @@ final class PhotoLibraryService {
             self.stopCaching()
             self.cachingImageManager.startCachingImages(for: assets, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions)
             self.cacheActive = true
-        } else {
-            // No photos returned, let's check permissions
-            if PHPhotoLibrary.authorizationStatus() != .authorized {
-                return nil
-            }
         }
         
         assets.forEach { (asset: PHAsset) in
@@ -106,16 +109,11 @@ final class PhotoLibraryService {
         
     }
     
-    // Result will be null if permissions not granted, or result.data will be empty if processing of image failed
     func getThumbnail(_ photoId: String, thumbnailWidth: Int, thumbnailHeight: Int, quality: Float, completion: @escaping (_ result: PictureData?) -> Void) {
         
         let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [photoId], options: self.fetchOptions)
         
         if fetchResult.count == 0 {
-            if PHPhotoLibrary.authorizationStatus() != .authorized {
-                completion(nil)
-                return
-            }
             completion(nil)
             return
         }
@@ -141,16 +139,11 @@ final class PhotoLibraryService {
         
     }
     
-    // Result will be null if permissions not granted, or result.data will be empty if processing of image failed
     func getPhoto(_ photoId: String, completion: @escaping (_ result: PictureData?) -> Void) {
         
         let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [photoId], options: self.fetchOptions)
         
         if fetchResult.count == 0 {
-            if PHPhotoLibrary.authorizationStatus() != .authorized {
-                completion(nil)
-                return
-            }
             completion(nil)
             return
         }
@@ -177,10 +170,12 @@ final class PhotoLibraryService {
     }
     
     func stopCaching() {
+        
         if self.cacheActive {
             self.cachingImageManager.stopCachingImagesForAllAssets()
             self.cacheActive = false
         }
+        
     }
     
     func requestAuthorization(_ success: @escaping () -> Void, failure: @escaping (_ err: String) -> Void ) {
@@ -215,12 +210,8 @@ final class PhotoLibraryService {
     // TODO: implement with PHPhotoLibrary (UIImageWriteToSavedPhotosAlbum) instead of deprecated ALAssetsLibrary,
     // as described here: http://stackoverflow.com/questions/11972185/ios-save-photo-in-an-app-specific-album
     // but first find a way to save animated gif with it.
-    func saveImage(_ url: String, album: String, completion: @escaping (_ url: URL?, _ error: String?)->Void) { // TODO: should return library item
-        
-        if PHPhotoLibrary.authorizationStatus() != .authorized {
-            completion(nil, PERMISSION_ERROR)
-            return
-        }
+    // TODO: should return library item
+    func saveImage(_ url: String, album: String, completion: @escaping (_ url: URL?, _ error: String?)->Void) {
         
         let sourceData: Data
         do {
@@ -275,11 +266,6 @@ final class PhotoLibraryService {
     }
     
     func saveVideo(_ url: String, album: String, completion: @escaping (_ url: URL?, _ error: String?)->Void) { // TODO: should return library item
-        
-        if PHPhotoLibrary.authorizationStatus() != .authorized {
-            completion(nil, PERMISSION_ERROR)
-            return
-        }
         
         guard let videoURL = URL(string: url) else {
             completion(nil, "Could not parse DataURL")

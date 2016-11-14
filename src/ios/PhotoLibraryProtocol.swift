@@ -7,10 +7,7 @@ import Foundation
     static let DEFAULT_HEIGHT = "384"
     static let DEFAULT_QUALITY = "0.5"
     
-    let service: PhotoLibraryService
-    
     override init(request: URLRequest, cachedResponse: CachedURLResponse?, client: URLProtocolClient?) {
-        self.service = PhotoLibraryService.instance
         super.init(request: request, cachedResponse: cachedResponse, client: client)
     }
     
@@ -40,6 +37,13 @@ import Foundation
                     return
                 }
                 
+                if !PhotoLibraryService.hasPermission() {
+                    self.sendErrorResponse(404, error: PhotoLibraryService.PERMISSION_ERROR)
+                    return
+                }
+                
+                let service = PhotoLibraryService.instance
+                
                 if url.host?.lowercased() == "thumbnail" {
                     
                     let widthStr = queryItems?.filter({$0.name == "width"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_WIDTH
@@ -64,9 +68,9 @@ import Foundation
                     }
                     
                     DispatchQueue.global(qos: .default).async {
-                        self.service.getThumbnail(photoId!, thumbnailWidth: width!, thumbnailHeight: height!, quality: quality!) { (imageData) in
+                        service.getThumbnail(photoId!, thumbnailWidth: width!, thumbnailHeight: height!, quality: quality!) { (imageData) in
                             if (imageData == nil) {
-                                self.sendErrorResponse(404, error: self.service.PERMISSION_ERROR)
+                                self.sendErrorResponse(404, error: PhotoLibraryService.PERMISSION_ERROR)
                                 return
                             }
                             self.sendResponseWithResponseCode(200, data: imageData!.data, mimeType: imageData!.mimeType)
@@ -78,9 +82,9 @@ import Foundation
                 } else if url.host?.lowercased() == "photo" {
                     
                     DispatchQueue.global(qos: .default).async {
-                        self.service.getPhoto(photoId!) { (imageData) in
+                        service.getPhoto(photoId!) { (imageData) in
                             if (imageData == nil) {
-                                self.sendErrorResponse(404, error: self.service.PERMISSION_ERROR)
+                                self.sendErrorResponse(404, error: PhotoLibraryService.PERMISSION_ERROR)
                                 return
                             }
                             self.sendResponseWithResponseCode(200, data: imageData!.data, mimeType: imageData!.mimeType)

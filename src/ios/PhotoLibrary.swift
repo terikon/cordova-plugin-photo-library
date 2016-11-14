@@ -17,6 +17,12 @@ import Foundation
     // Will sort by creation date
     func getLibrary(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
+            
+            if !PhotoLibraryService.hasPermission() {
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+                return
+            }
 
             let service = PhotoLibraryService.instance
 
@@ -26,15 +32,7 @@ import Foundation
 
             let library = service.getLibrary(thumbnailWidth, thumbnailHeight: thumbnailHeight)
 
-            let pluginResult = library != nil ?
-                CDVPluginResult(
-                    status: CDVCommandStatus_OK,
-                    messageAs: library)
-            :
-                CDVPluginResult(
-                    status: CDVCommandStatus_ERROR,
-                    messageAs: service.PERMISSION_ERROR)
-
+            let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: library)
             self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
 
         }
@@ -42,6 +40,12 @@ import Foundation
 
     func getThumbnail(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
+            
+            if !PhotoLibraryService.hasPermission() {
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+                return
+            }
 
             let service = PhotoLibraryService.instance
 
@@ -60,7 +64,7 @@ import Foundation
                     :
                     CDVPluginResult(
                         status: CDVCommandStatus_ERROR,
-                        messageAs: service.PERMISSION_ERROR)
+                        messageAs: "Could not fetch the thumbnail")
 
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId )
 
@@ -71,6 +75,12 @@ import Foundation
 
     func getPhoto(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
+            
+            if !PhotoLibraryService.hasPermission() {
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+                return
+            }
 
             let service = PhotoLibraryService.instance
 
@@ -85,7 +95,7 @@ import Foundation
                     :
                     CDVPluginResult(
                         status: CDVCommandStatus_ERROR,
-                        messageAs: service.PERMISSION_ERROR)
+                        messageAs: "Could not fetch the image")
 
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
 
@@ -121,6 +131,12 @@ import Foundation
 
     func saveImage(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
+            
+            if !PhotoLibraryService.hasPermission() {
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+                return
+            }
 
             let service = PhotoLibraryService.instance
 
@@ -142,6 +158,12 @@ import Foundation
 
     func saveVideo(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
+            
+            if !PhotoLibraryService.hasPermission() {
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+                return
+            }
 
             let service = PhotoLibraryService.instance
 
