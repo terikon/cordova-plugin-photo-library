@@ -4,7 +4,8 @@ We needed a code to displays photo library on HTML page. That gets thumbnail of 
 
 So here it is.
 
-- Displays photo gallery as web page, and not as native screen.
+- Displays photo gallery as web page, and not as boring native screen which you cannot modify. This brings back control over your app to you.
+For example, you can use [PhotoSwipe](https://github.com/dimsemenov/photoswipe) library to present photos.
 - Works on Android, iOS and browser (cordova serve).
 - Fast - does not do base64 and uses browser cache.
 - On device, provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5 .
