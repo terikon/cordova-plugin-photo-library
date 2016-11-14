@@ -95,8 +95,8 @@ cordova.plugins.photoLibrary.getLibrary(
 
 requestAuthorization is cross-platform method, that works in following way:
 
-- on android, will ask user to allow access to storage
-- on ios, will open setting page of your app, where user should enable access to Photos
+- On android, will ask user to allow access to storage
+- On ios, on first call will open permission prompt. If user denies it subsequent calls will open setting page of your app, where user should enable access to Photos.
 
 ```js
 cordova.plugins.photoLibrary.requestAuthorization(
@@ -112,11 +112,6 @@ cordova.plugins.photoLibrary.requestAuthorization(
   }
 );
 ``` 
-
-On iOS, first access to photo-library API after installation of an app will bring permission dialog. This dialog will appear before 'Permission' error returned from API.
-If user does not allow access, you will receive 'Permission' error.
-
-On Android, for newly installed app 'Permission' error will be returned without any prompt.
 
 ## In addition you can ask thumbnail or full image for each photo separately, as cross-platform url or as blob
 
