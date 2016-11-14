@@ -182,6 +182,11 @@ final class PhotoLibraryService {
         
         let status = PHPhotoLibrary.authorizationStatus()
         
+        if status == .authorized {
+            success()
+            return
+        }
+        
         if status == .notDetermined {
             // Ask for permission
             PHPhotoLibrary.requestAuthorization() { (status) -> Void in
@@ -200,7 +205,7 @@ final class PhotoLibraryService {
         if let url = settingsUrl {
             UIApplication.shared.openURL(url)
             // TODO: run callback only when return ?
-            success()
+            // Do not call success, as the app will be restarted when user changes permission
         } else {
             failure("could not open settings url")
         }
