@@ -30,10 +30,10 @@ import Foundation
             let thumbnailWidth = options["thumbnailWidth"] as! Int
             let thumbnailHeight = options["thumbnailHeight"] as! Int
 
-            let library = service.getLibrary(thumbnailWidth, thumbnailHeight: thumbnailHeight)
-
-            let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: library)
-            self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+            service.getLibrary(thumbnailWidth, thumbnailHeight: thumbnailHeight) { (library) in
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: library)
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+            }
 
         }
     }
