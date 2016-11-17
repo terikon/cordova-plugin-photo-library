@@ -17,7 +17,7 @@ import Foundation
     // Will sort by creation date
     func getLibrary(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
-            
+
             if !PhotoLibraryService.hasPermission() {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
@@ -31,7 +31,7 @@ import Foundation
             let thumbnailHeight = options["thumbnailHeight"] as! Int
 
             service.getLibrary(thumbnailWidth, thumbnailHeight: thumbnailHeight) { (library) in
-                let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: library)
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAsMultipart: [library, false])
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
             }
 
@@ -40,7 +40,7 @@ import Foundation
 
     func getThumbnail(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
-            
+
             if !PhotoLibraryService.hasPermission() {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
@@ -75,7 +75,7 @@ import Foundation
 
     func getPhoto(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
-            
+
             if !PhotoLibraryService.hasPermission() {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
@@ -131,7 +131,7 @@ import Foundation
 
     func saveImage(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
-            
+
             if !PhotoLibraryService.hasPermission() {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
@@ -158,7 +158,7 @@ import Foundation
 
     func saveVideo(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
-            
+
             if !PhotoLibraryService.hasPermission() {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
