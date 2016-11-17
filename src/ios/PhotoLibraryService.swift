@@ -32,6 +32,9 @@ final class PhotoLibraryService {
     static let PERMISSION_ERROR = "Permission Denial: This application is not allowed to access Photo data."
 
     let dataURLPattern = try! NSRegularExpression(pattern: "^data:.+?;base64,", options: NSRegularExpression.Options(rawValue: 0))
+    
+    // TODO: provide it as option to getLibrary
+    static let PARTIAL_RESULT_PERIOD_SEC = 0.5 // Waiting time for returning partial results in getLibrary
 
     fileprivate init() {
         fetchOptions = PHFetchOptions()
@@ -95,6 +98,13 @@ final class PhotoLibraryService {
         var library = [NSDictionary?](repeating: nil, count: fetchResult.count)
 
         var requestsLeft = fetchResult.count
+        
+        var lastPartialResultTime = NSDate()
+        
+        func sendPartialResult(_ library: [NSDictionary?]) {
+            let libraryCopy = library.filter { $0 != nil }
+            partialCallback(libraryCopy as! [NSDictionary])
+        }
 
         fetchResult.enumerateObjects({ (asset: PHAsset, index, stop) in
 
@@ -120,6 +130,14 @@ final class PhotoLibraryService {
 
                 if requestsLeft == 0 {
                     completion(library as! [NSDictionary])
+                } else {
+                    // Each PARTIAL_RESULT_PERIOD_SEC seconds provide partial result
+                    let elapsedSec = abs(lastPartialResultTime.timeIntervalSinceNow)
+                    if elapsedSec > PhotoLibraryService.PARTIAL_RESULT_PERIOD_SEC {
+                        lastPartialResultTime = NSDate()
+                        
+                        sendPartialResult(library)
+                    }
                 }
             }
         })
