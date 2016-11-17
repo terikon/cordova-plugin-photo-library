@@ -76,7 +76,7 @@ final class PhotoLibraryService {
 
     }
 
-    func getLibrary(_ thumbnailWidth: Int, thumbnailHeight: Int, completion: @escaping (_ result: [NSDictionary]) -> Void) {
+    func getLibrary(_ thumbnailWidth: Int, thumbnailHeight: Int, partialCallback: @escaping (_ result: [NSDictionary]) -> Void, completion: @escaping (_ result: [NSDictionary]) -> Void) {
 
         let fetchResult = PHAsset.fetchAssets(with: .image, options: self.fetchOptions)
 
