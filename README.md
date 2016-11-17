@@ -177,6 +177,56 @@ cordova.plugins.photoLibrary.getPhoto(
   });
 ```
 
+# ionic / angular
+
+As mentioned [here](https://github.com/terikon/cordova-plugin-photo-library/issues/15) by our contributors, cdvphotolibrary urls should bypass sanitization to work.
+
+In angular2, do following:
+
+Define Pipe that will tell to bypass trusted urls. cdvphotolibrary urls should be trusted:
+
+```js
+@Pipe({name: 'safeUrl'})
+export class SafeUrl {
+  constructor(private sanitizer:DomSanitizer){}
+  transform(url) {
+    return this.sanitizer.bypassSecurityTrustUrl(url);
+  }
+}
+```
+
+Then in your component, use cdvphotolibrary urls applying the safeUrl pipe:
+
+```js
+@Component({
+   selector: 'app',
+   template: '<img [src]="url | safeUrl"></div>',
+   pipes: [ SafeUrl ]
+})
+
+export class AppComponent {
+    public url: string = 'placeholder.jpg';
+    constructor() {
+      // fetch thumbnail URL's
+      this.url = libraryItem.thumbnailURL;
+    }
+} 
+```
+
+If you use angular1, you need to add cdvphotolibrary to whitelist:
+
+```js
+var app = angular
+  .module('myApp', [])
+  .config([
+    '$compileProvider',
+    function ($compileProvider) {
+      $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|cdvphotolibrary):/);
+      // Angular before v1.2 uses $compileProvider.urlSanitizationWhitelist(...)
+    }
+  ]);
+```
+
 # TypeScript
 
 TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/terikon/cordova-plugin-photo-library/blob/master/PhotoLibrary.d.ts)
