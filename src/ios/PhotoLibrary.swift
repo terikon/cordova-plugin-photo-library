@@ -29,10 +29,17 @@ import Foundation
             let options = command.arguments[0] as! NSDictionary
             let thumbnailWidth = options["thumbnailWidth"] as! Int
             let thumbnailHeight = options["thumbnailHeight"] as! Int
-
+            
             service.getLibrary(thumbnailWidth, thumbnailHeight: thumbnailHeight) { (library) in
-                let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAsMultipart: [library, false])
+                
+                let result: NSDictionary = [
+                    "isPartial": false,
+                    "library": library
+                ]
+                
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: result as! [String: AnyObject])
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+                
             }
 
         }
