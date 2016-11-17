@@ -196,6 +196,8 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 - saveImage and saveVideo should return saved libraryItem.
 - Improve documentation.
 - EXIF rotation hell is not handled on browser platform.
+- Include album name in libraryItem.
+- Enable filter option for getLibrary, that will select specific album.
 
 # References
 
