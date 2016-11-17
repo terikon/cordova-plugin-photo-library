@@ -30,6 +30,8 @@ Add cdvphotolibrary protocol to Content-Security-Policy, like this:
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: cdvphotolibrary:">
 ```
 
+For remarks about angular/ionic usage, see below. 
+
 ## Displaying photos
 
 ```js
