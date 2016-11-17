@@ -62,9 +62,12 @@ public class PhotoLibraryService {
 		return instance;
 	}
 
-  public ArrayList<JSONObject> getLibrary(Context context) throws JSONException {
+  public void getLibrary(Context context, MyRunnable partialCallback, MyRunnable completion) throws JSONException {
 
-    return queryLibrary(context, "");
+    // TODO: make use of partialCallback
+
+    String whereClause = "";
+    completion.run(queryLibrary(context, whereClause));
 
   }
 
@@ -616,6 +619,12 @@ public class PhotoLibraryService {
     }
 
     addFileToMediaLibrary(cordova, targetFile);
+
+  }
+
+  public interface MyRunnable {
+
+    void run(ArrayList<JSONObject> data);
 
   }
 
