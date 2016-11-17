@@ -66,10 +66,7 @@ public class PhotoLibrary extends CordovaPlugin {
                 public void run(ArrayList<JSONObject> library) {
                   try {
 
-                    JSONObject result = new JSONObject();
-                    result.put("isPartial", true);
-                    result.put("library", new JSONArray(library));
-
+                    JSONObject result = createGetLibraryResult(library, true);
                     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
                     callbackContext.sendPluginResult(pluginResult);
 
@@ -83,11 +80,9 @@ public class PhotoLibrary extends CordovaPlugin {
                 public void run(ArrayList<JSONObject> library) {
                   try {
 
-                    JSONObject result = new JSONObject();
-                    result.put("isPartial", false);
-                    result.put("library", new JSONArray(library));
-
+                    JSONObject result = createGetLibraryResult(library, false);
                     callbackContext.success(result);
+
                   } catch (Exception e) {
                     e.printStackTrace();
                     callbackContext.error(e.getMessage());
@@ -360,6 +355,13 @@ public class PhotoLibrary extends CordovaPlugin {
     }
 
     cordova.requestPermissions(this, REQUEST_AUTHORIZATION_REQ_CODE, permissions.toArray(new String[0]));
+  }
+
+  private static JSONObject createGetLibraryResult(ArrayList<JSONObject> library, boolean isPartial) throws JSONException {
+    JSONObject result = new JSONObject();
+    result.put("isPartial", isPartial);
+    result.put("library", new JSONArray(library));
+    return result;
   }
 
 }
