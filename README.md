@@ -251,6 +251,8 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 - Include album name in libraryItem.
 - Enable filter option for getLibrary, that will select specific album.
 - Provide cancellation mechanism for long-running operations, like getLibrary.
+- Pre-fetching data to file-based cache on app start can improve responsiveness dramatically. Just this caching should occur as low-priority thread. Cache can be updated
+by system photo libraries events.
 
 # References
 
