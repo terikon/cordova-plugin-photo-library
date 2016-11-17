@@ -250,6 +250,7 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 - EXIF rotation hell is not handled on browser platform.
 - Include album name in libraryItem.
 - Enable filter option for getLibrary, that will select specific album.
+- Provide cancellation mechanism for long-running operations, like getLibrary.
 
 # References
 
