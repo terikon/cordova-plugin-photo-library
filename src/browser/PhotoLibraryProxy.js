@@ -13,7 +13,7 @@ var photoLibraryProxy = {
       files2Library(files).then(lib => {
         library = lib;
         removeFilesElement(filesElement);
-        success(library);
+        success({ library: library, isPartial: false });
       });
 
     }, false);

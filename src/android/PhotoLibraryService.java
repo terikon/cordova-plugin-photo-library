@@ -5,10 +5,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.media.ExifInterface;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -62,9 +61,12 @@ public class PhotoLibraryService {
 		return instance;
 	}
 
-  public ArrayList<JSONObject> getLibrary(Context context) throws JSONException {
+  public void getLibrary(Context context, MyRunnable partialCallback, MyRunnable completion) throws JSONException {
 
-    return queryLibrary(context, "");
+    // TODO: make use of partialCallback
+
+    String whereClause = "";
+    completion.run(queryLibrary(context, whereClause));
 
   }
 
@@ -74,14 +76,6 @@ public class PhotoLibraryService {
 
     String imageURL = getImageURL(photoId);
     File imageFile = new File(imageURL);
-
-    // if image is rotated by 90 or 270 degrees, swap provided width and height
-    boolean swapDimensions = getSwapFromPhotoID(photoId);
-    if (swapDimensions) {
-      int tempWidth = thumbnailWidth;
-      thumbnailWidth = thumbnailHeight;
-      thumbnailHeight = tempWidth;
-    }
 
     // TODO: maybe it never worth using MediaStore.Images.Thumbnails.getThumbnail, as it returns sizes less than 512x384?
     if (thumbnailWidth == 512 && thumbnailHeight == 384) { // In such case, thumbnail will be cached by MediaStore
@@ -112,25 +106,24 @@ public class PhotoLibraryService {
 
     if (bitmap != null) {
 
-      // resize to exact size needed
-      Bitmap resizedBitmap = resizeBitmap(bitmap, thumbnailWidth, thumbnailHeight);
-      if (bitmap != resizedBitmap) {
+      // correct image orientation
+      int orientation = getImageOrientation(imageFile);
+      Bitmap rotatedBitmap = rotateImage(bitmap, orientation);
+      if (bitmap != rotatedBitmap) {
         bitmap.recycle();
       }
 
-      // correct image orientation
-      int orientation = getImageOrientation(imageFile);
-      Bitmap rotatedBitmap = rotateImage(resizedBitmap, orientation);
-      if (resizedBitmap != rotatedBitmap) {
-        resizedBitmap.recycle();
+      Bitmap thumbnailBitmap = ThumbnailUtils.extractThumbnail(rotatedBitmap, thumbnailWidth, thumbnailHeight);
+      if (rotatedBitmap != thumbnailBitmap) {
+        rotatedBitmap.recycle();
       }
 
       // TODO: cache bytes for performance
 
-      byte[] bytes = getJpegBytesFromBitmap(rotatedBitmap, quality);
+      byte[] bytes = getJpegBytesFromBitmap(thumbnailBitmap, quality);
       String mimeType = "image/jpeg";
 
-      rotatedBitmap.recycle();
+      thumbnailBitmap.recycle();
 
       return new PictureData(bytes, mimeType);
 
@@ -317,8 +310,6 @@ public class PhotoLibraryService {
         System.err.println(queryResult);
       } else {
 
-        boolean swapDimensions = false;
-
         // swap width and height if needed
         try {
           int orientation = getImageOrientation(new File(queryResult.getString("nativeURL")));
@@ -326,17 +317,15 @@ public class PhotoLibraryService {
             int tempWidth = queryResult.getInt("width");
             queryResult.put("width", queryResult.getInt("height"));
             queryResult.put("height", tempWidth);
-            swapDimensions = true;
           }
         } catch (IOException e) {
           // Do nothing
         }
 
-        // photoId is in format "imageid;imageurl;" or "imageid;imageurl;swap"
+        // photoId is in format "imageid;imageurl"
         queryResult.put("id",
             queryResult.get("id") + ";" +
-            queryResult.get("nativeURL") + ";" +
-            (swapDimensions ? "swap" : ""));
+            queryResult.get("nativeURL"));
 
         results.add(queryResult);
       }
@@ -441,33 +430,6 @@ public class PhotoLibraryService {
     return photoId.split(";")[1];
   }
 
-  // photoId is in format "imageid;imageurl;[swap]"
-  private static boolean getSwapFromPhotoID(String photoId) {
-    String[] split = photoId.split(";");
-    return split.length >=3 && split[2].equals("swap");
-  }
-
-  // from http://stackoverflow.com/a/15441311/1691132
-  private static Bitmap resizeBitmap(Bitmap bitmap, int width, int height) {
-
-    if (bitmap.getWidth() == width && bitmap.getHeight() == height) {
-      return bitmap;
-    }
-
-    Bitmap result = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-    float originalWidth = bitmap.getWidth(), originalHeight = bitmap.getHeight();
-    Canvas canvas = new Canvas(result);
-    float scale = width/originalWidth;
-    float xTranslation = 0.0f, yTranslation = (height - originalHeight * scale)/2.0f;
-    Matrix transformation = new Matrix();
-    transformation.postTranslate(xTranslation, yTranslation);
-    transformation.preScale(scale, scale);
-    Paint paint = new Paint();
-    paint.setFilterBitmap(true);
-    canvas.drawBitmap(bitmap, transformation, paint);
-    return result;
-  }
-
   private static int getImageOrientation(File imageFile) throws IOException {
 
     ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
@@ -477,13 +439,14 @@ public class PhotoLibraryService {
 
   }
 
+  // see http://www.daveperrett.com/articles/2012/07/28/exif-orientation-handling-is-a-ghetto/
   private static Bitmap rotateImage(Bitmap source, int orientation) {
 
     Matrix matrix = new Matrix();
 
     switch (orientation) {
       case ExifInterface.ORIENTATION_NORMAL: // 1
-        return source;
+          return source;
       case ExifInterface.ORIENTATION_FLIP_HORIZONTAL: // 2
         matrix.setScale(-1, 1);
         break;
@@ -616,6 +579,12 @@ public class PhotoLibraryService {
     }
 
     addFileToMediaLibrary(cordova, targetFile);
+
+  }
+
+  public interface MyRunnable {
+
+    void run(ArrayList<JSONObject> data);
 
   }
 

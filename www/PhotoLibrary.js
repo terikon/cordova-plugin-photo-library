@@ -10,7 +10,7 @@ var isBrowser = cordova.platformId == 'browser';
 var photoLibrary = {};
 
 // Will start caching for specified size
-photoLibrary.getLibrary = function (success, error, options) {
+photoLibrary.getLibrary = function (success, error, options, partialCallback) {
 
   if (!options) {
     options = {};
@@ -23,8 +23,20 @@ photoLibrary.getLibrary = function (success, error, options) {
   };
 
   cordova.exec(
-    function (library) {
+    function (result) {
+
+      var library = result.library;
+      var isPartial = result.isPartial;
+
+      if (isPartial) {
+        if (typeof partialCallback === 'function') {
+          addUrlsToLibrary(library, partialCallback, options);
+        }
+        return;
+      }
+
       addUrlsToLibrary(library, success, options);
+
     },
     error,
     'PhotoLibrary',
@@ -228,7 +240,7 @@ var getRequestAuthenticationOptionsWithDefaults = function (options) {
 
 };
 
-var addUrlsToLibrary = function (library, success, options) {
+var addUrlsToLibrary = function (library, callback, options) {
 
   var urlsLeft = library.length;
 
@@ -236,7 +248,7 @@ var addUrlsToLibrary = function (library, success, options) {
     libraryItem.photoURL = photoURL;
     urlsLeft -= 1;
     if (urlsLeft === 0) {
-      success(library);
+      callback(library);
     }
   };
 

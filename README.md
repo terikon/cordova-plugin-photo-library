@@ -55,10 +55,14 @@ cordova.plugins.photoLibrary.getLibrary(
   function (err) {
     console.log('Error occured');
   },
-  {
+  { // optional options
     thumbnailWidth: 512,
     thumbnailHeight: 384,
     quality: 0.8
+  },
+  function partialCallback(partialLibrary) { // optional
+    // If this callback provided and loading library takes time, it will be called each 0.5 seconds with
+    // library that filled up to this time. You can start displaying photos to user right then.  
   }
 );
 ```
@@ -130,7 +134,7 @@ cordova.plugins.photoLibrary.getThumbnailURL(
   function (err) {
     console.log('Error occured');
   },
-  {
+  { // optional options
     thumbnailWidth: 512,
     thumbnailHeight: 384,
     quality: 0.8
@@ -160,7 +164,7 @@ cordova.plugins.photoLibrary.getThumbnail(
   function (err) {
     console.log('Error occured');
   },
-  {
+  { // optional options
     thumbnailWidth: 512,
     thumbnailHeight: 384,
     quality: 0.8
@@ -253,6 +257,7 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 - Provide cancellation mechanism for long-running operations, like getLibrary.
 - Pre-fetching data to file-based cache on app start can improve responsiveness dramatically. Just this caching should occur as low-priority thread. Cache can be updated
 by system photo libraries events.
+- partialCallback currently implemented only for iOS platform. android and browser platform implementations needed. 
 
 # References
 

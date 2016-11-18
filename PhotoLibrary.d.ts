@@ -1,7 +1,7 @@
 declare module PhotoLibraryCordova {
 
   export interface Plugin {
-    getLibrary(success: (result: LibraryItem[]) => void, error: (err: any) => void, options: GetLibraryOptions): void;
+    getLibrary(success: (result: LibraryItem[]) => void, error: (err: any) => void, options: GetLibraryOptions, partialCallback: (result: string) => void): void;
 
     getThumbnailURL(photoId: string, success: (result: string) => void, error: (err: any) => void, options: GetThumbnailOptions): void;
     getThumbnailURL(libraryItem: LibraryItem, success: (result: string) => void, error: (err: any) => void, options: GetThumbnailOptions): void;

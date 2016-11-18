@@ -61,8 +61,34 @@ public class PhotoLibrary extends CordovaPlugin {
                 return;
               }
 
-              ArrayList<JSONObject> library = service.getLibrary(getContext());
-              callbackContext.success(new JSONArray(library));
+              service.getLibrary(getContext(), new PhotoLibraryService.MyRunnable() { // partialCallback
+                @Override
+                public void run(ArrayList<JSONObject> library) {
+                  try {
+
+                    JSONObject result = createGetLibraryResult(library, true);
+                    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
+                    callbackContext.sendPluginResult(pluginResult);
+
+                  } catch (Exception e) {
+                    e.printStackTrace();
+                    callbackContext.error(e.getMessage());
+                  }
+                }
+              }, new PhotoLibraryService.MyRunnable() { // completion
+                @Override
+                public void run(ArrayList<JSONObject> library) {
+                  try {
+
+                    JSONObject result = createGetLibraryResult(library, false);
+                    callbackContext.success(result);
+
+                  } catch (Exception e) {
+                    e.printStackTrace();
+                    callbackContext.error(e.getMessage());
+                  }
+                }
+              });
 
             } catch (Exception e) {
               e.printStackTrace();
@@ -89,7 +115,7 @@ public class PhotoLibrary extends CordovaPlugin {
               }
 
               PhotoLibraryService.PictureData thumbnail = service.getThumbnail(getContext(), photoId, thumbnailWidth, thumbnailHeight, quality);
-              callbackContext.sendPluginResult(createPluginResult(PluginResult.Status.OK, thumbnail));
+              callbackContext.sendPluginResult(createMultipartPluginResult(PluginResult.Status.OK, thumbnail));
 
             } catch (Exception e) {
               e.printStackTrace();
@@ -113,7 +139,7 @@ public class PhotoLibrary extends CordovaPlugin {
               }
 
               PhotoLibraryService.PictureData photo = service.getPhoto(getContext(), photoId);
-              callbackContext.sendPluginResult(createPluginResult(PluginResult.Status.OK, photo));
+              callbackContext.sendPluginResult(createMultipartPluginResult(PluginResult.Status.OK, photo));
 
             } catch (Exception e) {
               e.printStackTrace();
@@ -307,7 +333,7 @@ public class PhotoLibrary extends CordovaPlugin {
 
   }
 
-  private PluginResult createPluginResult(PluginResult.Status status, PhotoLibraryService.PictureData pictureData) {
+  private PluginResult createMultipartPluginResult(PluginResult.Status status, PhotoLibraryService.PictureData pictureData) {
 
     return new PluginResult(status,
       Arrays.asList(
@@ -329,6 +355,13 @@ public class PhotoLibrary extends CordovaPlugin {
     }
 
     cordova.requestPermissions(this, REQUEST_AUTHORIZATION_REQ_CODE, permissions.toArray(new String[0]));
+  }
+
+  private static JSONObject createGetLibraryResult(ArrayList<JSONObject> library, boolean isPartial) throws JSONException {
+    JSONObject result = new JSONObject();
+    result.put("isPartial", isPartial);
+    result.put("library", new JSONArray(library));
+    return result;
   }
 
 }
