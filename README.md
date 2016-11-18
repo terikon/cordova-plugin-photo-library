@@ -239,25 +239,28 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 
 # TODO
 
-- iOS: Bug: It seems to ignore png files.
-- iOS: PHImageContentMode.AspectFill returns images that larger than requested. Perform manual resizing.
-- iOS: it seems regex causes slowdown with dataURL, and (possibly) uses too much memory - check how to do regex on iOS better.
-- iOS: should take into account image rotation. 
+- [#7](https://github.com/terikon/cordova-plugin-photo-library/issues/7) saveImage and saveVideo should return saved libraryItem.
+- [#14](https://github.com/terikon/cordova-plugin-photo-library/issues/14) partialCallback currently implemented only for iOS platform.
+Android and browser platform implementations needed.
+- [#16](https://github.com/terikon/cordova-plugin-photo-library/issues/16) Include album name in libraryItem.
+- [#17](https://github.com/terikon/cordova-plugin-photo-library/issues/17) Enable filter option for getLibrary, that will select specific album.
+- Improve documentation.
+- iOS: PHImageContentMode.AspectFill returns images that larger than requested. If it really so, perform manual resizing.
+- Provide cancellation mechanism for long-running operations, like getLibrary.
+- Add unit tests.
+
+# Optional enchancements
+
+- iOS: it seems regex causes slowdown with dataURL, and (possibly) uses too much memory - check how to do regex on iOS in better way.
 - Browser platform: Separate to multiple files.
 - Browser platform: Compile plugin with webpack.
 - Android: caching mechanism like [this one](https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html) can be helpful.
-- Add unit tests.
 - Implement save protocol with HTTP POST, so no base64 transformation will be needed for saving.
 - Browser - implement saving to folder.
-- saveImage and saveVideo should return saved libraryItem.
-- Improve documentation.
 - EXIF rotation hell is not handled on browser platform.
-- Include album name in libraryItem.
-- Enable filter option for getLibrary, that will select specific album.
-- Provide cancellation mechanism for long-running operations, like getLibrary.
-- Pre-fetching data to file-based cache on app start can improve responsiveness dramatically. Just this caching should occur as low-priority thread. Cache can be updated
+- Pre-fetching data to file-based cache on app start can improve responsiveness. Just this caching should occur as low-priority thread. Cache can be updated
 by system photo libraries events.
-- partialCallback currently implemented only for iOS platform. android and browser platform implementations needed. 
+
 
 # References
 
