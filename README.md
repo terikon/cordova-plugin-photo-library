@@ -1,16 +1,20 @@
-**Work in progress**
+[![That's how it looks in real app](https://img.youtube.com/vi/qHnnRsZ7klE/0.jpg)](https://www.youtube.com/watch?v=qHnnRsZ7klE)
 
-We needed a library that displays photo libraty in HTML. That gets thumbnail of arbitrary sizes, works on multiple platforms, and is fast. 
+We needed a code to displays photo library on HTML page. That gets thumbnail of arbitrary sizes, works on multiple platforms, and is fast. 
 
 So here it is.
 
-- Displays photo gallery as web page, and not as native screen.
-- Works on android, ios and browser (cordova serve).
+- Displays photo gallery as web page, and not as boring native screen which you cannot modify. This brings back control over your app to you.
+For example, you can use [PhotoSwipe](https://github.com/dimsemenov/photoswipe) library to present photos.
+- Works on Android, iOS and browser (cordova serve).
 - Fast - does not do base64 and uses browser cache.
 - On device, provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5 .
 - Can save photos (jpg, png, animated gifs) and videos to specified album on device.
 - Handles permissions. 
-- On ios, written in Swift and not Objective-C.
+- Handles images [EXIF rotation hell](http://www.daveperrett.com/articles/2012/07/28/exif-orientation-handling-is-a-ghetto/).
+- On iOS, written in Swift and not Objective-C.
+
+**Work in progress**
 
 Contributions are welcome.
 
@@ -25,6 +29,8 @@ Add cdvphotolibrary protocol to Content-Security-Policy, like this:
 ```
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: cdvphotolibrary:">
 ```
+
+For remarks about angular/ionic usage, see below. 
 
 ## Displaying photos
 
@@ -49,10 +55,14 @@ cordova.plugins.photoLibrary.getLibrary(
   function (err) {
     console.log('Error occured');
   },
-  {
+  { // optional options
     thumbnailWidth: 512,
     thumbnailHeight: 384,
     quality: 0.8
+  },
+  function partialCallback(partialLibrary) { // optional
+    // If this callback provided and loading library takes time, it will be called each 0.5 seconds with
+    // library that filled up to this time. You can start displaying photos to user right then.  
   }
 );
 ```
@@ -92,8 +102,8 @@ cordova.plugins.photoLibrary.getLibrary(
 
 requestAuthorization is cross-platform method, that works in following way:
 
-- on android, will ask user to allow access to storage
-- on ios, will open setting page of your app, where user should enable access to Photos
+- On android, will ask user to allow access to storage
+- On ios, on first call will open permission prompt. If user denies it subsequent calls will open setting page of your app, where user should enable access to Photos.
 
 ```js
 cordova.plugins.photoLibrary.requestAuthorization(
@@ -124,7 +134,7 @@ cordova.plugins.photoLibrary.getThumbnailURL(
   function (err) {
     console.log('Error occured');
   },
-  {
+  { // optional options
     thumbnailWidth: 512,
     thumbnailHeight: 384,
     quality: 0.8
@@ -154,7 +164,7 @@ cordova.plugins.photoLibrary.getThumbnail(
   function (err) {
     console.log('Error occured');
   },
-  {
+  { // optional options
     thumbnailWidth: 512,
     thumbnailHeight: 384,
     quality: 0.8
@@ -173,25 +183,84 @@ cordova.plugins.photoLibrary.getPhoto(
   });
 ```
 
+# ionic / angular
+
+As mentioned [here](https://github.com/terikon/cordova-plugin-photo-library/issues/15) by dnmd, cdvphotolibrary urls should bypass sanitization to work.
+
+In angular2, do following:
+
+Define Pipe that will tell to bypass trusted urls. cdvphotolibrary urls should be trusted:
+
+```js
+@Pipe({name: 'safeUrl'})
+export class SafeUrl {
+  constructor(private sanitizer:DomSanitizer){}
+  transform(url) {
+    return this.sanitizer.bypassSecurityTrustUrl(url);
+  }
+}
+```
+
+Then in your component, use cdvphotolibrary urls applying the safeUrl pipe:
+
+```js
+@Component({
+   selector: 'app',
+   template: '<img [src]="url | safeUrl"></div>',
+   pipes: [ SafeUrl ]
+})
+
+export class AppComponent {
+    public url: string = 'placeholder.jpg';
+    constructor() {
+      // fetch thumbnail URL's
+      this.url = libraryItem.thumbnailURL;
+    }
+} 
+```
+
+If you use angular1, you need to add cdvphotolibrary to whitelist:
+
+```js
+var app = angular
+  .module('myApp', [])
+  .config([
+    '$compileProvider',
+    function ($compileProvider) {
+      $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|cdvphotolibrary):/);
+      // Angular before v1.2 uses $compileProvider.urlSanitizationWhitelist(...)
+    }
+  ]);
+```
+
 # TypeScript
 
 TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/terikon/cordova-plugin-photo-library/blob/master/PhotoLibrary.d.ts)
 
 # TODO
 
-- iOS: Bug: It seems to ignore png files.
-- iOS: PHImageContentMode.AspectFill returns images that larger than requested. Perform manual resizing.
-- iOS: convert to Swift 3.
-- iOS: it seems regex causes slowdown with dataURL, and (possibly) uses too much memory - check how to do regex on iOS better.
-- iOS: should take into account image rotation. 
+- [#7](https://github.com/terikon/cordova-plugin-photo-library/issues/7) saveImage and saveVideo should return saved libraryItem.
+- [#14](https://github.com/terikon/cordova-plugin-photo-library/issues/14) partialCallback currently implemented only for iOS platform.
+Android and browser platform implementations needed.
+- [#16](https://github.com/terikon/cordova-plugin-photo-library/issues/16) Include album name in libraryItem.
+- [#17](https://github.com/terikon/cordova-plugin-photo-library/issues/17) Enable filter option for getLibrary, that will select specific album.
+- Improve documentation.
+- iOS: PHImageContentMode.AspectFill returns images that larger than requested. If it really so, perform manual resizing.
+- Provide cancellation mechanism for long-running operations, like getLibrary.
+- Add unit tests.
+
+# Optional enchancements
+
+- iOS: it seems regex causes slowdown with dataURL, and (possibly) uses too much memory - check how to do regex on iOS in better way.
 - Browser platform: Separate to multiple files.
 - Browser platform: Compile plugin with webpack.
 - Android: caching mechanism like [this one](https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html) can be helpful.
-- Add unit tests.
 - Implement save protocol with HTTP POST, so no base64 transformation will be needed for saving.
 - Browser - implement saving to folder.
-- saveImage and saveVideo should return saved libraryItem.
-- Improve documentation.
+- EXIF rotation hell is not handled on browser platform.
+- Pre-fetching data to file-based cache on app start can improve responsiveness. Just this caching should occur as low-priority thread. Cache can be updated
+by system photo libraries events.
+
 
 # References
 

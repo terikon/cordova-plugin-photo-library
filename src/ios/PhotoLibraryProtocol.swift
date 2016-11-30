@@ -7,17 +7,14 @@ import Foundation
     static let DEFAULT_HEIGHT = "384"
     static let DEFAULT_QUALITY = "0.5"
     
-    let service: PhotoLibraryService
-    
-    override init(request: NSURLRequest, cachedResponse: NSCachedURLResponse?, client: NSURLProtocolClient?) {
-        self.service = PhotoLibraryService.instance
+    override init(request: URLRequest, cachedResponse: CachedURLResponse?, client: URLProtocolClient?) {
         super.init(request: request, cachedResponse: cachedResponse, client: client)
     }
     
-    override class func canInitWithRequest(request: NSURLRequest) -> Bool {
-        let scheme = request.URL?.scheme
+    override class func canInit(with request: URLRequest) -> Bool {
+        let scheme = request.url?.scheme
         
-        if scheme?.lowercaseString == PHOTO_LIBRARY_PROTOCOL {
+        if scheme?.lowercased() == PHOTO_LIBRARY_PROTOCOL {
             return true
         }
         
@@ -26,10 +23,10 @@ import Foundation
     
     override func startLoading() {
         
-        if let url = self.request.URL {
+        if let url = self.request.url {
             if url.path == "" {
                 
-                let urlComponents = NSURLComponents(URL: url, resolvingAgainstBaseURL: false)
+                let urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)
                 let queryItems = urlComponents?.queryItems
                 
                 // Errors are 404 as android plugin only supports returning 404
@@ -40,7 +37,14 @@ import Foundation
                     return
                 }
                 
-                if url.host?.lowercaseString == "thumbnail" {
+                if !PhotoLibraryService.hasPermission() {
+                    self.sendErrorResponse(404, error: PhotoLibraryService.PERMISSION_ERROR)
+                    return
+                }
+                
+                let service = PhotoLibraryService.instance
+                
+                if url.host?.lowercased() == "thumbnail" {
                     
                     let widthStr = queryItems?.filter({$0.name == "width"}).first?.value ?? PhotoLibraryProtocol.DEFAULT_WIDTH
                     let width = Int(widthStr)
@@ -63,10 +67,10 @@ import Foundation
                         return
                     }
                     
-                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
-                        self.service.getThumbnail(photoId!, thumbnailWidth: width!, thumbnailHeight: height!, quality: quality!) { (imageData) in
+                    DispatchQueue.global(qos: .default).async {
+                        service.getThumbnail(photoId!, thumbnailWidth: width!, thumbnailHeight: height!, quality: quality!) { (imageData) in
                             if (imageData == nil) {
-                                self.sendErrorResponse(404, error: self.service.PERMISSION_ERROR)
+                                self.sendErrorResponse(404, error: PhotoLibraryService.PERMISSION_ERROR)
                                 return
                             }
                             self.sendResponseWithResponseCode(200, data: imageData!.data, mimeType: imageData!.mimeType)
@@ -75,12 +79,12 @@ import Foundation
                     
                     return
                     
-                } else if url.host?.lowercaseString == "photo" {
+                } else if url.host?.lowercased() == "photo" {
                     
-                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
-                        self.service.getPhoto(photoId!) { (imageData) in
+                    DispatchQueue.global(qos: .default).async {
+                        service.getPhoto(photoId!) { (imageData) in
                             if (imageData == nil) {
-                                self.sendErrorResponse(404, error: self.service.PERMISSION_ERROR)
+                                self.sendErrorResponse(404, error: PhotoLibraryService.PERMISSION_ERROR)
                                 return
                             }
                             self.sendResponseWithResponseCode(200, data: imageData!.data, mimeType: imageData!.mimeType)
@@ -94,7 +98,7 @@ import Foundation
         }
         
         let body = "URI not supported by PhotoLibrary"
-        self.sendResponseWithResponseCode(404, data: body.dataUsingEncoding(NSASCIIStringEncoding), mimeType: nil)
+        self.sendResponseWithResponseCode(404, data: body.data(using: String.Encoding.ascii), mimeType: nil)
         
     }
     
@@ -103,12 +107,12 @@ import Foundation
         // do any cleanup here
     }
     
-    private func sendErrorResponse(statusCode: Int, error: String) {
-        self.sendResponseWithResponseCode(statusCode, data: error.dataUsingEncoding(NSASCIIStringEncoding), mimeType: nil)
+    fileprivate func sendErrorResponse(_ statusCode: Int, error: String) {
+        self.sendResponseWithResponseCode(statusCode, data: error.data(using: String.Encoding.ascii), mimeType: nil)
     }
     
     // Cannot use sendResponseWithResponseCode from CDVURLProtocol, so copied one here.
-    private func sendResponseWithResponseCode(statusCode: Int, data: NSData?, mimeType: String?) {
+    fileprivate func sendResponseWithResponseCode(_ statusCode: Int, data: Data?, mimeType: String?) {
         
         var mimeType = mimeType
         if mimeType == nil {
@@ -117,19 +121,19 @@ import Foundation
         
         let encodingName: String? = mimeType == "text/plain" ? "UTF-8" : nil
         
-        let response: CDVHTTPURLResponse = CDVHTTPURLResponse(URL: self.request.URL!, MIMEType: mimeType, expectedContentLength: data?.length ?? 0, textEncodingName: encodingName)
+        let response: CDVHTTPURLResponse = CDVHTTPURLResponse(url: self.request.url!, mimeType: mimeType, expectedContentLength: data?.count ?? 0, textEncodingName: encodingName)
         response.statusCode = statusCode
         
-        self.client?.URLProtocol(self, didReceiveResponse: response, cacheStoragePolicy: NSURLCacheStoragePolicy.NotAllowed)
+        self.client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: URLCache.StoragePolicy.notAllowed)
         
         if (data != nil) {
-            self.client?.URLProtocol(self, didLoadData: data!)
+            self.client?.urlProtocol(self, didLoad: data!)
         }
-        self.client?.URLProtocolDidFinishLoading(self)
+        self.client?.urlProtocolDidFinishLoading(self)
         
     }
     
-    class CDVHTTPURLResponse: NSHTTPURLResponse {
+    class CDVHTTPURLResponse: HTTPURLResponse {
         var _statusCode: Int = 0
         override var statusCode: Int {
             get {
@@ -140,7 +144,7 @@ import Foundation
             }
         }
         
-        override var allHeaderFields: [NSObject : AnyObject] {
+        override var allHeaderFields: [AnyHashable: Any] {
             get {
                 return [:]
             }
