@@ -46,7 +46,7 @@ final class PhotoLibraryService {
         thumbnailRequestOptions = PHImageRequestOptions()
         thumbnailRequestOptions.isSynchronous = false
         thumbnailRequestOptions.resizeMode = .exact
-        thumbnailRequestOptions.deliveryMode = .fastFormat
+        thumbnailRequestOptions.deliveryMode = .highQualityFormat
         thumbnailRequestOptions.version = .current
         thumbnailRequestOptions.isNetworkAccessAllowed = false
 
