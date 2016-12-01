@@ -58,7 +58,7 @@ final class PhotoLibraryService {
         imageRequestOptions.isNetworkAccessAllowed = false
 
         dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
 
         cachingImageManager = PHCachingImageManager()
     }
