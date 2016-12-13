@@ -1,6 +1,6 @@
 [![That's how it looks in real app](https://img.youtube.com/vi/qHnnRsZ7klE/0.jpg)](https://www.youtube.com/watch?v=qHnnRsZ7klE)
 
-We needed a code to displays photo library on HTML page. That gets thumbnail of arbitrary sizes, works on multiple platforms, and is fast. 
+We needed a code to displays photo library on HTML page. That gets thumbnail of arbitrary sizes, works on multiple platforms, and is fast.
 
 So here it is.
 
@@ -10,7 +10,7 @@ For example, you can use [PhotoSwipe](https://github.com/dimsemenov/photoswipe) 
 - Fast - does not do base64 and uses browser cache.
 - On device, provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5 .
 - Can save photos (jpg, png, animated gifs) and videos to specified album on device.
-- Handles permissions. 
+- Handles permissions.
 - Handles images [EXIF rotation hell](http://www.daveperrett.com/articles/2012/07/28/exif-orientation-handling-is-a-ghetto/).
 - On iOS, written in Swift and not Objective-C.
 
@@ -30,14 +30,14 @@ Add cdvphotolibrary protocol to Content-Security-Policy, like this:
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: cdvphotolibrary:">
 ```
 
-For remarks about angular/ionic usage, see below. 
+For remarks about angular/ionic usage, see below.
 
 ## Displaying photos
 
 ```js
 cordova.plugins.photoLibrary.getLibrary(
   function (library) {
-    
+
     // Here we have the library as array
 
     library.forEach(function(libraryItem) {
@@ -48,6 +48,7 @@ cordova.plugins.photoLibrary.getLibrary(
       console.log(libraryItem.width);
       console.log(libraryItem.height);
       console.log(libraryItem.creationDate);
+      console.log(libraryItem.mimetype);
       console.log(libraryItem.nativeURL);   // Do not use, as it is not accessible on all platforms
     });
 
@@ -112,20 +113,20 @@ cordova.plugins.photoLibrary.requestAuthorization(
   },
   function (err) {
     // User denied the access
-  }, // if options not provided, defaults to {read: true}. 
+  }, // if options not provided, defaults to {read: true}.
   {
     read: true,
     write: true
   }
 );
-``` 
+```
 
 ## In addition you can ask thumbnail or full image for each photo separately, as cross-platform url or as blob
 
 ```js
 // Use this method to get url. It's better to use it and not directly access cdvphotolibrary://, as it will also work on browser.
 cordova.plugins.photoLibrary.getThumbnailURL(
-  libraryItem, // or libraryItem.id 
+  libraryItem, // or libraryItem.id
   function (thumbnailURL) {
 
     image.src = thumbnailURL;
@@ -143,7 +144,7 @@ cordova.plugins.photoLibrary.getThumbnailURL(
 
 ```js
 cordova.plugins.photoLibrary.getPhotoURL(
-  libraryItem, // or libraryItem.id 
+  libraryItem, // or libraryItem.id
   function (photoURL) {
 
     image.src = photoURL;
@@ -216,7 +217,7 @@ export class AppComponent {
       // fetch thumbnail URL's
       this.url = libraryItem.thumbnailURL;
     }
-} 
+}
 ```
 
 If you use angular1, you need to add cdvphotolibrary to whitelist:
