@@ -32,6 +32,7 @@ declare module PhotoLibraryCordova {
     height: number,
     creationDate: any,
     mimetype: string,
+    size: number,
   }
 
   export interface GetLibraryOptions {

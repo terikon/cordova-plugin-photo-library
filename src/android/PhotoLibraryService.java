@@ -300,6 +300,7 @@ public class PhotoLibraryService {
       put("int.height", MediaStore.Images.ImageColumns.HEIGHT);
       put("date.creationDate", MediaStore.Images.ImageColumns.DATE_TAKEN);
       put("mimetype", MediaStore.MediaColumns.MIME_TYPE);
+      put("int.size", MediaStore.MediaColumns.SIZE);
     }};
 
     final ArrayList<JSONObject> queryResults = queryContentProvider(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, whereClause);

@@ -49,6 +49,7 @@ cordova.plugins.photoLibrary.getLibrary(
       console.log(libraryItem.height);
       console.log(libraryItem.creationDate);
       console.log(libraryItem.mimetype);
+      console.log(libraryItem.size);
       console.log(libraryItem.nativeURL);   // Do not use, as it is not accessible on all platforms
     });
 
