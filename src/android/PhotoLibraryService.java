@@ -565,11 +565,11 @@ public class PhotoLibraryService {
 
     } else {
 
+      String sourceUrl = url.replace("file:///", "");
       String extension = url.contains(".") ? url.substring(url.lastIndexOf(".")) : "";
       targetFile = getImageFileName(albumDirectory, extension);
 
-      File sourceFile = new File(new URI(url));
-      FileInputStream is = new FileInputStream(sourceFile);
+      InputStream is = cordova.getActivity().getApplicationContext().getAssets().open(sourceUrl);
       FileOutputStream os = new FileOutputStream(targetFile);
 
       copyStream(is, os);
