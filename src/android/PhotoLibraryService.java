@@ -44,22 +44,22 @@ public class PhotoLibraryService {
   //int cacheSize = 4 * 1024 * 1024; // 4MB
   //private LruCache<String, byte[]> imageCache = new LruCache<String, byte[]>(cacheSize);
 
-	protected PhotoLibraryService() {
+  protected PhotoLibraryService() {
     dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
-	}
+  }
 
   public static final String PERMISSION_ERROR = "Permission Denial: This application is not allowed to access Photo data.";
 
-	public static PhotoLibraryService getInstance() {
-		if (instance == null) {
-			synchronized (PhotoLibraryService.class) {
-				if (instance == null) {
-					instance = new PhotoLibraryService();
-				}
-			}
-		}
-		return instance;
-	}
+  public static PhotoLibraryService getInstance() {
+    if (instance == null) {
+      synchronized (PhotoLibraryService.class) {
+        if (instance == null) {
+          instance = new PhotoLibraryService();
+        }
+      }
+    }
+    return instance;
+  }
 
   public void getLibrary(Context context, MyRunnable partialCallback, MyRunnable completion) throws JSONException {
 
@@ -568,9 +568,16 @@ public class PhotoLibraryService {
       String extension = url.contains(".") ? url.substring(url.lastIndexOf(".")) : "";
       targetFile = getImageFileName(albumDirectory, extension);
 
-      File sourceFile = new File(new URI(url));
-      FileInputStream is = new FileInputStream(sourceFile);
+      InputStream is;
       FileOutputStream os = new FileOutputStream(targetFile);
+
+      if(url.startsWith("file:///android_asset/")) {
+        String assetUrl = url.replace("file:///android_asset/", "");
+        is = cordova.getActivity().getApplicationContext().getAssets().open(assetUrl);
+      } else {
+        File sourceFile = new File(new URI(url));
+        is = new FileInputStream(sourceFile);
+      }
 
       copyStream(is, os);
 
