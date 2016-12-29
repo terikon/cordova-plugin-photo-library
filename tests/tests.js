@@ -1,9 +1,54 @@
 exports.defineAutoTests = function () {
 
-  describe('Device Information (window.device)', function () {
-    it("should exist", function () {
-      expect(window.device).toBeDefined();
+  describe('cordova.plugins.photoLibrary', function () {
+
+    it('should exist', function () {
+      expect(cordova.plugins.photoLibrary).toBeDefined();
     });
+
+  });
+
+  describe('cordova.plugins.photoLibrary.getLibrary', function() {
+
+    it('should return multiple photos', function() {
+      cordova.plugins.photoLibrary.getLibrary(function(library) {
+        expect(library.length).toBeGreaterThan(0);
+      },
+      function(err) {
+        fail('expected to succeed, failed with error instead: ' + err);
+      });
+
+
+    });
+
+  });
+
+  describe('cordova.plugins.photoLibrary.getThumbnailURL', function() {
+
+  });
+
+  describe('cordova.plugins.photoLibrary.getPhotoURL', function() {
+
+  });
+
+  describe('cordova.plugins.photoLibrary.getThumbnail', function() {
+
+  });
+
+  describe('cordova.plugins.photoLibrary.getPhoto', function() {
+
+  });
+
+  describe('cordova.plugins.photoLibrary.requestAuthorization', function() {
+
+  });
+
+  describe('cordova.plugins.photoLibrary.saveImage', function() {
+
+  });
+
+  describe('cordova.plugins.photoLibrary.saveVideo', function() {
+
   });
 
 };
