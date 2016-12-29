@@ -1,53 +1,64 @@
 exports.defineAutoTests = function () {
 
-  describe('cordova.plugins.photoLibrary', function () {
+  jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000; // In browser platform, gives a time to select photos.
 
-    it('should exist', function () {
+  describe('cordova.plugins', function () {
+
+    it('photoLibrary should exist', function () {
       expect(cordova.plugins.photoLibrary).toBeDefined();
     });
 
-  });
+    describe('cordova.plugins.photoLibrary', function () {
 
-  describe('cordova.plugins.photoLibrary.getLibrary', function() {
+      var library = null;
 
-    it('should return multiple photos', function() {
-      cordova.plugins.photoLibrary.getLibrary(function(library) {
-        expect(library.length).toBeGreaterThan(0);
-      },
-      function(err) {
-        fail('expected to succeed, failed with error instead: ' + err);
+      beforeAll(function (done) {
+        cordova.plugins.photoLibrary.getLibrary(function (lib) {
+          library = lib;
+          done();
+        },
+        function (err) {
+          fail('expected to succeed, failed with error instead: ' + err);
+        });
       });
 
+      describe('cordova.plugins.photoLibrary.getLibrary', function () {
+
+        it('should return multiple photos', function () {
+          expect(library.length).toBeGreaterThan(0);
+        });
+
+      });
+
+      describe('cordova.plugins.photoLibrary.getThumbnailURL', function () {
+
+      });
+
+      describe('cordova.plugins.photoLibrary.getPhotoURL', function () {
+
+      });
+
+      describe('cordova.plugins.photoLibrary.getThumbnail', function () {
+
+      });
+
+      describe('cordova.plugins.photoLibrary.getPhoto', function () {
+
+      });
+
+      describe('cordova.plugins.photoLibrary.requestAuthorization', function () {
+
+      });
+
+      describe('cordova.plugins.photoLibrary.saveImage', function () {
+
+      });
+
+      describe('cordova.plugins.photoLibrary.saveVideo', function () {
+
+      });
 
     });
-
-  });
-
-  describe('cordova.plugins.photoLibrary.getThumbnailURL', function() {
-
-  });
-
-  describe('cordova.plugins.photoLibrary.getPhotoURL', function() {
-
-  });
-
-  describe('cordova.plugins.photoLibrary.getThumbnail', function() {
-
-  });
-
-  describe('cordova.plugins.photoLibrary.getPhoto', function() {
-
-  });
-
-  describe('cordova.plugins.photoLibrary.requestAuthorization', function() {
-
-  });
-
-  describe('cordova.plugins.photoLibrary.saveImage', function() {
-
-  });
-
-  describe('cordova.plugins.photoLibrary.saveVideo', function() {
 
   });
 
