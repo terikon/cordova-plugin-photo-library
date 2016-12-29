@@ -232,7 +232,7 @@ var getRequestAuthenticationOptionsWithDefaults = function (options) {
   }
 
   options = {
-    read: options.read || false,
+    read: options.read || true,
     write: options.write || false,
   };
 

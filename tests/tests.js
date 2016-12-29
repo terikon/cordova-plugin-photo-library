@@ -1,7 +1,5 @@
 exports.defineAutoTests = function () {
 
-  jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000; // In browser platform, gives a time to select photos.
-
   describe('cordova.plugins', function () {
 
     it('photoLibrary should exist', function () {
@@ -11,6 +9,7 @@ exports.defineAutoTests = function () {
     describe('cordova.plugins.photoLibrary', function () {
 
       var library = null;
+      var libraryError = '';
 
       beforeAll(function (done) {
         cordova.plugins.photoLibrary.getLibrary(function (lib) {
@@ -18,8 +17,13 @@ exports.defineAutoTests = function () {
           done();
         },
         function (err) {
-          fail('expected to succeed, failed with error instead: ' + err);
+          libraryError = err;
+          done.fail(err);
         });
+      }, 20000); // In browser platform, gives a time to select photos.
+
+      it('should load library', function() {
+        expect(library).not.toBeNull('getLibrary failed with error: ' + libraryError);
       });
 
       describe('cordova.plugins.photoLibrary.getLibrary', function () {
@@ -81,16 +85,22 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     log.innerHTML = '';
   };
 
-  var device_tests = '<h3>Press Dump Device button to get device information</h3>' +
-    '<div id="dump_device"></div>' +
-    'Expected result: Status box will get updated with device info. (i.e. platform, version, uuid, model, etc)';
+  var photo_library_tests = '<h3>Press requestAuthorization button to authorize storage</h3>' +
+    '<div id="request_authorization"></div>' +
+    'Expected result: If authorized, this fact will be logged. On iOS: settings page will open. On Android: confirmation prompt will open.';
 
-  contentEl.innerHTML = '<div id="info"></div>' + device_tests;
+  contentEl.innerHTML = '<div id="info"></div>' + photo_library_tests;
 
-  createActionButton('Dump device', function () {
+  createActionButton('requestAuthorization', function () {
     clearLog();
-    //logMessage(JSON.stringify(window.device, null, '\t'));
-    logMessage('Test result can be here...');
-  }, 'dump_device');
+    cordova.plugins.photoLibrary.requestAuthorization(
+      function () {
+        logMessage('User gave us permission to his library');
+      },
+      function (err) {
+        logMessage('User denied the access: ' + err);
+      }
+    );
+  }, 'request_authorization');
 
 };
