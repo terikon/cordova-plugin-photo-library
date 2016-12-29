@@ -20,6 +20,9 @@
     "globals": {
       "cordova": true,
       "require": true,
-      "exports": true
+      "exports": true,
+      "describe": true,
+      "it": true,
+      "expect": true
     }
 }

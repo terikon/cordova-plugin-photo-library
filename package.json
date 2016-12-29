@@ -4,7 +4,7 @@
   "description": "Plugin that just gets photos from the gallery",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Run tests with https://github.com/terikon/cordova-plugin-photo-library-tester\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,10 @@
   },
   "homepage": "https://github.com/terikon/cordova-plugin-photo-library#readme",
   "devDependencies": {
-    "eslint": "^3.4.0"
+    "eslint": "^3.12.2"
+  },
+  "dependencies": {
+    "@types/cordova": "0.0.34",
+    "@types/jasmine": "^2.5.39"
   }
 }
