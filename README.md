@@ -239,6 +239,12 @@ var app = angular
 
 TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/terikon/cordova-plugin-photo-library/blob/master/PhotoLibrary.d.ts)
 
+# Tests
+
+The library includes tests in [tests](https://github.com/terikon/cordova-plugin-photo-library/tree/master/tests) folder.
+To run tests, use [special cordova-plugin-photo-library-tester](https://github.com/terikon/cordova-plugin-photo-library-tester).
+It's always useful to run these tests before submitting changes.
+
 # TODO
 
 - [#7](https://github.com/terikon/cordova-plugin-photo-library/issues/7) saveImage and saveVideo should return saved libraryItem.
