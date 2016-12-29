@@ -243,7 +243,7 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 
 The library includes tests in [tests](https://github.com/terikon/cordova-plugin-photo-library/tree/master/tests) folder.
 To run tests, use [special cordova-plugin-photo-library-tester](https://github.com/terikon/cordova-plugin-photo-library-tester).
-It's always useful to run these tests before submitting changes.
+It's always useful to run these tests before submitting changes, for each platform (android, ios, browser).
 
 # TODO
 
