@@ -119,7 +119,7 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     '<div id="inspect_thumbnail_test_images"></div>' +
     'Expected result: All the images should be rotated right way';
 
-  contentEl.innerHTML = '<div id="info" style="overflow:scroll; width:100%; height:400px;"></div>' + photo_library_tests;
+  contentEl.innerHTML = '<div id="info" style="width:100%; max-height:none;"></div>' + photo_library_tests;
 
   createActionButton('requestAuthorization', function () {
     clearLog();
