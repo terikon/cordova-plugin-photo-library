@@ -1,3 +1,8 @@
+// Include shims for useful javascript functions to work on all devices
+cordova.require('cordova-plugin-photo-library-tests.es5shim');
+cordova.require('cordova-plugin-photo-library-tests.es6shim');
+cordova.require('cordova-plugin-photo-library-tests.es7shim');
+
 var testImages = [
   'Landscape_1.jpg',
   'Landscape_2.jpg',
@@ -114,7 +119,7 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     '<div id="inspect_thumbnail_test_images"></div>' +
     'Expected result: All the images should be rotated right way';
 
-  contentEl.innerHTML = '<div id="info"></div>' + photo_library_tests;
+  contentEl.innerHTML = '<div id="info" style="overflow:scroll; width:100%; height:400px;"></div>' + photo_library_tests;
 
   createActionButton('requestAuthorization', function () {
     clearLog();
