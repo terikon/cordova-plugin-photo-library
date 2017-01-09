@@ -243,13 +243,13 @@ var getRequestAuthenticationOptionsWithDefaults = function (options) {
 };
 
 var parseDates = function (library) {
-    var i;
-    for (i=0; i<library.length; i++) {
-        var libraryItem = library[i];
-        if (libraryItem.creationDate) {
-            libraryItem.creationDate = new Date(libraryItem.creationDate);
-        }
+  var i;
+  for (i = 0; i < library.length; i++) {
+    var libraryItem = library[i];
+    if (libraryItem.creationDate) {
+      libraryItem.creationDate = new Date(libraryItem.creationDate);
     }
+  }
 };
 
 var addUrlsToLibrary = function (library, callback, options) {

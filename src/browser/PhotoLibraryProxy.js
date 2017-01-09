@@ -173,7 +173,7 @@ function files2Library(files) {
               file: f,
               dataURL: dataURLwithImage.dataURL,
               width: image.width,
-              height: image.height
+              height: image.height,
             });
           });
       });
@@ -191,7 +191,9 @@ function files2Library(files) {
             nativeURL: dataURL,
             width: fileWithData.width,
             height: fileWithData.height,
-            creationDate: file.lastModifiedDate, // file contains only lastModifiedDate
+            creationDate: file.lastModifiedDate.toISOString(), // file contains only lastModifiedDate
+            mimeType: file.type,
+            size: file.size,
           };
           counter += 1;
           return libraryItem;
