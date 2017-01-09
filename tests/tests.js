@@ -4,22 +4,22 @@ cordova.require('cordova-plugin-photo-library-tests.es6shim');
 cordova.require('cordova-plugin-photo-library-tests.es7shim');
 
 var expectedImages = [
-    { filename: 'Landscape_1.jpg', width: 600, height: 450, },
-    { filename: 'Landscape_2.jpg', width: 600, height: 450, },
-    { filename: 'Landscape_3.jpg', width: 600, height: 450, },
-    { filename: 'Landscape_4.jpg', width: 600, height: 450, },
-    { filename: 'Landscape_5.jpg', width: 600, height: 450, },
-    { filename: 'Landscape_6.jpg', width: 600, height: 450, },
-    { filename: 'Landscape_7.jpg', width: 600, height: 450, },
-    { filename: 'Landscape_8.jpg', width: 600, height: 450, },
-    { filename: 'Portrait_1.jpg', width: 450, height: 600, },
-    { filename: 'Portrait_2.jpg', width: 450, height: 600, },
-    { filename: 'Portrait_3.jpg', width: 450, height: 600, },
-    { filename: 'Portrait_4.jpg', width: 450, height: 600, },
-    { filename: 'Portrait_5.jpg', width: 450, height: 600, },
-    { filename: 'Portrait_6.jpg', width: 450, height: 600, },
-    { filename: 'Portrait_7.jpg', width: 450, height: 600, },
-    { filename: 'Portrait_8.jpg', width: 450, height: 600, },
+    { fileName: 'Landscape_1.jpg', width: 600, height: 450, },
+    { fileName: 'Landscape_2.jpg', width: 600, height: 450, },
+    { fileName: 'Landscape_3.jpg', width: 600, height: 450, },
+    { fileName: 'Landscape_4.jpg', width: 600, height: 450, },
+    { fileName: 'Landscape_5.jpg', width: 600, height: 450, },
+    { fileName: 'Landscape_6.jpg', width: 600, height: 450, },
+    { fileName: 'Landscape_7.jpg', width: 600, height: 450, },
+    { fileName: 'Landscape_8.jpg', width: 600, height: 450, },
+    { fileName: 'Portrait_1.jpg', width: 450, height: 600, },
+    { fileName: 'Portrait_2.jpg', width: 450, height: 600, },
+    { fileName: 'Portrait_3.jpg', width: 450, height: 600, },
+    { fileName: 'Portrait_4.jpg', width: 450, height: 600, },
+    { fileName: 'Portrait_5.jpg', width: 450, height: 600, },
+    { fileName: 'Portrait_6.jpg', width: 450, height: 600, },
+    { fileName: 'Portrait_7.jpg', width: 450, height: 600, },
+    { fileName: 'Portrait_8.jpg', width: 450, height: 600, },
 ];
 
 exports.defineAutoTests = function () {
@@ -58,10 +58,10 @@ exports.defineAutoTests = function () {
 
         expectedImages.forEach(function(expectedImage) {
 
-            describe('test-images/' + expectedImage.filename, function() {
+            describe('test-images/' + expectedImage.fileName, function() {
 
                 beforeEach(function() {
-                    this.libraryItem = library.find(function(libraryItem) { return libraryItem.filename === expectedImage.filename });
+                    this.libraryItem = library.find(function(libraryItem) { return libraryItem.fileName === expectedImage.fileName });
                 });
 
                 it('should exist', function() {
@@ -73,9 +73,14 @@ exports.defineAutoTests = function () {
                     expect(this.libraryItem.id.length).not.toEqual(0);
                 });
 
-                it('should have not-empty nativeURL', function () {
-                    expect(this.libraryItem.nativeURL).toEqual(jasmine.any(String));
-                    expect(this.libraryItem.nativeURL.length).not.toEqual(0);
+                it('should have not-empty photoURL', function () {
+                    expect(this.libraryItem.photoURL).toEqual(jasmine.any(String));
+                    expect(this.libraryItem.photoURL.length).not.toEqual(0);
+                });
+
+                it('should have not-empty thumbnailURL', function () {
+                    expect(this.libraryItem.thumbnailURL).toEqual(jasmine.any(String));
+                    expect(this.libraryItem.thumbnailURL.length).not.toEqual(0);
                 });
 
                 it('should have right width', function () {
@@ -86,13 +91,23 @@ exports.defineAutoTests = function () {
                     expect(this.libraryItem.height).toBe(expectedImage.height);
                 });
 
+                it('should have creationDate', function () {
+                    expect(this.libraryItem.creationDate).toEqual(jasmine.any(Date));
+                    expect(this.libraryItem.creationDate.year).toBeGreaterThan(2015);
+                });
+
+                it('should have "image/jpeg" mimeType', function () {
+                    expect(this.libraryItem.mimeType).toBe('image/jpeg');
+                });
+
                 it('should have size greater than 0', function () {
                     expect(this.libraryItem.size).toEqual(jasmine.any(Number));
                     expect(this.libraryItem.size).toBeGreaterThan(0);
                 });
 
-                it('should have "image/jpeg" mimetype', function () {
-                    expect(this.libraryItem.mimetype).toBe('image/jpeg');
+                it('should have not-empty nativeURL', function () {
+                    expect(this.libraryItem.nativeURL).toEqual(jasmine.any(String));
+                    expect(this.libraryItem.nativeURL.length).not.toEqual(0);
                 });
 
             });
@@ -182,7 +197,7 @@ exports.defineManualTests = function (contentEl, createActionButton) {
       function (library) {
         var found = 0;
         library.forEach(function(libraryItem) {
-          if (expectedImages.some(function(expectedImage) { return expectedImage.filename === libraryItem.filename; })) {
+          if (expectedImages.some(function(expectedImage) { return expectedImage.fileName === libraryItem.fileName; })) {
             found += 1;
             logMessage('<img src="' + libraryItem.photoURL + '" width="256">');
           }
@@ -203,7 +218,7 @@ exports.defineManualTests = function (contentEl, createActionButton) {
       function (library) {
         var found = 0;
         library.forEach(function(libraryItem) {
-          if (expectedImages.some(function(expectedImage) { return expectedImage.filename === libraryItem.filename; })) {
+          if (expectedImages.some(function(expectedImage) { return expectedImage.fileName === libraryItem.fileName; })) {
             found += 1;
             logMessage('<img src="' + libraryItem.thumbnailURL + '" width="256">');
           }

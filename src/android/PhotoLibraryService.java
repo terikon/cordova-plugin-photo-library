@@ -294,12 +294,12 @@ public class PhotoLibraryService {
     // https://developer.android.com/reference/android/provider/MediaStore.MediaColumns.html
     JSONObject columns = new JSONObject() {{
       put("int.id", MediaStore.Images.Media._ID);
-      put("filename", MediaStore.Images.ImageColumns.DISPLAY_NAME);
+      put("fileName", MediaStore.Images.ImageColumns.DISPLAY_NAME);
       put("nativeURL", MediaStore.MediaColumns.DATA);
       put("int.width", MediaStore.Images.ImageColumns.WIDTH);
       put("int.height", MediaStore.Images.ImageColumns.HEIGHT);
       put("date.creationDate", MediaStore.Images.ImageColumns.DATE_TAKEN);
-      put("mimetype", MediaStore.MediaColumns.MIME_TYPE);
+      put("mimeType", MediaStore.MediaColumns.MIME_TYPE);
       put("int.size", MediaStore.MediaColumns.SIZE);
     }};
 

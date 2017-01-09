@@ -187,7 +187,7 @@ function files2Library(files) {
 
           let libraryItem = {
             id: `${counter}#${file.name}`,
-            filename: file.name,
+            fileName: file.name,
             nativeURL: dataURL,
             width: fileWithData.width,
             height: fileWithData.height,

@@ -18,25 +18,25 @@ import AssetsLibrary // TODO: needed for deprecated functionality
 //}
 
 extension PHAsset {
-    
+
     // Returns original file name, useful for photos synced with iTunes
     var originalFilename: String? {
         var result: String?
-        
+
         if #available(iOS 9.0, *) {
             let resources = PHAssetResource.assetResources(for: self)
             if let resource = resources.first {
                 result = resource.originalFilename
             }
         }
-        
+
         if result == nil {
             result = self.value(forKey: "filename") as? String
         }
-        
+
         return result
     }
-    
+
 }
 
 final class PhotoLibraryService {
@@ -54,7 +54,7 @@ final class PhotoLibraryService {
     static let PERMISSION_ERROR = "Permission Denial: This application is not allowed to access Photo data."
 
     let dataURLPattern = try! NSRegularExpression(pattern: "^data:.+?;base64,", options: NSRegularExpression.Options(rawValue: 0))
-    
+
     // TODO: provide it as option to getLibrary
     static let PARTIAL_RESULT_PERIOD_SEC = 0.5 // Waiting time for returning partial results in getLibrary
 
@@ -120,9 +120,9 @@ final class PhotoLibraryService {
         var library = [NSDictionary?](repeating: nil, count: fetchResult.count)
 
         var requestsLeft = fetchResult.count
-        
+
         var lastPartialResultTime = NSDate()
-        
+
         func sendPartialResult(_ library: [NSDictionary?]) {
             let libraryCopy = library.filter { $0 != nil }
             partialCallback(libraryCopy as! [NSDictionary])
@@ -138,11 +138,11 @@ final class PhotoLibraryService {
 
                 // TODO: support for cloud-stored images
                 // info?["PHImageResultIsInCloudKey"] as? Bool // if true, image should be downloaded with another request with isNetworkAccessAllowed==true option
-                
+
                 let libraryItem = NSMutableDictionary()
 
                 libraryItem["id"] = asset.localIdentifier
-                libraryItem["filename"] = asset.originalFilename
+                libraryItem["fileName"] = asset.originalFilename
                 libraryItem["nativeURL"] = imageURL?.absoluteString //TODO: in Swift 3, use JSONRepresentable
                 libraryItem["width"] = asset.pixelWidth
                 libraryItem["height"] = asset.pixelHeight
@@ -160,7 +160,7 @@ final class PhotoLibraryService {
                     let elapsedSec = abs(lastPartialResultTime.timeIntervalSinceNow)
                     if elapsedSec > PhotoLibraryService.PARTIAL_RESULT_PERIOD_SEC {
                         lastPartialResultTime = NSDate()
-                        
+
                         sendPartialResult(library)
                     }
                 }
