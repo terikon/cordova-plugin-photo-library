@@ -17,6 +17,28 @@ import AssetsLibrary // TODO: needed for deprecated functionality
 //    }
 //}
 
+extension PHAsset {
+    
+    // Returns original file name, useful for photos synced with iTunes
+    var originalFilename: String? {
+        var result: String?
+        
+        if #available(iOS 9.0, *) {
+            let resources = PHAssetResource.assetResources(for: self)
+            if let resource = resources.first {
+                result = resource.originalFilename
+            }
+        }
+        
+        if result == nil {
+            result = self.value(forKey: "filename") as? String
+        }
+        
+        return result
+    }
+    
+}
+
 final class PhotoLibraryService {
 
     let fetchOptions: PHFetchOptions!
@@ -114,10 +136,13 @@ final class PhotoLibraryService {
 
                 let imageURL = info?["PHImageFileURLKey"] as? URL
 
+                // TODO: support for cloud-stored images
+                // info?["PHImageResultIsInCloudKey"] as? Bool // if true, image should be downloaded with another request with isNetworkAccessAllowed==true option
+                
                 let libraryItem = NSMutableDictionary()
 
                 libraryItem["id"] = asset.localIdentifier
-                libraryItem["filename"] = imageURL?.pathComponents.last
+                libraryItem["filename"] = asset.originalFilename
                 libraryItem["nativeURL"] = imageURL?.absoluteString //TODO: in Swift 3, use JSONRepresentable
                 libraryItem["width"] = asset.pixelWidth
                 libraryItem["height"] = asset.pixelHeight
