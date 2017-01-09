@@ -33,7 +33,7 @@
         <source-file src="src/ios/PhotoLibrary.swift" />
         <source-file src="src/ios/PhotoLibraryProtocol.swift" />
         <source-file src="src/ios/PhotoLibraryService.swift" />
-        <dependency id="cordova-plugin-add-swift-support" version="1.4.0"/>
+        <dependency id="cordova-plugin-add-swift-support" version="1.6.0"/>
     </platform>
     <platform name="browser">
         <config-file target="config.xml" parent="/*">
