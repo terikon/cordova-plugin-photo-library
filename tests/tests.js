@@ -93,7 +93,7 @@ exports.defineAutoTests = function () {
 
                 it('should have creationDate', function () {
                     expect(this.libraryItem.creationDate).toEqual(jasmine.any(Date));
-                    expect(this.libraryItem.creationDate.year).toBeGreaterThan(2015);
+                    expect(this.libraryItem.creationDate.getFullYear()).toBeGreaterThan(2015);
                 });
 
                 it('should have "image/jpeg" mimeType', function () {

@@ -28,6 +28,8 @@ photoLibrary.getLibrary = function (success, error, options, partialCallback) {
       var library = result.library;
       var isPartial = result.isPartial;
 
+      parseDates(library);
+
       if (isPartial) {
         if (typeof partialCallback === 'function') {
           addUrlsToLibrary(library, partialCallback, options);
@@ -238,6 +240,16 @@ var getRequestAuthenticationOptionsWithDefaults = function (options) {
 
   return options;
 
+};
+
+var parseDates = function (library) {
+    var i;
+    for (i=0; i<library.length; i++) {
+        var libraryItem = library[i];
+        if (libraryItem.creationDate) {
+            libraryItem.creationDate = new Date(libraryItem.creationDate);
+        }
+    }
 };
 
 var addUrlsToLibrary = function (library, callback, options) {
