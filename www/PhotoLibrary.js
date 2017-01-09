@@ -115,14 +115,7 @@ photoLibrary.getThumbnail = function (photoIdOrLibraryItem, success, error, opti
 
   cordova.exec(
     function (data, mimeType) {
-      if (!mimeType && data.data && data.mimeType) {
-        // workaround for browser platform cannot return multipart result
-        mimeType = data.mimeType;
-        data = data.data;
-      }
-      var blob = new Blob([data], {
-        type: mimeType
-      });
+      var blob = dataAndMimeTypeToBlob(data, mimeType);
       success(blob);
     },
     error,
@@ -142,14 +135,7 @@ photoLibrary.getPhoto = function (photoIdOrLibraryItem, success, error, options)
 
   cordova.exec(
     function (data, mimeType) {
-      if (!mimeType && data.data && data.mimeType) {
-        // workaround for browser platform cannot return multipart result
-        mimeType = data.mimeType;
-        data = data.data;
-      }
-      var blob = new Blob([data], {
-        type: mimeType
-      });
+      var blob = dataAndMimeTypeToBlob(data, mimeType);
       success(blob);
     },
     error,
@@ -277,6 +263,23 @@ var addUrlsToLibrary = function (library, callback, options) {
     photoLibrary.getThumbnailURL(libraryItem, handleThumbnailURL.bind(null, libraryItem), handleUrlError, options);
   }
 
+};
+
+var dataAndMimeTypeToBlob = function (data, mimeType) {
+  if (!mimeType && data.data && data.mimeType) {
+    // workaround for browser platform cannot return multipart result
+    mimeType = data.mimeType;
+    data = data.data;
+  }
+  if (typeof data === 'string') {
+    // workaround for data arrives as base64 instead of arrayBuffer, with cordova-android 6.x
+    data = cordova.require('cordova/base64').toArrayBuffer(data);
+  }
+  var blob = new Blob([data], {
+    type: mimeType
+  });
+
+  return blob;
 };
 
 // from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.util.Base64;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
@@ -333,12 +334,22 @@ public class PhotoLibrary extends CordovaPlugin {
 
   }
 
-  private PluginResult createMultipartPluginResult(PluginResult.Status status, PhotoLibraryService.PictureData pictureData) {
+  private PluginResult createMultipartPluginResult(PluginResult.Status status, PhotoLibraryService.PictureData pictureData) throws JSONException {
 
-    return new PluginResult(status,
-      Arrays.asList(
-        new PluginResult(status, pictureData.getBytes()),
-        new PluginResult(status, pictureData.getMimeType())));
+    // As cordova-android 6.x uses EVAL_BRIDGE, and it breaks support for multipart result, we will encode result by ourselves.
+    // see encodeAsJsMessage method of https://github.com/apache/cordova-android/blob/master/framework/src/org/apache/cordova/NativeToJsMessageQueue.java
+
+    JSONObject resultJSON = new JSONObject();
+    resultJSON.put("data", Base64.encodeToString(pictureData.getBytes(), Base64.NO_WRAP));
+    resultJSON.put("mimeType", pictureData.getMimeType());
+
+    return new PluginResult(status, resultJSON);
+
+// This is old good code that worked with cordova-android 5.x
+//    return new PluginResult(status,
+//      Arrays.asList(
+//        new PluginResult(status, pictureData.getBytes()),
+//        new PluginResult(status, pictureData.getMimeType())));
 
   }
 
