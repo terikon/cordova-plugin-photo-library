@@ -1,21 +1,7 @@
 import Photos
 import Foundation
 import AssetsLibrary // TODO: needed for deprecated functionality
-
-//TODO: Swift 3
-//extension NSDate: JSONRepresentable {
-//    var JSONRepresentation: AnyObject {
-//        let formatter = NSDateFormatter()
-//        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
-//
-//        return formatter.stringFromDate(self)
-//    }
-//}
-//extension NSURL: JSONRepresentable {
-//    var JSONRepresentation: AnyObject {
-//        return self.absoluteString
-//    }
-//}
+import MobileCoreServices
 
 extension PHAsset {
 
@@ -44,7 +30,7 @@ final class PhotoLibraryService {
     let fetchOptions: PHFetchOptions!
     let thumbnailRequestOptions: PHImageRequestOptions!
     let imageRequestOptions: PHImageRequestOptions!
-    let dateFormatter: DateFormatter! //TODO: remove in Swift 3, use JSONRepresentable
+    let dateFormatter: DateFormatter!
     let cachingImageManager: PHCachingImageManager!
 
     let contentMode = PHImageContentMode.aspectFill // AspectFit: can be smaller, AspectFill - can be larger. TODO: resize to exact size
@@ -80,7 +66,7 @@ final class PhotoLibraryService {
         imageRequestOptions.isNetworkAccessAllowed = false
 
         dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 
         cachingImageManager = PHCachingImageManager()
     }
@@ -143,10 +129,11 @@ final class PhotoLibraryService {
 
                 libraryItem["id"] = asset.localIdentifier
                 libraryItem["fileName"] = asset.originalFilename
-                libraryItem["nativeURL"] = imageURL?.absoluteString //TODO: in Swift 3, use JSONRepresentable
+                libraryItem["nativeURL"] = imageURL?.absoluteString
                 libraryItem["width"] = asset.pixelWidth
                 libraryItem["height"] = asset.pixelHeight
-                libraryItem["creationDate"] = self.dateFormatter.string(from: asset.creationDate!) //TODO: in Swift 3, use JSONRepresentable
+                libraryItem["creationDate"] = self.dateFormatter.string(from: asset.creationDate!)
+                libraryItem["mimeType"] = UTTypeCopyPreferredTagWithClass(dataUTI as! CFString, kUTTagClassMIMEType)?.takeRetainedValue()
                 // TODO: asset.faceRegions, asset.locationData
 
                 library[index] = libraryItem
