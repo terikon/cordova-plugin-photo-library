@@ -17,6 +17,8 @@ For example, you can use [PhotoSwipe](https://github.com/dimsemenov/photoswipe) 
 **Work in progress**
 
 Contributions are welcome.
+Please add only features that can be supported on both Android and iOS.
+Please write tests for your contribution.
 
 # Install
 
@@ -240,7 +242,8 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 
 # Tests
 
-The library includes tests in [tests](https://github.com/terikon/cordova-plugin-photo-library/tree/master/tests) folder.
+The library includes tests in [tests](https://github.com/terikon/cordova-plugin-photo-library/tree/master/tests) folder. All tests are in
+[tests.js](https://github.com/terikon/cordova-plugin-photo-library/blob/master/tests/tests.js) file.
 To run tests, use [special cordova-plugin-photo-library-tester](https://github.com/terikon/cordova-plugin-photo-library-tester).
 It's always useful to run these tests before submitting changes, for each platform (android, ios, browser).
 
@@ -254,7 +257,7 @@ Android and browser platform implementations needed.
 - Improve documentation.
 - iOS: PHImageContentMode.AspectFill returns images that larger than requested. If it really so, perform manual resizing.
 - Provide cancellation mechanism for long-running operations, like getLibrary.
-- Add unit tests.
+- CI.
 
 # Optional enchancements
 
