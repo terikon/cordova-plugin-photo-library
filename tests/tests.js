@@ -3,23 +3,23 @@ cordova.require('cordova-plugin-photo-library-tests.es5shim');
 cordova.require('cordova-plugin-photo-library-tests.es6shim');
 cordova.require('cordova-plugin-photo-library-tests.es7shim');
 
-var testImages = [
-  'Landscape_1.jpg',
-  'Landscape_2.jpg',
-  'Landscape_3.jpg',
-  'Landscape_4.jpg',
-  'Landscape_5.jpg',
-  'Landscape_6.jpg',
-  'Landscape_7.jpg',
-  'Landscape_8.jpg',
-  'Portrait_1.jpg',
-  'Portrait_2.jpg',
-  'Portrait_3.jpg',
-  'Portrait_4.jpg',
-  'Portrait_5.jpg',
-  'Portrait_6.jpg',
-  'Portrait_7.jpg',
-  'Portrait_8.jpg',
+var expectedImages = [
+    { filename: 'Landscape_1.jpg', width: 600, height: 450, },
+    { filename: 'Landscape_2.jpg', width: 600, height: 450, },
+    { filename: 'Landscape_3.jpg', width: 600, height: 450, },
+    { filename: 'Landscape_4.jpg', width: 600, height: 450, },
+    { filename: 'Landscape_5.jpg', width: 600, height: 450, },
+    { filename: 'Landscape_6.jpg', width: 600, height: 450, },
+    { filename: 'Landscape_7.jpg', width: 600, height: 450, },
+    { filename: 'Landscape_8.jpg', width: 600, height: 450, },
+    { filename: 'Portrait_1.jpg', width: 450, height: 600, },
+    { filename: 'Portrait_2.jpg', width: 450, height: 600, },
+    { filename: 'Portrait_3.jpg', width: 450, height: 600, },
+    { filename: 'Portrait_4.jpg', width: 450, height: 600, },
+    { filename: 'Portrait_5.jpg', width: 450, height: 600, },
+    { filename: 'Portrait_6.jpg', width: 450, height: 600, },
+    { filename: 'Portrait_7.jpg', width: 450, height: 600, },
+    { filename: 'Portrait_8.jpg', width: 450, height: 600, },
 ];
 
 exports.defineAutoTests = function () {
@@ -54,6 +54,49 @@ exports.defineAutoTests = function () {
 
         it('should return multiple photos', function () {
           expect(library.length).toBeGreaterThan(0);
+        });
+
+        expectedImages.forEach(function(expectedImage) {
+
+            describe('test-images/' + expectedImage.filename, function() {
+
+                beforeEach(function() {
+                    this.libraryItem = library.find(function(libraryItem) { return libraryItem.filename === expectedImage.filename });
+                });
+
+                it('should exist', function() {
+                    expect(this.libraryItem).toBeDefined();
+                });
+
+                it('should have not-empty id', function () {
+                    expect(this.libraryItem.id).toEqual(jasmine.any(String));
+                    expect(this.libraryItem.id.length).not.toEqual(0);
+                });
+
+                it('should have not-empty nativeURL', function () {
+                    expect(this.libraryItem.nativeURL).toEqual(jasmine.any(String));
+                    expect(this.libraryItem.nativeURL.length).not.toEqual(0);
+                });
+
+                it('should have right width', function () {
+                    expect(this.libraryItem.width).toBe(expectedImage.width);
+                });
+
+                it('should have right height', function () {
+                    expect(this.libraryItem.height).toBe(expectedImage.height);
+                });
+
+                it('should have size greater than 0', function () {
+                    expect(this.libraryItem.size).toEqual(jasmine.any(Number));
+                    expect(this.libraryItem.size).toBeGreaterThan(0);
+                });
+
+                it('should have "image/jpeg" mimetype', function () {
+                    expect(this.libraryItem.mimetype).toBe('image/jpeg');
+                });
+
+            });
+
         });
 
       });
@@ -139,12 +182,12 @@ exports.defineManualTests = function (contentEl, createActionButton) {
       function (library) {
         var found = 0;
         library.forEach(function(libraryItem) {
-          if (testImages.includes(libraryItem.filename)) {
+          if (expectedImages.some(function(expectedImage) { return expectedImage.filename === libraryItem.filename; })) {
             found += 1;
             logMessage('<img src="' + libraryItem.photoURL + '" width="256">');
           }
         });
-        if (found < testImages.length) {
+        if (found < expectedImages.length) {
           logMessage('Some test-images are missing. Please put photos from test-images folder to device library.')
         }
       },
@@ -160,12 +203,12 @@ exports.defineManualTests = function (contentEl, createActionButton) {
       function (library) {
         var found = 0;
         library.forEach(function(libraryItem) {
-          if (testImages.includes(libraryItem.filename)) {
+          if (expectedImages.some(function(expectedImage) { return expectedImage.filename === libraryItem.filename; })) {
             found += 1;
             logMessage('<img src="' + libraryItem.thumbnailURL + '" width="256">');
           }
         });
-        if (found < testImages.length) {
+        if (found < expectedImages.length) {
           logMessage('Some test-images are missing. Please put photos from test-images folder to device library.')
         }
       },
