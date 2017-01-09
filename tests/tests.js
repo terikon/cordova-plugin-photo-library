@@ -113,6 +113,8 @@ exports.defineAutoTests = function () {
 
         });
 
+        // TODO: test partialCallback
+
       });
 
       describe('cordova.plugins.photoLibrary.getThumbnailURL', function () {
