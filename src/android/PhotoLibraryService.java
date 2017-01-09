@@ -45,7 +45,7 @@ public class PhotoLibraryService {
   //private LruCache<String, byte[]> imageCache = new LruCache<String, byte[]>(cacheSize);
 
   protected PhotoLibraryService() {
-    dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
+    dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
   }
 
   public static final String PERMISSION_ERROR = "Permission Denial: This application is not allowed to access Photo data.";
