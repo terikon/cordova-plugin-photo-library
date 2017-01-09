@@ -48,8 +48,7 @@ cordova.plugins.photoLibrary.getLibrary(
       console.log(libraryItem.width);
       console.log(libraryItem.height);
       console.log(libraryItem.creationDate);
-      console.log(libraryItem.mimeType);    // Only for Android platform
-      console.log(libraryItem.size);        // Only for Android platform
+      console.log(libraryItem.mimeType);    // 'image/jpeg' or 'image/png'
       console.log(libraryItem.nativeURL);   // Do not use, as it is not accessible on all platforms
     });
 

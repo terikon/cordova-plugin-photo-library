@@ -100,11 +100,6 @@ exports.defineAutoTests = function () {
                     expect(this.libraryItem.mimeType).toBe('image/jpeg');
                 });
 
-                it('should have size greater than 0', function () {
-                    expect(this.libraryItem.size).toEqual(jasmine.any(Number));
-                    expect(this.libraryItem.size).toBeGreaterThan(0);
-                });
-
                 it('should have not-empty nativeURL', function () {
                     expect(this.libraryItem.nativeURL).toEqual(jasmine.any(String));
                     expect(this.libraryItem.nativeURL.length).not.toEqual(0);

@@ -193,7 +193,6 @@ function files2Library(files) {
             height: fileWithData.height,
             creationDate: file.lastModifiedDate.toISOString(), // file contains only lastModifiedDate
             mimeType: file.type,
-            size: file.size,
           };
           counter += 1;
           return libraryItem;
