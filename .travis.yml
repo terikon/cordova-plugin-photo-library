@@ -12,9 +12,6 @@ os:
 
 sudo: false
 
-node_js:
-  - "node" # latest stable Node.js release
-
 android:
   components:
     # Uncomment the lines below if you want to
@@ -42,6 +39,8 @@ android:
     # To get a list of available exact component names and descriptions run the command android list sdk --no-ui --all --extended
 
 before_install:
+  - npm install -g n
+  - n stable
   - node --version
   # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then xcodebuild -version; fi
 
