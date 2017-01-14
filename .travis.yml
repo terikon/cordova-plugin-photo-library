@@ -53,4 +53,4 @@ before_script:
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm test-android; fi
-  # - if [[ "$TRAVIS_OS_NAME" == "ios" ]]; then npm test-ios; fi
+  - if [[ "$TRAVIS_OS_NAME" == "ios" ]]; then npm test-ios; fi
