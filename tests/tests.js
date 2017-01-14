@@ -24,6 +24,10 @@ var expectedImages = [
 
 exports.defineAutoTests = function () {
 
+  // Configure jasmine
+  var jasmineEnv = jasmine.getEnv();
+  jasmineEnv.catchExceptions(true); // without this, syntax error will hang a test, instead of reporting it failed
+
   describe('cordova.plugins', function () {
 
     it('photoLibrary should exist', function () {
