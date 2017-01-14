@@ -18,8 +18,8 @@ sudo: false
 android:
   components:
     # Uncomment the lines below if you want to use the latest revision of Android SDK Tools
-    # - platform-tools
-    # - tools
+    - platform-tools
+    - tools
 
     # The BuildTools version used by your project
     - build-tools-24.0.3
@@ -51,6 +51,7 @@ before_install:
 install:
   - npm install
   - npm install -g cordova
+  - cordova --version
 
 before_script:
   - echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
@@ -59,7 +60,7 @@ before_script:
   - adb shell input keyevent 82 & #KEYCODE_MENU
   - adb shell mount -o rw,remount rootfs /
   - npm run copy-test-images:android:emulator
-  # - adb shell pm grant com.name.app android.permission.READ_PROFILE
+  # - adb shell pm grant io.cordova.hellocordova android.permission.READ_EXTERNAL_STORAGE # io.cordova.hellocordova is paramedic default app name
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run test:android; fi
