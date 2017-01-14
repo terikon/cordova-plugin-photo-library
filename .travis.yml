@@ -39,6 +39,7 @@ android:
     # To get a list of available exact component names and descriptions run the command android list sdk --no-ui --all --extended
 
 before_install:
+  - rvm use system
   - npm install -g n
   - n stable
   - node --version
