@@ -25,6 +25,9 @@ android:
     # The SDK version used to compile your project
     - android-24
 
+    # Needed by emulator of 22
+    - android-22
+
     # Additional components
     # - extra-google-google_play_services
     # - extra-google-m2repository
@@ -41,7 +44,6 @@ android:
 before_install:
   # - rm -rf ~/.nvm && curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | bash && nvm install --lts && nvm use --lts
   - nvm install 6
-  - nvm use 6
   - node --version
   # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then xcodebuild -version; fi
 
