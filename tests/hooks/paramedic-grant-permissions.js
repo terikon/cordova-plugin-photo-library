@@ -1,4 +1,7 @@
+// Will grant permission for READ_EXTERNAL_STORAGE, if running inside TRAVIS.
 module.exports = function (ctx) {
+
+  console.log('Executing paramedic-grant-permissions hook...');
 
   // make sure android platform is part of build
   if (ctx.opts.platforms.indexOf('android') < 0) {
@@ -19,10 +22,13 @@ module.exports = function (ctx) {
     exec = ctx.requireCordovaModule('child_process').exec,
     deferral = ctx.requireCordovaModule('q').defer();
 
-  var command = 'adb -e shell pm grant io.cordova.hellocordova android.permission.READ_EXTERNAL_STORAGE';
+  var command = 'pm grant io.cordova.hellocordova android.permission.READ_EXTERNAL_STORAGE';
+  // See https://www.maketecheasier.com/run-bash-commands-background-linux/, http://stackoverflow.com/questions/3099092/why-cant-i-use-unix-nohup-with-bash-for-loop
+  // This command will run the loop in background, until the app installed, so it will set the permission.
+  var loop_command = 'adb -e shell "nohup sh -c \'until ' + command + '; do sleep 0.01; done\' & >/dev/null &"';
 
-  console.log('Running ' + command);
-  exec(command, function (error, stdout, stderr) {
+  console.log('Running ' + loop_command);
+  exec(loop_command, function (error, stdout, stderr) {
     if (error) {
       deferral.reject(error);
     } else {
