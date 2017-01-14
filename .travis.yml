@@ -10,6 +10,10 @@ os:
   - linux
   # - osx
 
+env:
+  global:
+    - EMULATOR_API_LEVEL=22
+
 jdk:
   - oraclejdk8
 
@@ -27,8 +31,8 @@ android:
     # The SDK version used to compile your project
     - android-24
 
-    # Needed by emulator of 22
-    - android-22
+    # Needed by emulator
+    - android-$EMULATOR_API_LEVEL
 
     # Additional components
     # - extra-google-google_play_services
@@ -37,13 +41,11 @@ android:
     # - addon-google_apis-google-19
 
     # Specify at least one system image, if you need to run emulator(s) during your tests
-    - sys-img-armeabi-v7a-android-22
-    # - sys-img-armeabi-v7a-android-17
+    - sys-img-armeabi-v7a-android-$EMULATOR_API_LEVEL
 
     # To get a list of available exact component names and descriptions run the command android list sdk --no-ui --all --extended
 
 before_install:
-  # - rm -rf ~/.nvm && curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | bash && nvm install --lts && nvm use --lts
   - nvm install 6
   - node --version
   # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then xcodebuild -version; fi
@@ -54,8 +56,8 @@ install:
   - cordova --version
 
 before_script:
-  - echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
-  - emulator -avd test -no-audio -no-window &
+  - echo no | android create avd --force -n test -t android-$EMULATOR_API_LEVEL --abi armeabi-v7a
+  - emulator -avd test -no-skin -no-audio -no-window &
   - android-wait-for-emulator
   - adb shell input keyevent 82 & #KEYCODE_MENU
   - adb shell mount -o rw,remount rootfs /
