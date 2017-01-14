@@ -10,6 +10,9 @@ os:
   - linux
   # - osx
 
+jdk:
+  - oraclejdk8
+
 sudo: false
 
 android:
