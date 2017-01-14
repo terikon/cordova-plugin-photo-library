@@ -1,0 +1,56 @@
+language:
+  - android
+  # - objective-c
+
+# osx_image: xcode8.2
+
+os:
+  # The value of the $TRAVIS_OS_NAME variable is set to linux or osx according to the operating system a particular build is running on
+  # Usage: - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  - linux
+  # - osx
+
+sudo: false
+
+android:
+  components:
+    # Uncomment the lines below if you want to
+    # use the latest revision of Android SDK Tools
+    # - platform-tools
+    # - tools
+
+    # The BuildTools version used by your project
+    - build-tools-24.0.3
+
+    # The SDK version used to compile your project
+    - android-24
+
+    # Additional components
+    # - extra-google-google_play_services
+    # - extra-google-m2repository
+    # - extra-android-m2repository
+    # - addon-google_apis-google-19
+
+    # Specify at least one system image,
+    # if you need to run emulator(s) during your tests
+    - sys-img-armeabi-v7a-android-22
+    # - sys-img-armeabi-v7a-android-17
+
+    # To get a list of available exact component names and descriptions run the command android list sdk --no-ui --all --extended
+
+before_install:
+  - node --version
+  # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then xcodebuild -version; fi
+
+install:
+  - npm install
+
+before_script:
+  - echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
+  - emulator -avd test -no-audio -no-window &
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
+
+script:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm test-android; fi
+  # - if [[ "$TRAVIS_OS_NAME" == "ios" ]]; then npm test-ios; fi
