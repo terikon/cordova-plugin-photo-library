@@ -55,7 +55,8 @@ before_script:
   - emulator -avd test -no-audio -no-window &
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
+  - npm run copy-test-images:android:emulator
 
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm test-android; fi
-  - if [[ "$TRAVIS_OS_NAME" == "ios" ]]; then npm test-ios; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run test:android; fi
+  - if [[ "$TRAVIS_OS_NAME" == "ios" ]]; then npm run test:ios; fi
