@@ -12,6 +12,9 @@ os:
 
 sudo: false
 
+node_js:
+  - "node" # latest stable Node.js release
+
 android:
   components:
     # Uncomment the lines below if you want to
