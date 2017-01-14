@@ -39,6 +39,7 @@ android:
     # To get a list of available exact component names and descriptions run the command android list sdk --no-ui --all --extended
 
 before_install:
+  - curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | bash
   - nvm install --lts
   - nvm use --lts
   - node --version
