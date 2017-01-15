@@ -8,7 +8,4 @@
     <js-module src="es6-shim.min.js" name="es6shim" />
     <js-module src="es7-shim.min.js" name="es7shim" />
     <js-module src="tests.js" name="tests" />
-    <platform name="android">
-        <hook type="before_run" src="hooks/paramedic-grant-permissions.js" />
-    </platform>
 </plugin>
