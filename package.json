@@ -30,7 +30,7 @@
     "es6-shim": "0.35.2",
     "es7-shim": "6.0.0",
     "cordova-paramedic": "https://github.com/apache/cordova-paramedic.git",
-    "adb-ci": "^0.0.1"
+    "adb-ci": "https://github.com/terikon/adb-ci.git"
   },
   "dependencies": {
   }
