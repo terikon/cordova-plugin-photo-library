@@ -60,9 +60,9 @@ before_script:
   - emulator -avd test -no-audio -no-window -memory 1024 &
   - echo $PATH
   - which adb
+  - pwd
   - android-wait-for-emulator
-  #KEYCODE_MENU
-  - adb shell input keyevent 82 &
+  - adb shell input keyevent 82 & #KEYCODE_MENU
   - adb shell mount -o rw,remount rootfs /
   - npm run copy-test-images:android:emulator
 
