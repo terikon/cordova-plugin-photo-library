@@ -65,6 +65,8 @@ before_script:
   - adb shell input keyevent 82 & #KEYCODE_MENU
   - adb shell mount -o rw,remount rootfs /
   - npm run copy-test-images:android:emulator
+  - hash
+  - hash -r
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run test:android; fi
