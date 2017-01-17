@@ -56,6 +56,7 @@ install:
   - cordova --version
 
 before_script:
+  - cat node_modules/.bin/adb-ci.txt
   - echo no | android create avd --force -n test -t android-$EMULATOR_API_LEVEL --abi armeabi-v7a
   - emulator -avd test -no-audio -no-window -memory 1024 &
   - echo $PATH
@@ -65,9 +66,13 @@ before_script:
   - adb shell input keyevent 82 & #KEYCODE_MENU
   - adb shell mount -o rw,remount rootfs /
   - npm run copy-test-images:android:emulator
-  - hash
-  - hash -r
+  # - hash
+  # - hash -r
+  - cat node_modules/.bin/adb-ci.txt
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run test:android; fi
   - if [[ "$TRAVIS_OS_NAME" == "ios" ]]; then npm run test:ios; fi
+
+after_failure:
+  - cat node_modules/.bin/adb-ci.txt
