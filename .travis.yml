@@ -14,8 +14,8 @@ env:
   global:
     - EMULATOR_API_LEVEL=24
 
-jdk:
-  - oraclejdk8
+# jdk:
+#   - oraclejdk8
 
 sudo: false
 
@@ -46,6 +46,7 @@ android:
     # To get a list of available exact component names and descriptions run the command android list sdk --no-ui --all --extended
 
 before_install:
+  # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - nvm install 6
   - node --version
   # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then xcodebuild -version; fi
