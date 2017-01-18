@@ -60,10 +60,10 @@ before_script:
   - pwd
   - echo $PATH
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then echo no | android create avd --force -n test -t android-$EMULATOR_API_LEVEL --abi armeabi-v7a; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then emulator -avd test -no-audio -no-window -memory 1024 &; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then emulator -avd test -no-audio -no-window -memory 1024 & fi
   #- which adb
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then android-wait-for-emulator; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell input keyevent 82 &; fi #KEYCODE_MENU
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell input keyevent 82 & fi #KEYCODE_MENU
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell mount -o rw,remount rootfs /; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run copy-test-images:android:emulator; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
