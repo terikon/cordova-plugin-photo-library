@@ -12,7 +12,7 @@ os:
 
 env:
   global:
-    - EMULATOR_API_LEVEL=22
+    - EMULATOR_API_LEVEL=23
 
 jdk:
   - oraclejdk8
