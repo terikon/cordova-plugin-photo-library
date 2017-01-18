@@ -1,6 +1,6 @@
 language:
-  - android
-  #- objective-c
+  #- android
+  - objective-c
 
 os:
   # The value of the $TRAVIS_OS_NAME variable is set to linux or osx according to the operating system a particular build is running on
@@ -56,24 +56,20 @@ install:
   - cordova --version
 
 before_script:
-  - ls node_modules/adb-ci
-  - echo no | android create avd --force -n test -t android-$EMULATOR_API_LEVEL --abi armeabi-v7a
-  - emulator -avd test -no-audio -no-window -memory 1024 &
-  - echo $PATH
-  - which adb
   - pwd
-  - android-wait-for-emulator
-  - adb shell input keyevent 82 & #KEYCODE_MENU
-  - adb shell mount -o rw,remount rootfs /
-  - npm run copy-test-images:android:emulator
-  # - hash
-  # - hash -r
-  - ls node_modules/adb-ci
-  - cat ./node_modules/adb-ci/adb-ci.txt
+  - echo $PATH
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then echo no | android create avd --force -n test -t android-$EMULATOR_API_LEVEL --abi armeabi-v7a; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then emulator -avd test -no-audio -no-window -memory 1024 &; fi
+  #- which adb
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then android-wait-for-emulator; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell input keyevent 82 &; fi #KEYCODE_MENU
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell mount -o rw,remount rootfs /; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run copy-test-images:android:emulator; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run test:android; fi
   - if [[ "$TRAVIS_OS_NAME" == "ios" ]]; then npm run test:ios; fi
 
 after_failure:
-  - cat ./node_modules/adb-ci/adb-ci.txt
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
