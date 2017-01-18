@@ -1,14 +1,14 @@
 language:
   - android
-  # - objective-c
-
-# osx_image: xcode8.2
+  #- objective-c
 
 os:
   # The value of the $TRAVIS_OS_NAME variable is set to linux or osx according to the operating system a particular build is running on
   # Usage: - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-  - linux
-  # - osx
+  # - linux
+  - osx
+
+osx_image: xcode8.2
 
 env:
   global:
@@ -17,7 +17,7 @@ env:
 jdk:
   - oraclejdk8
 
-sudo: true
+sudo: false
 
 android:
   components:
