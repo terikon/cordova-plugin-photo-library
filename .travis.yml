@@ -68,7 +68,8 @@ before_script:
   - npm run copy-test-images:android:emulator
   # - hash
   # - hash -r
-  - cat node_modules/.bin/adb-ci.txt
+  - ls ./node_modules/.bin
+  - cat ./node_modules/.bin/adb-ci.txt
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run test:android; fi
