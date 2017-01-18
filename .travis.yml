@@ -17,7 +17,7 @@ env:
 jdk:
   - oraclejdk8
 
-sudo: false
+sudo: true
 
 android:
   components:
