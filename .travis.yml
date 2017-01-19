@@ -1,28 +1,28 @@
 language:
-  #- android
-  - objective-c
+  - android
+  # - objective-c
 
 os:
   # The value of the $TRAVIS_OS_NAME variable is set to linux or osx according to the operating system a particular build is running on
-  # Usage: - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-  # - linux
-  - osx
+  # Usage: - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then command; fi
+  - linux
+  # - osx
 
 osx_image: xcode8.1 # 8.2 causes multiple simulators error
-
 
 env:
   global:
     - EMULATOR_API_LEVEL=24
 
-# jdk:
-#   - oraclejdk8
+# jdk is for Android only, commend on osx to prevent error
+jdk:
+  - oraclejdk8
 
 sudo: false
 
 android:
   components:
-    # Uncomment the lines below if you want to use the latest revision of Android SDK Tools
+    # We want to use the latest revision of Android SDK Tools
     - platform-tools
     - tools
 
@@ -60,9 +60,9 @@ install:
 before_script:
   - pwd
   - echo $PATH
+  #- which adb
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then echo no | android create avd --force -n test -t android-$EMULATOR_API_LEVEL --abi armeabi-v7a; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then emulator -avd test -no-audio -no-window -memory 1024 & fi
-  #- which adb
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then android-wait-for-emulator; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell input keyevent 82 & fi #KEYCODE_MENU
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell mount -o rw,remount rootfs /; fi
@@ -75,3 +75,4 @@ script:
 
 after_failure:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb logcat; fi
