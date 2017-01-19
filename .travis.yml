@@ -14,6 +14,7 @@ env:
   global:
     - EMULATOR_API_LEVEL=24
     - SIMULATOR_TYPE=iPhone-5
+    - IOS_VERSION=10.1 # for xcode8.1
 
 # jdk is for Android only, commend on osx to prevent error
 # jdk:
@@ -75,7 +76,7 @@ before_script:
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run test:android; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run test:ios; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run test:ios -- --target '$SIMULATOR_TYPE,\\ $IOS_VERSION'; fi
 
 after_failure:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
