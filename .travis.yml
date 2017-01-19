@@ -47,15 +47,15 @@ android:
     # To get a list of available exact component names and descriptions run the command android list sdk --no-ui --all --extended
 
 before_install:
-  # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - nvm install 6
   - node --version
-  # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then xcodebuild -version; fi
 
 install:
   - npm install
   - npm install -g cordova
   - cordova --version
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm install -g ios-deploy; fi
 
 before_script:
   - pwd
