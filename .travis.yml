@@ -1,22 +1,23 @@
 language:
-  - android
-  # - objective-c
+  #- android
+  - objective-c
 
 os:
   # The value of the $TRAVIS_OS_NAME variable is set to linux or osx according to the operating system a particular build is running on
   # Usage: - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then command; fi
-  - linux
-  # - osx
+  #- linux
+  - osx
 
 osx_image: xcode8.1 # 8.2 causes multiple simulators error
 
 env:
   global:
     - EMULATOR_API_LEVEL=24
+    - SIMULATOR_TYPE=iPhone-5
 
 # jdk is for Android only, commend on osx to prevent error
-jdk:
-  - oraclejdk8
+# jdk:
+#   - oraclejdk8
 
 sudo: false
 
@@ -56,6 +57,7 @@ install:
   - npm install -g cordova
   - cordova --version
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm install -g ios-deploy; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm install -g ios-sim; fi
 
 before_script:
   - pwd
@@ -68,6 +70,7 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell mount -o rw,remount rootfs /; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run copy-test-images:android:emulator; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ios-sim start --devicetypeid com.apple.CoreSimulator.SimDeviceType.$SIMULATOR_TYPE; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run copy-test-images:ios:simulator; fi
 
 script:
