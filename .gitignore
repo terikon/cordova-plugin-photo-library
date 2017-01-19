@@ -1,2 +1,4 @@
 node_modules/
 npm-debug.log
+tcc.db-shm
+tcc.db-wal
