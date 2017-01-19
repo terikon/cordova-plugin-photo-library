@@ -246,6 +246,15 @@ TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/te
 
 The library includes tests in [tests](https://github.com/terikon/cordova-plugin-photo-library/tree/master/tests) folder. All tests are in
 [tests.js](https://github.com/terikon/cordova-plugin-photo-library/blob/master/tests/tests.js) file.
+
+# Running tests
+
+## Travis
+
+tcc.db file is located at $HOME/Library/Developer/CoreSimulator/Devices/$DEVICEID/data/Library/TCC/TCC.db
+
+## Helper app
+
 To run tests, use [special cordova-plugin-photo-library-tester](https://github.com/terikon/cordova-plugin-photo-library-tester).
 It's always useful to run these tests before submitting changes, for each platform (android, ios, browser).
 
