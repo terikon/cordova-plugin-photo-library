@@ -8,13 +8,13 @@ os:
   #- linux
   - osx
 
-osx_image: xcode8.1 # 8.2 causes multiple simulators error
+osx_image: xcode8.0 # 8.2 causes multiple simulators error
 
 env:
   global:
     - EMULATOR_API_LEVEL=24
     - SIMULATOR_TYPE=iPhone-5
-    - IOS_VERSION=10.1 # for xcode8.1
+    - IOS_VERSION=10.0 # 10.1 for xcode8.1
 
 # jdk is for Android only, commend on osx to prevent error
 # jdk:
@@ -73,7 +73,7 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ios-sim start --devicetypeid com.apple.CoreSimulator.SimDeviceType.$SIMULATOR_TYPE; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run copy-test-images:ios:simulator; fi
-  #- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bash tests/ios/grant-simulator-permissions.sh; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bash tests/ios/grant-simulator-permissions.sh; fi
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run test:android; fi
