@@ -53,6 +53,7 @@ before_install:
   - nvm install 6
   - node --version
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then xcrun simctl delete 7B6F8C6B-B67A-4F64-BB70-AE1FF077ACC2; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then xcrun simctl delete 9464677E-9962-4C3B-91E8-C969B6337A68; fi
 
 install:
   - npm install
