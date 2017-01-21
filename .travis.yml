@@ -49,8 +49,8 @@ android:
     # To get a list of available exact component names and descriptions run the command android list sdk --no-ui --all --extended
 
 # osx only. On android, will be ignored. Use nvm instead (see below).
-#node_js:
-#  - "6"
+node_js:
+  - "6"
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
@@ -75,7 +75,8 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell mount -o rw,remount rootfs /; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run copy-test-images:android:emulator; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ios-sim start --devicetypeid "com.apple.CoreSimulator.SimDeviceType.iPhone-5, 10.1"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ios-sim start; fi
+  # --devicetypeid "com.apple.CoreSimulator.SimDeviceType.$SIMULATOR_TYPE, $IOS_VERSION"
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run copy-test-images:ios:simulator; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bash tests/ios/grant-simulator-permissions.sh; fi
 
@@ -90,10 +91,10 @@ after_failure:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cat ~/Library/Logs/CoreSimulator/CoreSimulator.log; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cat ~/Library/Logs/CoreSimulator/$(bash tests/ios/get-booted-simulator.sh)/system.log; fi
 
-# before_cache:
-#   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-#   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
-# cache:
-#   directories:
-#     - $HOME/.gradle/caches/
-#     - $HOME/.gradle/wrapper/
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
