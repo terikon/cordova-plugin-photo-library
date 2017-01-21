@@ -15,14 +15,10 @@ env:
     - EMULATOR_API_LEVEL=24
     - SIMULATOR_TYPE=iPhone-5
     - IOS_VERSION=10.1 # 10.1 for xcode8.1
-    - PATH=$PATH:$TRAVIS_BUILD_DIR/node_modules/.bin
 
 # jdk is for Android only, commend on osx to prevent error
 # jdk:
 #   - oraclejdk8
-
-node_js:
-  - "6"
 
 sudo: false
 
@@ -54,7 +50,8 @@ android:
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then nvm install 6; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade xctool; fi
+  - nvm install 6
   - node --version
 
 install:
