@@ -75,13 +75,13 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell mount -o rw,remount rootfs /; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run copy-test-images:android:emulator; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ios-sim start --devicetypeid "com.apple.CoreSimulator.SimDeviceType.iPhone-6, 10.1"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ios-sim start --devicetypeid com.apple.CoreSimulator.SimDeviceType.iPhone-7-Plus; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run copy-test-images:ios:simulator; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bash tests/ios/grant-simulator-permissions.sh; fi
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run test:android; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run test:ios - --target 'iPhone-6,\\ 10.1'; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run test:ios -- --target iPhone-7-Plus; fi
 
 after_failure:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
