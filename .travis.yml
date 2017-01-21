@@ -58,7 +58,7 @@ install:
   - npm install -g cordova
   - cordova --version
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm install -g ios-deploy; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm install -g ios-sim; fi
+  #- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm install -g ios-sim; fi
 
 before_script:
   - pwd
@@ -85,10 +85,10 @@ after_failure:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cat ~/Library/Logs/CoreSimulator/CoreSimulator.log; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cat ~/Library/Logs/CoreSimulator/$(bash tests/ios/get-booted-simulator.sh)/system.log; fi
 
-before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
-cache:
-  directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
+# before_cache:
+#   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+#   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+# cache:
+#   directories:
+#     - $HOME/.gradle/caches/
+#     - $HOME/.gradle/wrapper/
