@@ -8,13 +8,13 @@ os:
   #- linux
   - osx
 
-osx_image: xcode8.1 # 8.2 causes multiple simulators error
+osx_image: xcode8.2 # 8.2 causes multiple simulators error
 
 env:
   global:
     - EMULATOR_API_LEVEL=24
     - SIMULATOR_TYPE=iPhone-5
-    - IOS_VERSION=10.1 # 10.1 for xcode8.1
+    - IOS_VERSION=10.2 # 10.1 for xcode8.1
 
 # jdk is for Android only, commend on osx to prevent error
 # jdk:

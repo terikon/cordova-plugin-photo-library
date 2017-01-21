@@ -8,7 +8,7 @@
     "test:ios": "cordova-paramedic --platform ios --plugin . --verbose",
     "test": "echo \"Run tests with https://github.com/terikon/cordova-plugin-photo-library-tester, or run test:android or test:ios.\" && exit 1",
     "copy-test-images:android:emulator": "adb -e push tests/test-images /mnt/sdcard/DCIM && adb -e shell am broadcast -a android.intent.action.MEDIA_MOUNTED -d file:///sdcard",
-    "copy-test-images:ios:simulator": "xcrun simctl addphoto booted ./tests/test-images `# use addmedia booted tests/test-images/* instead of addphoto with xcode 8.2`"
+    "copy-test-images:ios:simulator": "xcrun simctl addmedia booted tests/test-images/*"
   },
   "repository": {
     "type": "git",
