@@ -8,12 +8,12 @@ os:
   #- linux
   - osx
 
-osx_image: xcode8.2 # 8.2 causes multiple simulators error
+osx_image: xcode8.2
 
 env:
   global:
     - EMULATOR_API_LEVEL=24
-    - SIMULATOR_TYPE=iPhone-5
+    - SIMULATOR_TYPE=iPhone-7-Plus
     - IOS_VERSION=10.2 # 10.1 for xcode8.1
 
 # jdk is for Android only, commend on osx to prevent error
@@ -52,6 +52,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - nvm install 6
   - node --version
+  # Workaround for 8.2 causes multiple simulators error: https://github.com/travis-ci/travis-ci/issues/7031
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then xcrun simctl delete 7B6F8C6B-B67A-4F64-BB70-AE1FF077ACC2; fi # 7-plus
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then xcrun simctl delete 9464677E-9962-4C3B-91E8-C969B6337A68; fi # 7-plus
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then xcrun simctl delete 2AAA645C-1882-4F81-B866-6241B900C185; fi # 5s
@@ -74,13 +75,13 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell mount -o rw,remount rootfs /; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run copy-test-images:android:emulator; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ios-sim start --devicetypeid "com.apple.CoreSimulator.SimDeviceType.iPhone-7-Plus, 10.2"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ios-sim start --devicetypeid "com.apple.CoreSimulator.SimDeviceType.$SIMULATOR_TYPE, $IOS_VERSION"; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run copy-test-images:ios:simulator; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bash tests/ios/grant-simulator-permissions.sh; fi
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run test:android; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run test:ios -- --target "'iPhone-7-Plus,\\ 10.2'"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run test:ios -- --target "'$SIMULATOR_TYPE,\\ $IOS_VERSION'"; fi
 
 after_failure:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
