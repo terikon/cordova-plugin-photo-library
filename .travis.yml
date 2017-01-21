@@ -52,6 +52,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - nvm install 6
   - node --version
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then xcrun simctl delete 7B6F8C6B-B67A-4F64-BB70-AE1FF077ACC2; fi
 
 install:
   - npm install
