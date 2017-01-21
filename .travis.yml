@@ -48,6 +48,10 @@ android:
 
     # To get a list of available exact component names and descriptions run the command android list sdk --no-ui --all --extended
 
+# osx only. On android, will be ignored. Use nvm instead (see below).
+#node_js:
+#  - "6"
+
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - nvm install 6
@@ -77,7 +81,8 @@ before_script:
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run test:android; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run test:ios -- --target "'$SIMULATOR_TYPE,\\ $IOS_VERSION'"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run test:ios
+  #-- --target "'$SIMULATOR_TYPE,\\ $IOS_VERSION'"; fi
 
 after_failure:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
