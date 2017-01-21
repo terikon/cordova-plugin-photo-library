@@ -50,7 +50,6 @@ android:
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade xctool; fi
   - nvm install 6
   - node --version
 
@@ -83,6 +82,8 @@ script:
 after_failure:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb logcat; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cat ~/Library/Logs/CoreSimulator/CoreSimulator.log; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cat ~/Library/Logs/CoreSimulator/$(bash tests/ios/get-booted-simulator.sh)/system.log; fi
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
