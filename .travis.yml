@@ -14,7 +14,7 @@ env:
   global:
     - EMULATOR_API_LEVEL=24
     - SIMULATOR_TYPE=iPhone-5
-    - IOS_VERSION=10.0 # 10.1 for xcode8.1
+    - IOS_VERSION=9.3 # 10.1 for xcode8.1
 
 # jdk is for Android only, commend on osx to prevent error
 # jdk:
