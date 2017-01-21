@@ -8,17 +8,21 @@ os:
   #- linux
   - osx
 
-osx_image: xcode8.0 # 8.2 causes multiple simulators error
+osx_image: xcode8.1 # 8.2 causes multiple simulators error
 
 env:
   global:
     - EMULATOR_API_LEVEL=24
     - SIMULATOR_TYPE=iPhone-5
-    - IOS_VERSION=9.3 # 10.1 for xcode8.1
+    - IOS_VERSION=10.1 # 10.1 for xcode8.1
+    - PATH=$PATH:$TRAVIS_BUILD_DIR/node_modules/.bin
 
 # jdk is for Android only, commend on osx to prevent error
 # jdk:
 #   - oraclejdk8
+
+node_js:
+  - "6"
 
 sudo: false
 
@@ -50,7 +54,7 @@ android:
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-  - nvm install 6
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then nvm install 6; fi
   - node --version
 
 install:
