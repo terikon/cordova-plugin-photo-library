@@ -73,6 +73,7 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then android-wait-for-emulator; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell input keyevent 82 & fi #KEYCODE_MENU
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell mount -o rw,remount rootfs /; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell chmod 777 /mnt/sdcard; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run copy-test-images:android:emulator; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ios-sim start --devicetypeid "com.apple.CoreSimulator.SimDeviceType.$SIMULATOR_TYPE, $IOS_VERSION"; fi
