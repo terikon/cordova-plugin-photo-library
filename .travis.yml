@@ -1,12 +1,12 @@
 language:
-  #- android
-  - objective-c
+  - android
+  #- objective-c
 
 os:
   # The value of the $TRAVIS_OS_NAME variable is set to linux or osx according to the operating system a particular build is running on
   # Usage: - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then command; fi
-  #- linux
-  - osx
+  - linux
+  #- osx
 
 osx_image: xcode8.2
 
@@ -17,8 +17,8 @@ env:
     - IOS_VERSION=10.2 # 10.1 for xcode8.1
 
 # jdk is for Android only, commend on osx to prevent error
-# jdk:
-#   - oraclejdk8
+jdk:
+  - oraclejdk8
 
 sudo: false
 
