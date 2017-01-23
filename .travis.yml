@@ -84,13 +84,19 @@ before_script:
 
 script:
   #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run test:android; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run test:android -- --justbuild > test_android.txt; fi
-  - adb shell /system/bin/screencap -p /sdcard/screenshot.png
-  - adb pull /sdcard/screenshot.png screenshot.png
-  - ls
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then timeout -t 120 npm run test:android -- --justbuild > test_android.txt; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run test:ios -- --target "'$SIMULATOR_TYPE,\\ $IOS_VERSION'"; fi
 
+after_success:
+# TODO: remove
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell /system/bin/screencap -p /sdcard/screenshot.png; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb pull /sdcard/screenshot.png screenshot.png; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb logcat; fi
+
 after_failure:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell /system/bin/screencap -p /sdcard/screenshot.png; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb pull /sdcard/screenshot.png screenshot.png; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb logcat; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cat ~/Library/Logs/CoreSimulator/CoreSimulator.log; fi
@@ -113,10 +119,10 @@ cache:
 #   skip_cleanup: true
 
 addons:
-  - apt:
+  apt:
     packages:
       - timeout
-  - artifacts:
+  artifacts:
     s3_region: "eu-west-1"
     paths:
       - screenshot.png
