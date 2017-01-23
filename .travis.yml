@@ -73,7 +73,7 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then bash tests/android/wait-for-emulator-boot.sh; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell input keyevent 82; fi #KEYCODE_MENU
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run copy-test-images:android:emulator; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
+  #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ios-sim start --devicetypeid "com.apple.CoreSimulator.SimDeviceType.$SIMULATOR_TYPE, $IOS_VERSION"; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run copy-test-images:ios:simulator; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bash tests/ios/grant-simulator-permissions.sh; fi
@@ -87,13 +87,13 @@ after_success:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell /system/bin/screencap -p /sdcard/screenshot.png; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb pull /sdcard/screenshot.png screenshot.png; fi
   - ls -l
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
+  #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb logcat -d; fi
 
 after_failure:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell /system/bin/screencap -p /sdcard/screenshot.png; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb pull /sdcard/screenshot.png screenshot.png; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
+  #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb logcat -d; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cat ~/Library/Logs/CoreSimulator/CoreSimulator.log; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cat ~/Library/Logs/CoreSimulator/$(bash tests/ios/get-booted-simulator.sh)/system.log; fi
