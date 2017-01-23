@@ -20,7 +20,7 @@ env:
 jdk:
   - oraclejdk8
 
-sudo: false
+sudo: true
 
 android:
   components:
@@ -87,16 +87,18 @@ script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then timeout 540 npm run test:android; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run test:ios -- --target "'$SIMULATOR_TYPE,\\ $IOS_VERSION'"; fi
 
-after_success:
 # TODO: remove
+after_success:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell /system/bin/screencap -p /sdcard/screenshot.png; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb pull /sdcard/screenshot.png screenshot.png; fi
+  - ls -l
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb logcat -d; fi
 
 after_failure:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell /system/bin/screencap -p /sdcard/screenshot.png; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb pull /sdcard/screenshot.png screenshot.png; fi
+  - ls -l
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb logcat -d; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cat ~/Library/Logs/CoreSimulator/CoreSimulator.log; fi
