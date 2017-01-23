@@ -72,8 +72,8 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then echo no | android create avd --force -n test -t android-$EMULATOR_API_LEVEL --abi armeabi-v7a; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then emulator -avd test -no-audio -no-window -memory 1024 & fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then android-wait-for-emulator; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done; input keyevent 82'; fi
-  #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell input keyevent 82 &; fi #KEYCODE_MENU
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then bash tests/android/wait-for-emulator-boot.sh; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell input keyevent 82; fi #KEYCODE_MENU
   #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell mount -o rw,remount rootfs /; fi
   #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell chmod 777 /mnt/sdcard; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run copy-test-images:android:emulator; fi
@@ -84,7 +84,7 @@ before_script:
 
 script:
   #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run test:android; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then timeout 120 npm run test:android -- --justbuild > test_android.txt; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then timeout 540 npm run test:android; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run test:ios -- --target "'$SIMULATOR_TYPE,\\ $IOS_VERSION'"; fi
 
 after_success:
