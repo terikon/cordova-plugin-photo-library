@@ -19,6 +19,7 @@ env:
     # To get a list of available targets run the command android list targets
     - EMULATOR_API_LEVEL=23
     - EMULATOR_TARGET=11 # android-$EMULATOR_API_LEVEL
+    - EMULATOR_ABI=google_apis/armeabi-v7a # armeabi-v7a
 
     - SIMULATOR_TYPE=iPhone-7-Plus
     - IOS_VERSION=10.2 # 10.1 for xcode8.1
@@ -53,6 +54,7 @@ android:
     - sys-img-armeabi-v7a-google_apis-$EMULATOR_API_LEVEL
 
 before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then android list targets; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - nvm install 6
   - node --version
@@ -71,7 +73,7 @@ install:
 before_script:
   - pwd
   - echo $PATH
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then echo no | android create avd --force -n test -t "$EMULATOR_TARGET" --abi armeabi-v7a; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then echo no | android create avd --force -n test -t "$EMULATOR_TARGET" --abi $EMULATOR_ABI; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then emulator -avd test -no-audio -no-window -memory 1024 & fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then android-wait-for-emulator; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then bash tests/android/wait-for-emulator-boot.sh; fi
