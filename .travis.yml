@@ -119,9 +119,6 @@ cache:
 #   skip_cleanup: true
 
 addons:
-  apt:
-    packages:
-      - timeout
   artifacts:
     s3_region: "eu-west-1"
     paths:
