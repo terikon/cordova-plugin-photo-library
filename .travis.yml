@@ -75,7 +75,7 @@ before_script:
   - echo $PATH
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then echo no | android create avd --force -n test -t "$EMULATOR_TARGET" --abi $EMULATOR_ABI; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then emulator -avd test -no-audio -no-window -memory 1024 & fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then android-wait-for-emulator; fi
+  #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then android-wait-for-emulator; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then bash tests/android/wait-for-emulator-boot.sh; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell input keyevent 82; fi #KEYCODE_MENU
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run copy-test-images:android:emulator; fi
