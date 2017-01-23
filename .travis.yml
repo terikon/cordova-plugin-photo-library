@@ -16,7 +16,7 @@ osx_image: xcode8.2
 
 env:
   global:
-    - EMULATOR_API_LEVEL=24
+    - EMULATOR_API_LEVEL=23
     - SIMULATOR_TYPE=iPhone-7-Plus
     - IOS_VERSION=10.2 # 10.1 for xcode8.1
 
@@ -44,7 +44,8 @@ android:
     # - addon-google_apis-google-19
 
     # Specify at least one system image, if you need to run emulator(s) during your tests
-    - sys-img-armeabi-v7a-android-$EMULATOR_API_LEVEL
+    #- sys-img-armeabi-v7a-android-$EMULATOR_API_LEVEL
+    - sys-img-armeabi-v7a-google_apis-$EMULATOR_API_LEVEL
 
     # To get a list of available exact component names and descriptions run the command android list sdk --no-ui --all --extended
 
