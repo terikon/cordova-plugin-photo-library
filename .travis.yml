@@ -84,7 +84,7 @@ before_script:
 
 script:
   #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run test:android; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then timeout -t 120 npm run test:android -- --justbuild > test_android.txt; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then timeout 120 npm run test:android -- --justbuild > test_android.txt; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm run test:ios -- --target "'$SIMULATOR_TYPE,\\ $IOS_VERSION'"; fi
 
 after_success:
@@ -92,13 +92,13 @@ after_success:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell /system/bin/screencap -p /sdcard/screenshot.png; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb pull /sdcard/screenshot.png screenshot.png; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb logcat; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb logcat -d; fi
 
 after_failure:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell /system/bin/screencap -p /sdcard/screenshot.png; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb pull /sdcard/screenshot.png screenshot.png; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb logcat; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb logcat -d; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cat ~/Library/Logs/CoreSimulator/CoreSimulator.log; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cat ~/Library/Logs/CoreSimulator/$(bash tests/ios/get-booted-simulator.sh)/system.log; fi
 
