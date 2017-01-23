@@ -18,7 +18,7 @@ env:
   global:
     # To get a list of available targets run the command android list targets
     - EMULATOR_API_LEVEL=23
-    - EMULATOR_TARGET=11 # android-$EMULATOR_API_LEVEL
+    - EMULATOR_TARGET=android-$EMULATOR_API_LEVEL
     - EMULATOR_ABI=google_apis/armeabi-v7a # armeabi-v7a
 
     - SIMULATOR_TYPE=iPhone-7-Plus
