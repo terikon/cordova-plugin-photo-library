@@ -31,8 +31,9 @@ android:
     # To get a list of available exact component names and descriptions run the command android list sdk --no-ui --all --extended
 
     # We want to use the latest revision of Android SDK Tools
+    - tools # to get the new `repository-11.xml`
     - platform-tools
-    - tools
+    - tools # to install Android SDK tools 25.x.x, see https://github.com/travis-ci/travis-ci/issues/6040#issuecomment-219367943
 
     # The BuildTools version used by your project
     - build-tools-25.1.7
