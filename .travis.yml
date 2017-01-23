@@ -49,6 +49,7 @@ android:
     # To get a list of available exact component names and descriptions run the command android list sdk --no-ui --all --extended
 
 before_install:
+  - which timeout
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - nvm install 6
   - node --version
@@ -112,7 +113,10 @@ cache:
 #   skip_cleanup: true
 
 addons:
-  artifacts:
-    s3_region: "eu-central-1"
+  - apt:
+    packages:
+      - timeout
+  - artifacts:
+    s3_region: "eu-west-1"
     paths:
       - screenshot.png
