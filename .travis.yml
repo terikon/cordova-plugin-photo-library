@@ -71,9 +71,10 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then echo no | android create avd --force -n test -t android-$EMULATOR_API_LEVEL --abi armeabi-v7a; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then emulator -avd test -no-audio -no-window -memory 1024 & fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then android-wait-for-emulator; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell input keyevent 82 & fi #KEYCODE_MENU
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell mount -o rw,remount rootfs /; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell chmod 777 /mnt/sdcard; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done; input keyevent 82'; fi
+  #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell input keyevent 82; fi #KEYCODE_MENU
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell su -c mount -o rw,remount rootfs /; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then adb shell su -c chmod 777 /mnt/sdcard; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run copy-test-images:android:emulator; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cat ./node_modules/adb-ci/adb-ci.txt; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ios-sim start --devicetypeid "com.apple.CoreSimulator.SimDeviceType.$SIMULATOR_TYPE, $IOS_VERSION"; fi
