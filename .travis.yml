@@ -16,8 +16,9 @@ osx_image: xcode8.2
 
 env:
   global:
+    # To get a list of available targets run the command android list targets
     - EMULATOR_API_LEVEL=23
-    - EMULATOR_TARGET=Google Inc.:Google APIs:$EMULATOR_API_LEVEL # android-$EMULATOR_API_LEVEL
+    - EMULATOR_TARGET=11 # android-$EMULATOR_API_LEVEL
 
     - SIMULATOR_TYPE=iPhone-7-Plus
     - IOS_VERSION=10.2 # 10.1 for xcode8.1
@@ -26,6 +27,8 @@ sudo: false
 
 android:
   components:
+    # To get a list of available exact component names and descriptions run the command android list sdk --no-ui --all --extended
+
     # We want to use the latest revision of Android SDK Tools
     - platform-tools
     - tools
@@ -48,9 +51,6 @@ android:
     # Specify at least one system image, if you need to run emulator(s) during your tests
     #- sys-img-armeabi-v7a-android-$EMULATOR_API_LEVEL
     - sys-img-armeabi-v7a-google_apis-$EMULATOR_API_LEVEL
-
-    # To get a list of available exact component names and descriptions run the command android list sdk --no-ui --all --extended
-    # To get a list of available targets run the command android list targets
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
