@@ -101,3 +101,17 @@ cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
+
+# deploy:
+#   provider: releases
+#   api_key:
+#     secure: ""
+#   file:
+#     - "screenshot.png"
+#   skip_cleanup: true
+
+addons:
+  artifacts:
+    s3_region: "eu-central-1"
+    paths:
+      - screenshot.png
