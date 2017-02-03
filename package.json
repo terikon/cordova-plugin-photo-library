@@ -25,11 +25,11 @@
   },
   "homepage": "https://github.com/terikon/cordova-plugin-photo-library#readme",
   "devDependencies": {
-    "eslint": "^3.12.2",
+    "eslint": "^3.14.1",
     "@types/cordova": "^0.0.34",
-    "@types/jasmine": "^2.5.39",
+    "@types/jasmine": "^2.5.41",
     "es5-shim": "4.5.9",
-    "es6-shim": "0.35.2",
+    "es6-shim": "0.35.3",
     "es7-shim": "6.0.0",
     "cordova-paramedic": "https://github.com/apache/cordova-paramedic.git"
   },
