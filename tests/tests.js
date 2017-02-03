@@ -341,7 +341,10 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     'Expected result: All the images should be rotated right way' +
     '<h3>Press the button to visually inspect thumbnails of test-images</h3>' +
     '<div id="inspect_thumbnail_test_images"></div>' +
-    'Expected result: All the images should be rotated right way';
+    'Expected result: All the images should be rotated right way' +
+    '<h3>Press the button to measure speed of getLibrary</h3>' +
+    '<div id="measure_get_library_speed"></div>' +
+    'Expected result: Time per image should be adequate';
 
   contentEl.innerHTML = '<div id="info" style="width:100%; max-height:none;"></div>' + photo_library_tests;
 
@@ -402,5 +405,22 @@ exports.defineManualTests = function (contentEl, createActionButton) {
       }
     );
   }, 'inspect_thumbnail_test_images');
+
+  createActionButton('measure', function () {
+    clearLog();
+    var start = performance.now();
+    cordova.plugins.photoLibrary.getLibrary(
+      function (library) {
+        var end = performance.now();
+        var elapsedMs = end - start;
+        logMessage('getLibrary returned ' + library.length + ' items.');
+        logMessage('it took ' + Math.round(elapsedMs) + ' ms.');
+        logMessage('time per photo is ' + Math.round(elapsedMs / library.length) + ' ms.');
+      },
+      function (err) {
+        logMessage('Error occured in getLibrary: ' + err);
+      }
+    );
+  }, 'measure_get_library_speed');
 
 };
