@@ -408,6 +408,7 @@ exports.defineManualTests = function (contentEl, createActionButton) {
 
   createActionButton('measure', function () {
     clearLog();
+    logMessage('measuring, please wait...');
     var start = performance.now();
     cordova.plugins.photoLibrary.getLibrary(
       function (library) {
