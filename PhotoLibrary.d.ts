@@ -35,14 +35,16 @@ declare module PhotoLibraryCordova {
   }
 
   export interface GetLibraryOptions {
-    thumbnailWidth: number,
-    thumbnailHeight: number,
+    thumbnailWidth?: number,
+    thumbnailHeight?: number,
+    quality?: number,
+    useOriginalFileNames?: boolean,
   }
 
   export interface GetThumbnailOptions {
-    thumbnailWidth: number,
-    thumbnailHeight: number,
-    quality: number,
+    thumbnailWidth?: number,
+    thumbnailHeight?: number,
+    quality?: number,
   }
 
   export interface GetPhotoOptions {

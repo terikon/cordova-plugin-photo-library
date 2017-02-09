@@ -63,7 +63,8 @@ cordova.plugins.photoLibrary.getLibrary(
   { // optional options
     thumbnailWidth: 512,
     thumbnailHeight: 384,
-    quality: 0.8
+    quality: 0.8,
+    useOriginalFileNames: false // default, true will be much slower on iOS
   },
   function partialCallback(partialLibrary) { // optional
     // If this callback provided and loading library takes time, it will be called each 0.5 seconds with
