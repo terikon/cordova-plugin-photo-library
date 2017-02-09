@@ -186,8 +186,6 @@ function files2Library(files) {
 
           let libraryItem = {
             id: `${counter}#${file.name}`,
-            //TODO: photoURL
-            //TODO: thumbnailURL
             fileName: file.name,
             width: fileWithData.width,
             height: fileWithData.height,

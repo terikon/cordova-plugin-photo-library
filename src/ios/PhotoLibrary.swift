@@ -29,6 +29,7 @@ import Foundation
             let options = command.arguments[0] as! NSDictionary
             let thumbnailWidth = options["thumbnailWidth"] as! Int
             let thumbnailHeight = options["thumbnailHeight"] as! Int
+            let useOriginalFileNames = options["useOriginalFileNames"] as! Bool
             
             func createResult (library: [NSDictionary], isPartial: Bool) -> [String: AnyObject] {
                 let result: NSDictionary = [
@@ -38,8 +39,9 @@ import Foundation
                 return result as! [String: AnyObject]
             }
             
-            service.getLibrary(
-                thumbnailWidth, thumbnailHeight: thumbnailHeight,
+            let getLibraryOptions = PhotoLibraryGetLibraryOptions(thumbnailWidth: thumbnailWidth, thumbnailHeight: thumbnailHeight, useOriginalFileNames: useOriginalFileNames)
+            
+            service.getLibrary(getLibraryOptions,
                 partialCallback: { (library) in
                     
                     let result = createResult(library: library, isPartial: true)

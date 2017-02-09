@@ -6,22 +6,22 @@ import MobileCoreServices
 extension PHAsset {
     
     // Returns original file name, useful for photos synced with iTunes
-    var originalFilename: String? {
+    var originalFileName: String? {
         var result: String?
         
-        // This technique is too slow, use self.value instead
-        //        if #available(iOS 9.0, *) {
-        //            let resources = PHAssetResource.assetResources(for: self)
-        //            if let resource = resources.first {
-        //                result = resource.originalFilename
-        //            }
-        //        }
-        
-        if result == nil {
-            result = self.value(forKey: "filename") as? String
+        // This technique is slow
+        if #available(iOS 9.0, *) {
+            let resources = PHAssetResource.assetResources(for: self)
+            if let resource = resources.first {
+                result = resource.originalFilename
+            }
         }
         
         return result
+    }
+    
+    var fileName: String? {
+        return self.value(forKey: "filename") as? String
     }
     
 }
@@ -88,7 +88,7 @@ final class PhotoLibraryService {
         
     }
     
-    func getLibrary(_ thumbnailWidth: Int, thumbnailHeight: Int, partialCallback: @escaping (_ result: [NSDictionary]) -> Void, completion: @escaping (_ result: [NSDictionary]) -> Void) {
+    func getLibrary(_ options: PhotoLibraryGetLibraryOptions, partialCallback: @escaping (_ result: [NSDictionary]) -> Void, completion: @escaping (_ result: [NSDictionary]) -> Void) {
         
         //let start = NSDate()
         
@@ -102,7 +102,7 @@ final class PhotoLibraryService {
             })
             
             self.stopCaching()
-            self.cachingImageManager.startCachingImages(for: assets, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions)
+            self.cachingImageManager.startCachingImages(for: assets, targetSize: CGSize(width: options.thumbnailWidth, height: options.thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions)
             self.cacheActive = true
         }
         
@@ -122,7 +122,7 @@ final class PhotoLibraryService {
             let libraryItem = NSMutableDictionary()
             
             libraryItem["id"] = asset.localIdentifier
-            libraryItem["fileName"] = asset.originalFilename
+            libraryItem["fileName"] = options.useOriginalFileNames ? asset.originalFileName : asset.fileName // originalFilename is much slower
             libraryItem["width"] = asset.pixelWidth
             libraryItem["height"] = asset.pixelHeight
             libraryItem["creationDate"] = self.dateFormatter.string(from: asset.creationDate!)
