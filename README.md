@@ -45,15 +45,15 @@ cordova.plugins.photoLibrary.getLibrary(
     // Here we have the library as array
 
     library.forEach(function(libraryItem) {
-      console.log(libraryItem.id);          // Id of the photo
+      console.log(libraryItem.id);          // ID of the photo
       console.log(libraryItem.photoURL);    // Cross-platform access to photo
       console.log(libraryItem.thumbnailURL);// Cross-platform access to thumbnail
       console.log(libraryItem.fileName);
       console.log(libraryItem.width);
       console.log(libraryItem.height);
       console.log(libraryItem.creationDate);
-      console.log(libraryItem.mimeType);    // 'image/jpeg' or 'image/png'
-      console.log(libraryItem.nativeURL);   // Do not use, as it is not accessible on all platforms
+      console.log(libraryItem.latitude);
+      console.log(libraryItem.longitude);
     });
 
   },

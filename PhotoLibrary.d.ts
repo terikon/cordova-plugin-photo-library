@@ -26,13 +26,12 @@ declare module PhotoLibraryCordova {
 
   export interface LibraryItem {
     id: string,
-    filename: string,
-    nativeURL: string,
+    fileName: string,
     width: number,
     height: number,
-    creationDate: any,
-    mimetype: string,
-    size: number,
+    creationDate: Date,
+    latitude?: number,
+    longitude?: number,
   }
 
   export interface GetLibraryOptions {

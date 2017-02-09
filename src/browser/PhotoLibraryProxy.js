@@ -1,6 +1,5 @@
 var photoLibraryProxy = {
 
-
   getLibrary: function (success, error, [options]) {
 
     checkSupported();
@@ -187,12 +186,14 @@ function files2Library(files) {
 
           let libraryItem = {
             id: `${counter}#${file.name}`,
+            //TODO: photoURL
+            //TODO: thumbnailURL
             fileName: file.name,
-            nativeURL: dataURL,
             width: fileWithData.width,
             height: fileWithData.height,
             creationDate: file.lastModifiedDate.toISOString(), // file contains only lastModifiedDate
-            mimeType: file.type,
+            //TODO: latitude, using exif-js
+            //TODO: longitude
           };
           counter += 1;
           return libraryItem;

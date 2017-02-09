@@ -295,11 +295,11 @@ public class PhotoLibraryService {
     JSONObject columns = new JSONObject() {{
       put("int.id", MediaStore.Images.Media._ID);
       put("fileName", MediaStore.Images.ImageColumns.DISPLAY_NAME);
-      put("nativeURL", MediaStore.MediaColumns.DATA);
       put("int.width", MediaStore.Images.ImageColumns.WIDTH);
       put("int.height", MediaStore.Images.ImageColumns.HEIGHT);
       put("date.creationDate", MediaStore.Images.ImageColumns.DATE_TAKEN);
-      put("mimeType", MediaStore.MediaColumns.MIME_TYPE);
+      put("float.latitude", MediaStore.Images.ImageColumns.LATITUDE);
+      put("float.longitude", MediaStore.Images.ImageColumns.LONGITUDE);
     }};
 
     final ArrayList<JSONObject> queryResults = queryContentProvider(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, whereClause);
