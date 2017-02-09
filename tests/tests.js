@@ -44,9 +44,12 @@ exports.defineAutoTests = function () {
           library = lib;
           done();
         },
-          function (err) {
-            libraryError = err;
-            done.fail(err);
+        function (err) {
+          libraryError = err;
+          done.fail(err);
+        },
+          {
+            useOriginalFileNames: true, // We want to compare file names in test
           });
       }, 20000); // In browser platform, gives a time to select photos.
 
@@ -104,15 +107,22 @@ exports.defineAutoTests = function () {
               expect(this.libraryItem.creationDate.getFullYear()).toBeGreaterThan(2015);
             });
 
-            it('should have "image/jpeg" mimeType', function () {
-              expect(this.libraryItem.mimeType).toBe('image/jpeg');
-            });
+          });
 
-            it('should have not-empty nativeURL', function () {
-              expect(this.libraryItem.nativeURL).toEqual(jasmine.any(String));
-              expect(this.libraryItem.nativeURL.length).not.toEqual(0);
-            });
+        });
 
+        describe('geotagged image', function() {
+
+          beforeEach(function () {
+            this.libraryItem = library.find(function (libraryItem) { return libraryItem.fileName === 'geotagged.jpg' });
+          });
+
+          it('should have correct latitude', function() {
+            expect(this.libraryItem.latitude).toBeCloseTo(32.517078, 5); // 32' 31'' 1.482'''
+          });
+
+          it('should have correct longitude', function() {
+            expect(this.libraryItem.longitude).toBeCloseTo(34.955096, 5); // 34' 57'' 18.348'''
           });
 
         });
