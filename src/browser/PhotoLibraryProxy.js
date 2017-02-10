@@ -90,7 +90,7 @@ var photoLibraryProxy = {
     error('not implemented');
   },
 
-  saveImage: function (url, album, success, error) {
+  saveVideo: function (url, album, success, error) {
     // TODO - implement saving on browser
     error('not implemented');
   },
