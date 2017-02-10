@@ -9,8 +9,7 @@ var photoLibraryProxy = {
     filesElement.addEventListener('change', (evt) => {
 
       let files = getFiles(evt.target);
-      files2Library(files).then(lib => {
-        library = lib;
+      files2Library(files).then(library => {
         removeFilesElement(filesElement);
         success({ library: library, isPartial: false });
       });
@@ -41,15 +40,16 @@ var photoLibraryProxy = {
 
   getThumbnail: function (success, error, [photoId, options]) {
 
-    let libraryItem = library.find(li => li.id === photoId);
-    if (!libraryItem) {
+    let staticItem = staticLibrary.get(photoId);
+    if (!staticItem) {
       error(`Photo with id ${photoId} not found in the library`);
       return;
     }
+    let libraryItem = staticItem.libraryItem;
 
     let {thumbnailWidth, thumbnailHeight, quality} = options;
 
-    readDataURLAsImage(libraryItem.nativeURL).then(image => {
+    readDataURLAsImage(staticItem.dataURL).then(image => {
       let canvas = document.createElement('canvas');
       let context = canvas.getContext('2d');
       canvas.width = thumbnailWidth;
@@ -64,13 +64,13 @@ var photoLibraryProxy = {
 
   getPhoto: function (success, error, [photoId, options]) {
 
-    let libraryItem = library.find(li => li.id === photoId);
-    if (!libraryItem) {
+    let staticItem = staticLibrary.get(photoId);
+    if (!staticItem) {
       error(`Photo with id ${photoId} not found in the library`);
       return;
     }
 
-    let blob = dataURLToBlob(libraryItem.nativeURL);
+    let blob = dataURLToBlob(staticItem.dataURL);
     success({ data: blob, mimeType: blob.type });
 
   },
@@ -103,7 +103,7 @@ require('cordova/exec/proxy').add('PhotoLibrary', photoLibraryProxy);
 
 const HIGHEST_POSSIBLE_Z_INDEX = 2147483647;
 
-var library = [];
+var staticLibrary = new Map();
 var counter = 0;
 
 function checkSupported() {
@@ -194,6 +194,9 @@ function files2Library(files) {
             //TODO: longitude
           };
           counter += 1;
+
+          staticLibrary.set(libraryItem.id, { libraryItem: libraryItem, dataURL: dataURL });
+
           return libraryItem;
 
         });

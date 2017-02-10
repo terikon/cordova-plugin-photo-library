@@ -61,14 +61,15 @@ photoLibrary.getThumbnailURL = function (photoIdOrLibraryItem, success, error, o
 
   options = getThumbnailOptionsWithDefaults(options);
 
-  var thumbnailURL = 'cdvphotolibrary://thumbnail?photoId=' + fixedEncodeURIComponent(photoId) +
+  var urlParams = 'photoId=' + fixedEncodeURIComponent(photoId) +
     '&width=' + fixedEncodeURIComponent(options.thumbnailWidth) +
     '&height=' + fixedEncodeURIComponent(options.thumbnailHeight) +
     '&quality=' + fixedEncodeURIComponent(options.quality);
+  var thumbnailURL = 'cdvphotolibrary://thumbnail?' + urlParams;
 
   if (success) {
     if (isBrowser) {
-      cordova.exec(success, error, 'PhotoLibrary', '_getThumbnailURLBrowser', [photoId, options]);
+      cordova.exec(function(thumbnailURL) { success(thumbnailURL + '#' + urlParams); }, error, 'PhotoLibrary', '_getThumbnailURLBrowser', [photoId, options]);
     } else {
       success(thumbnailURL);
     }
@@ -93,11 +94,12 @@ photoLibrary.getPhotoURL = function (photoIdOrLibraryItem, success, error, optio
     options = {};
   }
 
-  var photoURL = 'cdvphotolibrary://photo?photoId=' + fixedEncodeURIComponent(photoId);
+  var urlParams = 'photoId=' + fixedEncodeURIComponent(photoId);
+  var photoURL = 'cdvphotolibrary://photo?' + urlParams;
 
   if (success) {
     if (isBrowser) {
-      cordova.exec(success, success, 'PhotoLibrary', '_getPhotoURLBrowser', [photoId, options]);
+      cordova.exec(function(photoURL) { success(photoURL + '#' + urlParams); }, error, 'PhotoLibrary', '_getPhotoURLBrowser', [photoId, options]);
     } else {
       success(photoURL);
     }
