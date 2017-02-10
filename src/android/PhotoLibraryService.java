@@ -278,6 +278,9 @@ public class PhotoLibraryService {
           }
         }
         buffer.add(item);
+
+        // TODO: return partial result
+
       }
       while (cursor.moveToNext());
     }
