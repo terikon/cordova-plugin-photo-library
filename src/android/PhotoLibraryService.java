@@ -300,6 +300,7 @@ public class PhotoLibraryService {
       put("date.creationDate", MediaStore.Images.ImageColumns.DATE_TAKEN);
       put("float.latitude", MediaStore.Images.ImageColumns.LATITUDE);
       put("float.longitude", MediaStore.Images.ImageColumns.LONGITUDE);
+      put("nativeURL", MediaStore.MediaColumns.DATA); // will not be returned to javascript
     }};
 
     final ArrayList<JSONObject> queryResults = queryContentProvider(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, whereClause);
@@ -327,6 +328,8 @@ public class PhotoLibraryService {
         queryResult.put("id",
             queryResult.get("id") + ";" +
             queryResult.get("nativeURL"));
+
+        queryResult.remove("nativeURL"); // Not needed
 
         results.add(queryResult);
       }
