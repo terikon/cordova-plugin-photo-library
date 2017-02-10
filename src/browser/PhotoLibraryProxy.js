@@ -1,3 +1,5 @@
+// Assume browser supports lambdas
+
 var photoLibraryProxy = {
 
   getLibrary: function (success, error, [options]) {
@@ -19,7 +21,7 @@ var photoLibraryProxy = {
   },
 
   _getThumbnailURLBrowser: function (success, error, [photoId, options]) {
-    let thumbnail = photoLibraryProxy.getThumbnail(
+    photoLibraryProxy.getThumbnail(
       imageData => {
         let thumbnailURL = URL.createObjectURL(imageData.data);
         success(thumbnailURL);
@@ -29,7 +31,7 @@ var photoLibraryProxy = {
   },
 
   _getPhotoURLBrowser: function (success, error, [photoId, options]) {
-    let photo = photoLibraryProxy.getPhoto(
+    photoLibraryProxy.getPhoto(
       imageData => {
         let photoURL = URL.createObjectURL(imageData.data);
         success(photoURL);
@@ -45,7 +47,7 @@ var photoLibraryProxy = {
       error(`Photo with id ${photoId} not found in the library`);
       return;
     }
-    let libraryItem = staticItem.libraryItem;
+    //let libraryItem = staticItem.libraryItem;
 
     let {thumbnailWidth, thumbnailHeight, quality} = options;
 
@@ -69,6 +71,7 @@ var photoLibraryProxy = {
       error(`Photo with id ${photoId} not found in the library`);
       return;
     }
+    //let libraryItem = staticItem.libraryItem;
 
     let blob = dataURLToBlob(staticItem.dataURL);
     success({ data: blob, mimeType: blob.type });
