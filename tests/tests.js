@@ -1,3 +1,6 @@
+// Tests should be written on JavaScript version that supported on both iOS and Android WebView (no lambdas).
+// But functionality provided by esshims can be used :)
+
 // Include shims for useful javascript functions to work on all devices
 cordova.require('cordova-plugin-photo-library-tests.es5shim');
 cordova.require('cordova-plugin-photo-library-tests.es6shim');
@@ -38,10 +41,14 @@ exports.defineAutoTests = function () {
 
       var library = null;
       var libraryError = null;
+      var getLibraryResultCalledTimes = 0;
+      var getLibraryIsLastChunk = null;
 
       beforeAll(function (done) {
-        cordova.plugins.photoLibrary.getLibrary(function (lib) {
+        cordova.plugins.photoLibrary.getLibrary(function (lib, isLastChunk) {
           library = lib;
+          getLibraryResultCalledTimes += 1;
+          getLibraryIsLastChunk = isLastChunk;
           done();
         },
         function (err) {
@@ -59,6 +66,14 @@ exports.defineAutoTests = function () {
 
       it('should load library', function () {
         expect(library).not.toBeNull();
+      });
+
+      it('result callback should be executed exactly once', function () {
+        expect(getLibraryResultCalledTimes).toEqual(1);
+      });
+
+      it('result callback should be treated as last chunk', function () {
+        expect(getLibraryIsLastChunk).toBeTruthy();
       });
 
       describe('cordova.plugins.photoLibrary.getLibrary', function () {
@@ -114,7 +129,7 @@ exports.defineAutoTests = function () {
         describe('geotagged image', function() {
 
           beforeEach(function () {
-            this.libraryItem = library.find(function (libraryItem) { return libraryItem.fileName === 'geotagged.jpg' });
+            this.libraryItem = library.find(function (libraryItem) { return libraryItem.fileName === 'geotagged.jpg'; });
           });
 
           it('should have correct latitude', function() {
@@ -126,8 +141,6 @@ exports.defineAutoTests = function () {
           });
 
         });
-
-        // TODO: test partialCallback
 
       });
 
@@ -317,6 +330,43 @@ exports.defineAutoTests = function () {
         });
 
         // TODO: add more tests
+
+      });
+
+      describe('chunked output', function () {
+        var libraryChunks = [];
+        var chunkedError = null;
+
+        beforeAll(function (done) {
+          cordova.plugins.photoLibrary.getLibrary(function (lib, isLastChunk) {
+            libraryChunks.push(lib);
+            if (isLastChunk) {
+              done();
+            }
+          },
+          function (err) {
+            chunkedError = err;
+            done.fail(err);
+          },
+            {
+              itemsInChunk: 1,
+            });
+        }, 20000); // In browser platform, gives a time to select photos.
+
+        it('should not fail', function () {
+          expect(chunkedError).toBeNull('chunked getLibrary failed with error: ' + chunkedError);
+        });
+
+        it('should return correct number of chunks', function () {
+          expect(libraryChunks.length).toEqual(library.length);
+        });
+
+        it('should return same photos in chunks as without chunks', function () {
+          var unchunkedNames = library.map(function(item) { return item.fileName; });
+          var flattenedChunks = libraryChunks.map(function(chunk) { return chunk; } );
+          var chunkedNames = flattenedChunks.map(function(item) { return item.fileName; });
+          expect(chunkedNames).toEqual(unchunkedNames);
+        });
 
       });
 

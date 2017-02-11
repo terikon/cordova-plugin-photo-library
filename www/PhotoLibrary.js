@@ -10,7 +10,7 @@ var isBrowser = cordova.platformId == 'browser';
 var photoLibrary = {};
 
 // Will start caching for specified size
-photoLibrary.getLibrary = function (success, error, options, partialCallback) {
+photoLibrary.getLibrary = function (success, error, options) {
 
   if (!options) {
     options = {};
@@ -20,6 +20,8 @@ photoLibrary.getLibrary = function (success, error, options, partialCallback) {
     thumbnailWidth: options.thumbnailWidth || defaultThumbnailWidth,
     thumbnailHeight: options.thumbnailHeight || defaultThumbnailHeight,
     quality: options.quality || defaultQuality,
+    itemsInChunk: options.itemsInChunk || 0,
+    chunkTimeSec: options.chunkTimeSec || 0,
     useOriginalFileNames: options.useOriginalFileNames || false,
   };
 
@@ -27,18 +29,11 @@ photoLibrary.getLibrary = function (success, error, options, partialCallback) {
     function (result) {
 
       var library = result.library;
-      var isPartial = result.isPartial;
+      var isLastChunk = result.isLastChunk;
 
       parseDates(library);
 
-      if (isPartial) {
-        if (typeof partialCallback === 'function') {
-          addUrlsToLibrary(library, partialCallback, options);
-        }
-        return;
-      }
-
-      addUrlsToLibrary(library, success, options);
+      addUrlsToLibrary(library, function(library) { success(library, isLastChunk); }, options);
 
     },
     error,

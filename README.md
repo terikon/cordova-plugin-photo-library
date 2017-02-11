@@ -40,7 +40,7 @@ For remarks about angular/ionic usage, see below.
 
 ```js
 cordova.plugins.photoLibrary.getLibrary(
-  function (library) {
+  function (library, isLastChunk/*Used when output is chunked*/) {
 
     // Here we have the library as array
 
@@ -64,11 +64,9 @@ cordova.plugins.photoLibrary.getLibrary(
     thumbnailWidth: 512,
     thumbnailHeight: 384,
     quality: 0.8,
+    itemsInChunk: 100, // Loading large library takes time, so output can be chunked so that result callback will be called on
+    chunkTimeSec: 0.5, // each X items, or after Y secons passes. You can start displaying photos immediately.
     useOriginalFileNames: false // default, true will be much slower on iOS
-  },
-  function partialCallback(partialLibrary) { // optional
-    // If this callback provided and loading library takes time, it will be called each 0.5 seconds with
-    // library that filled up to this time. You can start displaying photos to user right then.  
   }
 );
 ```
@@ -267,7 +265,6 @@ Android and browser platform implementations needed.
 - [#16](https://github.com/terikon/cordova-plugin-photo-library/issues/16) Include album name in libraryItem.
 - [#17](https://github.com/terikon/cordova-plugin-photo-library/issues/17) Enable filter option for getLibrary, that will select specific album.
 - Improve documentation.
-- iOS: PHImageContentMode.AspectFill returns images that larger than requested. If it really so, perform manual resizing.
 - Provide cancellation mechanism for long-running operations, like getLibrary.
 - CI.
 
@@ -275,14 +272,12 @@ Android and browser platform implementations needed.
 
 - iOS: it seems regex causes slowdown with dataURL, and (possibly) uses too much memory - check how to do regex on iOS in better way.
 - Browser platform: Separate to multiple files.
-- Browser platform: Compile plugin with webpack.
 - Android: caching mechanism like [this one](https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html) can be helpful.
 - Implement save protocol with HTTP POST, so no base64 transformation will be needed for saving.
 - Browser - implement saving to folder.
 - EXIF rotation hell is not handled on browser platform.
 - Pre-fetching data to file-based cache on app start can improve responsiveness. Just this caching should occur as low-priority thread. Cache can be updated
 by system photo libraries events.
-
 
 # References
 
