@@ -10,6 +10,7 @@ import android.media.ExifInterface;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Base64;
 
@@ -30,7 +31,6 @@ import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -61,10 +61,10 @@ public class PhotoLibraryService {
     return instance;
   }
 
-  public void getLibrary(Context context, ChunkResultRunnable completion) throws JSONException {
+  public void getLibrary(Context context, int itemsInChunk, double chunkTimeSec, ChunkResultRunnable completion) throws JSONException {
 
     String whereClause = "";
-    queryLibrary(context, whereClause, completion);
+    queryLibrary(context, itemsInChunk, chunkTimeSec, whereClause, completion);
 
   }
 
@@ -289,7 +289,7 @@ public class PhotoLibraryService {
 
   }
 
-  private void queryLibrary(Context context, String whereClause, ChunkResultRunnable completion) throws JSONException {
+  private void queryLibrary(Context context, int itemsInChunk, double chunkTimeSec, String whereClause, ChunkResultRunnable completion) throws JSONException {
 
     // All columns here: https://developer.android.com/reference/android/provider/MediaStore.Images.ImageColumns.html,
     // https://developer.android.com/reference/android/provider/MediaStore.MediaColumns.html
@@ -306,9 +306,13 @@ public class PhotoLibraryService {
 
     final ArrayList<JSONObject> queryResults = queryContentProvider(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, whereClause);
 
-    ArrayList<JSONObject> results = new ArrayList<JSONObject>();
+    ArrayList<JSONObject> chunk = new ArrayList<JSONObject>();
 
-    for (JSONObject queryResult : queryResults) {
+    long chunkStartTime = SystemClock.elapsedRealtime();
+
+    for (int i=0; i<queryResults.size(); i++) {
+    //for (JSONObject queryResult : queryResults) {
+      JSONObject queryResult = queryResults.get(i);
       if (queryResult.getInt("height") <=0 || queryResult.getInt("width") <= 0) {
         System.err.println(queryResult);
       } else {
@@ -332,13 +336,18 @@ public class PhotoLibraryService {
 
         queryResult.remove("nativeURL"); // Not needed
 
-        results.add(queryResult);
+        chunk.add(queryResult);
+
+        if (i == queryResults.size() - 1) {
+          completion.run(chunk, true);
+        } else if ((itemsInChunk > 0 && chunk.size() == itemsInChunk) || (chunkTimeSec > 0 && (SystemClock.elapsedRealtime() - chunkStartTime) >= chunkStartTime*1000)) {
+          completion.run(chunk, false);
+          chunk = new ArrayList<JSONObject>();
+          chunkStartTime = SystemClock.elapsedRealtime();
+        }
+
       }
     }
-
-    Collections.reverse(results);
-
-    completion.run(results, true);
 
   }
 
