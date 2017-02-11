@@ -34,5 +34,6 @@
     "cordova-paramedic": "https://github.com/apache/cordova-paramedic.git"
   },
   "dependencies": {
+    "async": "^2.1.4"
   }
 }

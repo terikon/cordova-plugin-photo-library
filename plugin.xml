@@ -42,6 +42,7 @@
                   <param name="browser-package" value="PhotoLibrary" />
               </feature>
         </config-file>
+        <js-module src="node_modules/async/dist/async.min.js" name="async" />
         <js-module src="src/browser/PhotoLibraryProxy.js" name="PhotoLibraryProxy">
             <runs />
         </js-module>

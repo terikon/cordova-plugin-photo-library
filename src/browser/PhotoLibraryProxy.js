@@ -1,5 +1,7 @@
 // Assume browser supports lambdas
 
+var async = cordova.require('cordova-plugin-photo-library.async');
+
 var photoLibraryProxy = {
 
   getLibrary: function (success, error, [options]) {
@@ -11,9 +13,11 @@ var photoLibraryProxy = {
     filesElement.addEventListener('change', (evt) => {
 
       let files = getFiles(evt.target);
-      files2Library(files).then(library => {
-        removeFilesElement(filesElement);
-        success({ library: library, isPartial: false });
+      files2Library(files, options.itemsInChunk, options.chunkTimeSec, (library, isLastChunk) => {
+        if (isLastChunk) {
+          removeFilesElement(filesElement);
+        }
+        success({ library: library, isLastChunk: isLastChunk }, {keepCallback: !isLastChunk});
       });
 
     }, false);
@@ -158,57 +162,52 @@ function readDataURLAsImage(dataURL) {
   });
 }
 
-function files2Library(files) {
-  return new Promise((resolve, reject) => {
+function files2Library(files, itemsInChunk, chunkTimeSec, success) {
 
-    let filesWithDataPromises = files.map(f => {
-      return new Promise((resolve, reject) => {
-        readFileAsDataURL(f)
-          .then(dataURL => {
-            return readDataURLAsImage(dataURL).then(image => {
-              return { dataURL, image };
-            });
-          })
-          .then(dataURLwithImage => {
-            let {image} = dataURLwithImage;
-            resolve({
-              file: f,
-              dataURL: dataURLwithImage.dataURL,
-              width: image.width,
-              height: image.height,
-            });
-          });
-      });
-    });
+  let chunk = [];
+  let chunkStartTime = new Date().getTime();
 
-    Promise.all(filesWithDataPromises)
-      .then(filesWithData => {
-        let result = filesWithData.map(fileWithData => {
+  async.eachOfSeries(files, (file, index, done) => {
 
-          let {file, dataURL} = fileWithData;
-
-          let libraryItem = {
-            id: `${counter}#${file.name}`,
-            fileName: file.name,
-            width: fileWithData.width,
-            height: fileWithData.height,
-            creationDate: file.lastModifiedDate.toISOString(), // file contains only lastModifiedDate
-            //TODO: latitude, using exif-js
-            //TODO: longitude
-          };
-          counter += 1;
-
-          staticLibrary.set(libraryItem.id, { libraryItem: libraryItem, dataURL: dataURL });
-
-          return libraryItem;
-
+    readFileAsDataURL(file)
+      .then(dataURL => {
+        return readDataURLAsImage(dataURL).then(image => {
+          return { dataURL, image };
         });
+      })
+      .then(dataURLwithImage => {
+        let {image, dataURL} = dataURLwithImage;
+        let {width, height} = image;
 
-        resolve(result);
+        let libraryItem = {
+          id: `${counter}#${file.name}`,
+          fileName: file.name,
+          width: width,
+          height: height,
+          creationDate: file.lastModifiedDate.toISOString(), // file contains only lastModifiedDate
+          //TODO: latitude, using exif-js
+          //TODO: longitude
+        };
+        counter += 1;
+
+        staticLibrary.set(libraryItem.id, { libraryItem: libraryItem, dataURL: dataURL });
+
+        chunk.push(libraryItem);
+
+        if (index === files.length - 1) {
+          success(chunk, true);
+        } else if ((itemsInChunk > 0 && chunk.length === itemsInChunk) || (chunkTimeSec > 0 && (new Date().getTime() - chunkStartTime) >= chunkTimeSec*1000)) {
+          success(chunk, false);
+          chunk = [];
+          chunkStartTime = new Date().getTime();
+        }
+
+        done();
 
       });
 
   });
+
 }
 
 // From here: https://gist.github.com/davoclavo/4424731
