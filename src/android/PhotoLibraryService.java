@@ -61,12 +61,10 @@ public class PhotoLibraryService {
     return instance;
   }
 
-  public void getLibrary(Context context, MyRunnable partialCallback, MyRunnable completion) throws JSONException {
-
-    // TODO: make use of partialCallback
+  public void getLibrary(Context context, ChunkResultRunnable completion) throws JSONException {
 
     String whereClause = "";
-    completion.run(queryLibrary(context, whereClause));
+    queryLibrary(context, whereClause, completion);
 
   }
 
@@ -291,7 +289,7 @@ public class PhotoLibraryService {
 
   }
 
-  private ArrayList<JSONObject> queryLibrary(Context context, String whereClause) throws JSONException {
+  private void queryLibrary(Context context, String whereClause, ChunkResultRunnable completion) throws JSONException {
 
     // All columns here: https://developer.android.com/reference/android/provider/MediaStore.Images.ImageColumns.html,
     // https://developer.android.com/reference/android/provider/MediaStore.MediaColumns.html
@@ -340,7 +338,7 @@ public class PhotoLibraryService {
 
     Collections.reverse(results);
 
-    return results;
+    completion.run(results, true);
 
   }
 
@@ -596,9 +594,9 @@ public class PhotoLibraryService {
 
   }
 
-  public interface MyRunnable {
+  public interface ChunkResultRunnable {
 
-    void run(ArrayList<JSONObject> data);
+    void run(ArrayList<JSONObject> chunk, boolean isLastChunk);
 
   }
 

@@ -62,27 +62,15 @@ public class PhotoLibrary extends CordovaPlugin {
                 return;
               }
 
-              service.getLibrary(getContext(), new PhotoLibraryService.MyRunnable() { // partialCallback
+              service.getLibrary(getContext(), new PhotoLibraryService.ChunkResultRunnable() { // partialCallback
                 @Override
-                public void run(ArrayList<JSONObject> library) {
+                public void run(ArrayList<JSONObject> library, boolean isLastChunk) {
                   try {
 
-                    JSONObject result = createGetLibraryResult(library, true);
+                    JSONObject result = createGetLibraryResult(library, isLastChunk);
                     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
+                    pluginResult.setKeepCallback(!isLastChunk);
                     callbackContext.sendPluginResult(pluginResult);
-
-                  } catch (Exception e) {
-                    e.printStackTrace();
-                    callbackContext.error(e.getMessage());
-                  }
-                }
-              }, new PhotoLibraryService.MyRunnable() { // completion
-                @Override
-                public void run(ArrayList<JSONObject> library) {
-                  try {
-
-                    JSONObject result = createGetLibraryResult(library, false);
-                    callbackContext.success(result);
 
                   } catch (Exception e) {
                     e.printStackTrace();
@@ -368,9 +356,9 @@ public class PhotoLibrary extends CordovaPlugin {
     cordova.requestPermissions(this, REQUEST_AUTHORIZATION_REQ_CODE, permissions.toArray(new String[0]));
   }
 
-  private static JSONObject createGetLibraryResult(ArrayList<JSONObject> library, boolean isPartial) throws JSONException {
+  private static JSONObject createGetLibraryResult(ArrayList<JSONObject> library, boolean isLastChunk) throws JSONException {
     JSONObject result = new JSONObject();
-    result.put("isPartial", isPartial);
+    result.put("isLastChunk", isLastChunk);
     result.put("library", new JSONArray(library));
     return result;
   }
