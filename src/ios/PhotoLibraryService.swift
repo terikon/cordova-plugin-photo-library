@@ -42,9 +42,6 @@ final class PhotoLibraryService {
     
     let dataURLPattern = try! NSRegularExpression(pattern: "^data:.+?;base64,", options: NSRegularExpression.Options(rawValue: 0))
     
-    // TODO: provide it as option to getLibrary
-    static let PARTIAL_RESULT_PERIOD_SEC = 0.5 // Waiting time for returning partial results in getLibrary
-    
     fileprivate init() {
         fetchOptions = PHFetchOptions()
         fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
@@ -88,9 +85,7 @@ final class PhotoLibraryService {
         
     }
     
-    func getLibrary(_ options: PhotoLibraryGetLibraryOptions, partialCallback: @escaping (_ result: [NSDictionary]) -> Void, completion: @escaping (_ result: [NSDictionary]) -> Void) {
-        
-        //let start = NSDate()
+    func getLibrary(_ options: PhotoLibraryGetLibraryOptions, completion: @escaping (_ result: [NSDictionary], _ isLastChunk: Bool) -> Void) {
         
         let fetchResult = PHAsset.fetchAssets(with: .image, options: self.fetchOptions)
         
@@ -106,16 +101,9 @@ final class PhotoLibraryService {
             self.cacheActive = true
         }
         
-        var library = [NSDictionary?](repeating: nil, count: fetchResult.count)
+        var chunk = [NSDictionary]()
         
-        var requestsLeft = fetchResult.count
-        
-        var lastPartialResultTime = NSDate()
-        
-        func sendPartialResult(_ library: [NSDictionary?]) {
-            let libraryCopy = library.filter { $0 != nil }
-            partialCallback(libraryCopy as! [NSDictionary])
-        }
+        var chunkStartTime = NSDate()
         
         fetchResult.enumerateObjects({ (asset: PHAsset, index, stop) in
             
@@ -131,26 +119,17 @@ final class PhotoLibraryService {
                 libraryItem["longitude"] = location.coordinate.longitude
             }
 	    
-            library[index] = libraryItem
+            chunk.append(libraryItem)
             
-            requestsLeft -= 1
-            
-            if requestsLeft == 0 {
-                
-                //let end = NSDate()
-                //let timeInterval = end.timeIntervalSince(start as Date) * 1_000
-                //print("getLibrary runs for \(timeInterval) ms")
-                
-                completion(library as! [NSDictionary])
-            } else {
-                // Each PARTIAL_RESULT_PERIOD_SEC seconds provide partial result
-                let elapsedSec = abs(lastPartialResultTime.timeIntervalSinceNow)
-                if elapsedSec > PhotoLibraryService.PARTIAL_RESULT_PERIOD_SEC {
-                    lastPartialResultTime = NSDate()
-                    
-                    sendPartialResult(library)
-                }
+            if index == fetchResult.count - 1 {
+                completion(chunk, true)
+            } else if (options.itemsInChunk > 0 && chunk.count == options.itemsInChunk) ||
+                (options.chunkTimeSec > 0 && abs(chunkStartTime.timeIntervalSinceNow) >= options.chunkTimeSec) {
+                completion(chunk, false)
+                chunk = [NSDictionary]()
+                chunkStartTime = NSDate()
             }
+
         })
         
     }

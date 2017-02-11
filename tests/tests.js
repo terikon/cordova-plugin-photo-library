@@ -350,6 +350,7 @@ exports.defineAutoTests = function () {
           },
             {
               itemsInChunk: 1,
+              useOriginalFileNames: true,
             });
         }, 20000); // In browser platform, gives a time to select photos.
 

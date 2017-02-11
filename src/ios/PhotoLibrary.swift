@@ -30,7 +30,7 @@ import Foundation
             let thumbnailWidth = options["thumbnailWidth"] as! Int
             let thumbnailHeight = options["thumbnailHeight"] as! Int
             let itemsInChunk = options["itemsInChunk"] as! Int
-            let chunkTimeSec = options["chunkTimeSec"] as! Float
+            let chunkTimeSec = options["chunkTimeSec"] as! Double
             let useOriginalFileNames = options["useOriginalFileNames"] as! Bool
 
             func createResult (library: [NSDictionary], isLastChunk: Bool) -> [String: AnyObject] {
@@ -41,23 +41,19 @@ import Foundation
                 return result as! [String: AnyObject]
             }
 
-            let getLibraryOptions = PhotoLibraryGetLibraryOptions(thumbnailWidth: thumbnailWidth, thumbnailHeight: thumbnailHeight, useOriginalFileNames: useOriginalFileNames)
+            let getLibraryOptions = PhotoLibraryGetLibraryOptions(thumbnailWidth: thumbnailWidth,
+                                                                  thumbnailHeight: thumbnailHeight,
+                                                                  itemsInChunk: itemsInChunk,
+                                                                  chunkTimeSec: chunkTimeSec,
+                                                                  useOriginalFileNames: useOriginalFileNames)
 
             service.getLibrary(getLibraryOptions,
-                partialCallback: { (library) in
+                completion: { (library, isLastChunk) in
 
-                    let result = createResult(library: library, isLastChunk: false)
-
-                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: result)
-                    pluginResult!.setKeepCallbackAs(true)
-                    self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
-
-                },
-                completion: { (library) in
-
-                    let result = createResult(library: library, isLastChunk: true)
+                    let result = createResult(library: library, isLastChunk: isLastChunk)
 
                     let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: result)
+                    pluginResult!.setKeepCallbackAs(!isLastChunk)
                     self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
 
                 })
