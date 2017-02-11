@@ -4,8 +4,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-plugin-photo-library-tests">
     <name>Photo Library Tests</name>
-    <js-module src="es5-shim.min.js" name="es5shim" />
-    <js-module src="es6-shim.min.js" name="es6shim" />
-    <js-module src="es7-shim.min.js" name="es7shim" />
+    <js-module src="es5-shim/es5-shim.min.js" name="es5shim" />
+    <js-module src="es6-shim/es6-shim.min.js" name="es6shim" />
+    <js-module src="es7-shim/dist/es7-shim.min.js" name="es7shim" />
     <js-module src="tests.js" name="tests" />
 </plugin>
