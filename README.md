@@ -51,6 +51,7 @@ cordova.plugins.photoLibrary.getLibrary(
       console.log(libraryItem.fileName);
       console.log(libraryItem.width);
       console.log(libraryItem.height);
+      console.log(libraryItem.albumId);     // Id of appropriate AlbumItem
       console.log(libraryItem.creationDate);
       console.log(libraryItem.latitude);
       console.log(libraryItem.longitude);
@@ -69,6 +70,20 @@ cordova.plugins.photoLibrary.getLibrary(
 ```
 
 This method is fast, as thumbails will be generated on demand.
+
+## Getting albums
+
+```js
+cordova.plugins.photoLibrary.getAlbums(
+  function (albums) {
+    albums.forEach(function(album) {
+      console.log(album.id);
+      console.log(album.title);
+    });
+  }, 
+  function (err) { }
+);
+```
 
 ## Saving photos and videos
 
@@ -130,7 +145,8 @@ cordova.plugins.photoLibrary.getLibrary(
   {
     itemsInChunk: 100, // Loading large library takes time, so output can be chunked so that result callback will be called on
     chunkTimeSec: 0.5, // each X items, or after Y secons passes. You can start displaying photos immediately.
-    useOriginalFileNames: false // default, true will be much slower on iOS
+    useOriginalFileNames: false, // default, true will be much slower on iOS
+    album: albumId, // or album
   }
 );
 ```

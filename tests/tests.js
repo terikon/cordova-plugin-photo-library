@@ -76,6 +76,32 @@ exports.defineAutoTests = function () {
         expect(getLibraryIsLastChunk).toBeTruthy();
       });
 
+      describe('cordova.plugins.photoLibrary.getAlbums', function () {
+
+        var albums = null;
+        var getAlbumsError = null;
+
+        beforeAll(function (done) {
+          cordova.plugins.photoLibrary.getAlbums(function (albs) {
+            albums = albs;
+            done();
+          },
+          function (err) {
+            getAlbumsError = err;
+            done.fail(err);
+          });
+        });
+
+        it('should not fail', function() {
+          expect(getAlbumsError).toBeNull('getAlbums failed with error: ' + getAlbumsError);
+        });
+
+        it('shoud return at least one album', function() {
+          expect(albums.length).toBeGreaterThan(0);
+        });
+
+      });
+
       describe('cordova.plugins.photoLibrary.getLibrary', function () {
 
         it('should return multiple photos', function () {
@@ -333,6 +359,10 @@ exports.defineAutoTests = function () {
 
       });
 
+      describe('getLibrary when searching by album', function() {
+        // TODO: search by album
+      });
+
       describe('chunked output', function () {
         var libraryChunks = [];
         var chunkedError = null;
@@ -397,15 +427,23 @@ exports.defineManualTests = function (contentEl, createActionButton) {
   var photo_library_tests = '<h3>Press requestAuthorization button to authorize storage</h3>' +
     '<div id="request_authorization"></div>' +
     'Expected result: If authorized, this fact will be logged. On iOS: settings page will open. On Android: confirmation prompt will open.' +
+
     '<h3>Press the button to visually inspect test-images</h3>' +
     '<div id="inspect_test_images"></div>' +
     'Expected result: All the images should be rotated right way' +
+
     '<h3>Press the button to visually inspect thumbnails of test-images</h3>' +
     '<div id="inspect_thumbnail_test_images"></div>' +
     'Expected result: All the images should be rotated right way' +
+
     '<h3>Press the button to measure speed of getLibrary</h3>' +
     '<div id="measure_get_library_speed"></div>' +
-    'Expected result: Time per image should be adequate';
+    'Expected result: Time per image should be adequate' +
+
+    '<h3>Press the button to display albums</h3>' +
+    '<div id="display_albums"></div>' +
+    'Expected result: Should return all the albums'
+    ;
 
   contentEl.innerHTML = '<div id="info" style="width:100%; max-height:none;"></div>' + photo_library_tests;
 
@@ -484,5 +522,19 @@ exports.defineManualTests = function (contentEl, createActionButton) {
       }
     );
   }, 'measure_get_library_speed');
+
+  createActionButton('display albums', function () {
+    clearLog();
+    cordova.plugins.photoLibrary.getAlbums(
+      function (albums) {
+        albums.forEach(function(album) {
+          logMessage(JSON.stringify(album));
+        });
+      },
+      function (err) {
+        logMessage('Error occured in getAlbums: ' + err);
+      }
+    );
+  }, 'display_albums');
 
 };

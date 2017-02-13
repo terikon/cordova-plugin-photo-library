@@ -1,6 +1,9 @@
 declare module PhotoLibraryCordova {
 
   export interface Plugin {
+
+    getAlbums(success: (result: AlbumItem[]) => void, error: (err:any) => void): void;
+
     getLibrary(success: (result: LibraryItem[], isLastChunk: boolean) => void, error: (err: any) => void, options: GetLibraryOptions): void;
 
     getThumbnailURL(photoId: string, success: (result: string) => void, error: (err: any) => void, options: GetThumbnailOptions): void;
@@ -22,6 +25,12 @@ declare module PhotoLibraryCordova {
     stopCaching(success: () => void, error: (err: any) => void): void;
 
     requestAuthorization(success: () => void, error: (err: any) => void): void;
+
+  }
+
+  export interface AlbumItem {
+    id: string,
+    title: string,
   }
 
   export interface LibraryItem {
@@ -29,6 +38,7 @@ declare module PhotoLibraryCordova {
     fileName: string,
     width: number,
     height: number,
+    albumId: string,
     creationDate: Date,
     latitude?: number,
     longitude?: number,
@@ -38,6 +48,7 @@ declare module PhotoLibraryCordova {
     thumbnailWidth?: number,
     thumbnailHeight?: number,
     quality?: number,
+    album?: string | LibraryItem,
     itemsInChunk?: number,
     chunkTimeSec?: number,
     useOriginalFileNames?: boolean,

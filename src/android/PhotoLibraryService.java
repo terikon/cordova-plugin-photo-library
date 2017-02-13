@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Base64;
 
 import org.apache.cordova.CordovaInterface;
@@ -61,10 +62,39 @@ public class PhotoLibraryService {
     return instance;
   }
 
-  public void getLibrary(Context context, int itemsInChunk, double chunkTimeSec, ChunkResultRunnable completion) throws JSONException {
+  public ArrayList<JSONObject> getAlbums(Context context) throws JSONException {
 
-    String whereClause = "";
-    queryLibrary(context, itemsInChunk, chunkTimeSec, whereClause, completion);
+    // All columns here: https://developer.android.com/reference/android/provider/MediaStore.Images.ImageColumns.html,
+    // https://developer.android.com/reference/android/provider/MediaStore.MediaColumns.html
+    JSONObject columns = new JSONObject() {{
+        put("id", MediaStore.Images.ImageColumns.BUCKET_ID);
+        put("title", MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME);
+    }};
+
+    final ArrayList<JSONObject> queryResult = queryContentProvider(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, "1) GROUP BY 1,(2");
+
+    return queryResult;
+
+  }
+
+  public static class GetLibraryOptions {
+
+    public final String albumId;
+    public final int itemsInChunk;
+    public final double chunkTimeSec;
+
+    public GetLibraryOptions(String albumId, int itemsInChunk, double chunkTimeSec) {
+      this.albumId = albumId;
+      this.itemsInChunk = itemsInChunk;
+      this.chunkTimeSec = chunkTimeSec;
+    }
+
+  }
+
+  public void getLibrary(Context context, GetLibraryOptions options, ChunkResultRunnable completion) throws JSONException {
+
+    String whereClause = TextUtils.isEmpty(options.albumId) ? "" : MediaStore.Images.ImageColumns.BUCKET_ID + " = \"" + options.albumId + "\"";
+    queryLibrary(context, options.itemsInChunk, options.chunkTimeSec, whereClause, completion);
 
   }
 
@@ -194,17 +224,13 @@ public class PhotoLibraryService {
 
   public class PictureData {
 
+    public final byte[] bytes;
+    public final String mimeType;
+
     public PictureData(byte[] bytes, String mimeType) {
       this.bytes = bytes;
       this.mimeType = mimeType;
     }
-
-    public byte[] getBytes() { return this.bytes; }
-
-    public String getMimeType() { return this.mimeType; }
-
-    private byte[] bytes;
-    private String mimeType;
 
   }
 
@@ -298,6 +324,7 @@ public class PhotoLibraryService {
       put("fileName", MediaStore.Images.ImageColumns.DISPLAY_NAME);
       put("int.width", MediaStore.Images.ImageColumns.WIDTH);
       put("int.height", MediaStore.Images.ImageColumns.HEIGHT);
+      put("albumId", MediaStore.Images.ImageColumns.BUCKET_ID);
       put("date.creationDate", MediaStore.Images.ImageColumns.DATE_TAKEN);
       put("float.latitude", MediaStore.Images.ImageColumns.LATITUDE);
       put("float.longitude", MediaStore.Images.ImageColumns.LONGITUDE);
