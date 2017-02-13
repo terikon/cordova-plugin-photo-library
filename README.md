@@ -40,7 +40,7 @@ For remarks about angular/ionic usage, see below.
 
 ```js
 cordova.plugins.photoLibrary.getLibrary(
-  function (library, isLastChunk/*Used when output is chunked*/) {
+  function (library) {
 
     // Here we have the library as array
 
@@ -63,10 +63,7 @@ cordova.plugins.photoLibrary.getLibrary(
   { // optional options
     thumbnailWidth: 512,
     thumbnailHeight: 384,
-    quality: 0.8,
-    itemsInChunk: 100, // Loading large library takes time, so output can be chunked so that result callback will be called on
-    chunkTimeSec: 0.5, // each X items, or after Y secons passes. You can start displaying photos immediately.
-    useOriginalFileNames: false // default, true will be much slower on iOS
+    quality: 0.8
   }
 );
 ```
@@ -85,7 +82,6 @@ cordova.plugins.photoLibrary.saveImage(url, album, function () {}, function (err
 // iOS quirks: video provided cannot be .webm . Use .mov or .mp4 .
 cordova.plugins.photoLibrary.saveVideo(url, album, function () {}, function (err) {});
 ```
-
 
 ## Permissions
 
@@ -120,6 +116,21 @@ cordova.plugins.photoLibrary.requestAuthorization(
   {
     read: true,
     write: true
+  }
+);
+```
+
+## Chunked output
+
+```js
+cordova.plugins.photoLibrary.getLibrary(
+  function (library, isLastChunk) {
+  },
+  function (err) { },
+  {
+    itemsInChunk: 100, // Loading large library takes time, so output can be chunked so that result callback will be called on
+    chunkTimeSec: 0.5, // each X items, or after Y secons passes. You can start displaying photos immediately.
+    useOriginalFileNames: false // default, true will be much slower on iOS
   }
 );
 ```
