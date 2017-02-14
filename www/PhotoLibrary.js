@@ -13,7 +13,7 @@ photoLibrary.getAlbums = function (success, error) {
 
   cordova.exec(
     function (result) {
-      success(result.albums);
+      success(result);
     },
     error,
     'PhotoLibrary',

@@ -388,10 +388,8 @@ public class PhotoLibrary extends CordovaPlugin {
     cordova.requestPermissions(this, REQUEST_AUTHORIZATION_REQ_CODE, permissions.toArray(new String[0]));
   }
 
-  private static JSONObject createGetAlbumsResult(ArrayList<JSONObject> albums) throws JSONException {
-    JSONObject result = new JSONObject();
-    result.put("albums", albums);
-    return result;
+  private static JSONArray createGetAlbumsResult(ArrayList<JSONObject> albums) throws JSONException {
+    return new JSONArray(albums);
   }
 
   private static JSONObject createGetLibraryResult(ArrayList<JSONObject> library, boolean isLastChunk) throws JSONException {
