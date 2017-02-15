@@ -14,6 +14,25 @@ import Foundation
     //        self.service.stopCaching()
     //    }
 
+    func getAlbums(_ command: CDVInvokedUrlCommand) {
+        DispatchQueue.global(qos: .default).async {
+
+            if !PhotoLibraryService.hasPermission() {
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+                return
+            }
+
+            let service = PhotoLibraryService.instance
+
+            let albums = service.getAlbums()
+
+            let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: albums)
+            self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+
+        }
+    }
+
     // Will sort by creation date
     func getLibrary(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
