@@ -367,7 +367,7 @@ public class PhotoLibraryService {
 
         if (i == queryResults.size() - 1) {
           completion.run(chunk, true);
-        } else if ((itemsInChunk > 0 && chunk.size() == itemsInChunk) || (chunkTimeSec > 0 && (SystemClock.elapsedRealtime() - chunkStartTime) >= chunkStartTime*1000)) {
+        } else if ((itemsInChunk > 0 && chunk.size() == itemsInChunk) || (chunkTimeSec > 0 && (SystemClock.elapsedRealtime() - chunkStartTime) >= chunkTimeSec*1000)) {
           completion.run(chunk, false);
           chunk = new ArrayList<JSONObject>();
           chunkStartTime = SystemClock.elapsedRealtime();

@@ -363,40 +363,47 @@ exports.defineAutoTests = function () {
         // TODO: search by album
       });
 
-      describe('chunked output', function () {
-        var libraryChunks = [];
-        var chunkedError = null;
+      var chunkOptionsArray = [{itemsInChunk: 1, chunkTimeSec: 0}, {itemsInChunk: 0, chunkTimeSec: 0.0000001}];
 
-        beforeAll(function (done) {
-          cordova.plugins.photoLibrary.getLibrary(function (lib, isLastChunk) {
-            libraryChunks.push(lib);
-            if (isLastChunk) {
-              done();
-            }
-          },
-          function (err) {
-            chunkedError = err;
-            done.fail(err);
-          },
-            {
-              itemsInChunk: 1,
-              useOriginalFileNames: true,
-            });
-        }, 20000); // In browser platform, gives a time to select photos.
+      chunkOptionsArray.forEach(function (chunkOptions) {
 
-        it('should not fail', function () {
-          expect(chunkedError).toBeNull('chunked getLibrary failed with error: ' + chunkedError);
-        });
+        describe('chunked output by ' + (chunkOptions.itemsInChunk > 0? 'itemsInChunk' : 'chunkTimeSec'), function () {
+          var libraryChunks = [];
+          var chunkedError = null;
 
-        it('should return correct number of chunks', function () {
-          expect(libraryChunks.length).toEqual(library.length);
-        });
+          beforeAll(function (done) {
+            cordova.plugins.photoLibrary.getLibrary(function (lib, isLastChunk) {
+              libraryChunks.push(lib);
+              if (isLastChunk) {
+                done();
+              }
+            },
+            function (err) {
+              chunkedError = err;
+              done.fail(err);
+            },
+              {
+                itemsInChunk: chunkOptions.itemsInChunk,
+                chunkTimeSec: chunkOptions.chunkTimeSec,
+                useOriginalFileNames: true,
+              });
+          }, 20000); // In browser platform, gives a time to select photos.
 
-        it('should return same photos in chunks as without chunks', function () {
-          var unchunkedNames = library.map(function(item) { return item.fileName; });
-          var flattenedChunks = [].concat.apply([], libraryChunks);
-          var chunkedNames = flattenedChunks.map(function(item) { return item.fileName; });
-          expect(chunkedNames).toEqual(unchunkedNames);
+          it('should not fail', function () {
+            expect(chunkedError).toBeNull('chunked getLibrary failed with error: ' + chunkedError);
+          });
+
+          it('should return correct number of chunks', function () {
+            expect(libraryChunks.length).toEqual(library.length);
+          });
+
+          it('should return same photos in chunks as without chunks', function () {
+            var unchunkedNames = library.map(function(item) { return item.fileName; });
+            var flattenedChunks = [].concat.apply([], libraryChunks);
+            var chunkedNames = flattenedChunks.map(function(item) { return item.fileName; });
+            expect(chunkedNames).toEqual(unchunkedNames);
+          });
+
         });
 
       });
