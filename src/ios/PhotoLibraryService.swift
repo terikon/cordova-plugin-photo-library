@@ -42,9 +42,12 @@ final class PhotoLibraryService {
 
     let dataURLPattern = try! NSRegularExpression(pattern: "^data:.+?;base64,", options: NSRegularExpression.Options(rawValue: 0))
 
+    let assetCollectionTypes = [PHAssetCollectionType.album, PHAssetCollectionType.smartAlbum/*, PHAssetCollectionType.moment*/]
+
     fileprivate init() {
         fetchOptions = PHFetchOptions()
         fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
+        //fetchOptions.predicate = NSPredicate(format: "mediaType = %d", PHAssetMediaType.image.rawValue)
         if #available(iOS 9.0, *) {
             fetchOptions.includeAssetSourceTypes = [.typeUserLibrary, .typeiTunesSynced, .typeCloudShared]
         }
@@ -88,24 +91,22 @@ final class PhotoLibraryService {
     func getAlbums() -> [NSDictionary] {
 
         var result = [NSDictionary]()
-        
-        let collectionTypes = [PHAssetCollectionType.album, PHAssetCollectionType.smartAlbum, PHAssetCollectionType.moment]
-        
-        for collectionType in collectionTypes {
-            
-            let fetchResult = PHAssetCollection.fetchAssetCollections(with: collectionType, subtype: .any, options: nil)
-            
+
+        for assetCollectionType in assetCollectionTypes {
+
+            let fetchResult = PHAssetCollection.fetchAssetCollections(with: assetCollectionType, subtype: .any, options: nil)
+
             fetchResult.enumerateObjects({ (assetCollection: PHAssetCollection, index, stop) in
-                
+
                 let albumItem = NSMutableDictionary()
-                
+
                 albumItem["id"] = assetCollection.localIdentifier
                 albumItem["title"] = assetCollection.localizedTitle
-                
+
                 result.append(albumItem)
-                
+
             });
-            
+
         }
 
         return result;
@@ -116,6 +117,7 @@ final class PhotoLibraryService {
 
         let fetchResult = PHAsset.fetchAssets(with: .image, options: self.fetchOptions)
 
+	// TODO: do not restart caching on multiple calls
         if fetchResult.count > 0 {
 
             var assets = [PHAsset]()
@@ -144,6 +146,17 @@ final class PhotoLibraryService {
             if let location = asset.location {
                 libraryItem["latitude"] = location.coordinate.latitude
                 libraryItem["longitude"] = location.coordinate.longitude
+            }
+
+            if options.includeAlbumData {
+                var assetCollectionIds = [String]()
+                for assetCollectionType in self.assetCollectionTypes {
+                    let albumsOfAsset = PHAssetCollection.fetchAssetCollectionsContaining(asset, with: assetCollectionType, options: nil)
+                    albumsOfAsset.enumerateObjects({ (assetCollection: PHAssetCollection, index, stop) in
+                        assetCollectionIds.append(assetCollection.localIdentifier)
+                    })
+                }
+                libraryItem["albumIds"] = assetCollectionIds
             }
 
             chunk.append(libraryItem)

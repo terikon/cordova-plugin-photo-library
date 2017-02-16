@@ -51,6 +51,7 @@ import Foundation
             let itemsInChunk = options["itemsInChunk"] as! Int
             let chunkTimeSec = options["chunkTimeSec"] as! Double
             let useOriginalFileNames = options["useOriginalFileNames"] as! Bool
+            let includeAlbumData = options["includeAlbumData"] as! Bool
 
             func createResult (library: [NSDictionary], isLastChunk: Bool) -> [String: AnyObject] {
                 let result: NSDictionary = [
@@ -64,7 +65,8 @@ import Foundation
                                                                   thumbnailHeight: thumbnailHeight,
                                                                   itemsInChunk: itemsInChunk,
                                                                   chunkTimeSec: chunkTimeSec,
-                                                                  useOriginalFileNames: useOriginalFileNames)
+                                                                  useOriginalFileNames: useOriginalFileNames,
+                                                                  includeAlbumData: includeAlbumData)
 
             service.getLibrary(getLibraryOptions,
                 completion: { (library, isLastChunk) in

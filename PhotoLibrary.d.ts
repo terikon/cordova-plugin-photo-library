@@ -38,20 +38,20 @@ declare module PhotoLibraryCordova {
     fileName: string,
     width: number,
     height: number,
-    albumId: string,
     creationDate: Date,
     latitude?: number,
     longitude?: number,
+    albumIds: string[],
   }
 
   export interface GetLibraryOptions {
     thumbnailWidth?: number,
     thumbnailHeight?: number,
     quality?: number,
-    album?: string | LibraryItem,
     itemsInChunk?: number,
     chunkTimeSec?: number,
     useOriginalFileNames?: boolean,
+    includeAlbumData?: boolean,
   }
 
   export interface GetThumbnailOptions {

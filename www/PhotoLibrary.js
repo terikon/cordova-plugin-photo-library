@@ -33,10 +33,10 @@ photoLibrary.getLibrary = function (success, error, options) {
     thumbnailWidth: options.thumbnailWidth || defaultThumbnailWidth,
     thumbnailHeight: options.thumbnailHeight || defaultThumbnailHeight,
     quality: options.quality || defaultQuality,
-    album: options.album && options.album.id || options.album,
     itemsInChunk: options.itemsInChunk || 0,
     chunkTimeSec: options.chunkTimeSec || 0,
     useOriginalFileNames: options.useOriginalFileNames || false,
+    includeAlbumData: options.includeAlbumData || false,
   };
 
   cordova.exec(
