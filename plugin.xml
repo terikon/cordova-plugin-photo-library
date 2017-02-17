@@ -18,6 +18,7 @@
         </config-file>
         <source-file src="src/android/PhotoLibrary.java" target-dir="src/com/terikon/cordova/photolibrary" />
         <source-file src="src/android/PhotoLibraryService.java" target-dir="src/com/terikon/cordova/photolibrary" />
+        <source-file src="src/android/PhotoLibraryGetLibraryOptions.java" target-dir="src/com/terikon/cordova/photolibrary" />
     </platform>
     <platform name="ios">
         <config-file target="config.xml" parent="/*">

@@ -27,8 +27,8 @@ public class PhotoLibrary extends CordovaPlugin {
   public static final int DEFAULT_HEIGHT = 384;
   public static final double DEFAULT_QUALITY = 0.5;
 
-  public static final String ACTION_GET_ALBUMS = "getAlbums";
   public static final String ACTION_GET_LIBRARY = "getLibrary";
+  public static final String ACTION_GET_ALBUMS = "getAlbums";
   public static final String ACTION_GET_THUMBNAIL = "getThumbnail";
   public static final String ACTION_GET_PHOTO = "getPhoto";
   public static final String ACTION_STOP_CACHING = "stopCaching";
@@ -53,44 +53,22 @@ public class PhotoLibrary extends CordovaPlugin {
 
     try {
 
-      if (ACTION_GET_ALBUMS.equals(action)) {
-        cordova.getThreadPool().execute(new Runnable() {
-          public void run() {
-            try {
-
-              if (!cordova.hasPermission(READ_EXTERNAL_STORAGE)) {
-                callbackContext.error(service.PERMISSION_ERROR);
-                return;
-              }
-
-              ArrayList<JSONObject> albums = service.getAlbums(getContext());
-
-              callbackContext.success(createGetAlbumsResult(albums));
-
-            } catch (Exception e) {
-              e.printStackTrace();
-              callbackContext.error(e.getMessage());
-            }
-          }
-        });
-        return true;
-
-      } else if (ACTION_GET_LIBRARY.equals(action)) {
+      if (ACTION_GET_LIBRARY.equals(action)) {
         cordova.getThreadPool().execute(new Runnable() {
           public void run() {
             try {
 
               final JSONObject options = args.optJSONObject(0);
-              final String albumId = options.optString("albumId");
               final int itemsInChunk = options.getInt("itemsInChunk");
               final double chunkTimeSec = options.getDouble("chunkTimeSec");
+              final boolean includeAlbumData = options.getBoolean("includeAlbumData");
 
               if (!cordova.hasPermission(READ_EXTERNAL_STORAGE)) {
                 callbackContext.error(service.PERMISSION_ERROR);
                 return;
               }
 
-              PhotoLibraryService.GetLibraryOptions getLibraryOptions = new PhotoLibraryService.GetLibraryOptions(albumId, itemsInChunk, chunkTimeSec);
+              PhotoLibraryGetLibraryOptions getLibraryOptions = new PhotoLibraryGetLibraryOptions(itemsInChunk, chunkTimeSec, includeAlbumData);
 
               service.getLibrary(getContext(), getLibraryOptions, new PhotoLibraryService.ChunkResultRunnable() {
                 @Override
@@ -108,6 +86,28 @@ public class PhotoLibrary extends CordovaPlugin {
                   }
                 }
               });
+
+            } catch (Exception e) {
+              e.printStackTrace();
+              callbackContext.error(e.getMessage());
+            }
+          }
+        });
+        return true;
+
+      } else if (ACTION_GET_ALBUMS.equals(action)) {
+        cordova.getThreadPool().execute(new Runnable() {
+          public void run() {
+            try {
+
+              if (!cordova.hasPermission(READ_EXTERNAL_STORAGE)) {
+                callbackContext.error(service.PERMISSION_ERROR);
+                return;
+              }
+
+              ArrayList<JSONObject> albums = service.getAlbums(getContext());
+
+              callbackContext.success(createGetAlbumsResult(albums));
 
             } catch (Exception e) {
               e.printStackTrace();

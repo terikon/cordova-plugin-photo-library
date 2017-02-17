@@ -57,6 +57,7 @@ exports.defineAutoTests = function () {
         },
           {
             useOriginalFileNames: true, // We want to compare file names in test
+            includeAlbumData: true, // We want to check albums
           });
       }, 20000); // In browser platform, gives a time to select photos.
 
@@ -94,6 +95,10 @@ exports.defineAutoTests = function () {
 
         it('should not fail', function() {
           expect(getAlbumsError).toBeNull('getAlbums failed with error: ' + getAlbumsError);
+        });
+
+        it('should return an array', function() {
+          expect(albums instanceof Array).toBeTruthy();
         });
 
         it('shoud return at least one album', function() {
@@ -146,6 +151,14 @@ exports.defineAutoTests = function () {
             it('should have creationDate', function () {
               expect(this.libraryItem.creationDate).toEqual(jasmine.any(Date));
               expect(this.libraryItem.creationDate.getFullYear()).toBeGreaterThan(2015);
+            });
+
+            it('should have albumIds array', function() {
+              expect(this.libraryItem.albumIds instanceof Array).toBeTruthy();
+            });
+
+            it('albumIds array should contain at least one album', function() {
+              expect(this.libraryItem.albumIds.length).toBeGreaterThan(0);
             });
 
           });
@@ -363,7 +376,7 @@ exports.defineAutoTests = function () {
         // TODO: search by album
       });
 
-      var chunkOptionsArray = [{itemsInChunk: 1, chunkTimeSec: 0}, {itemsInChunk: 0, chunkTimeSec: 0.0000001}];
+      var chunkOptionsArray = [{itemsInChunk: 1, chunkTimeSec: 0}, {itemsInChunk: 0, chunkTimeSec: 0.000000001}];
 
       chunkOptionsArray.forEach(function (chunkOptions) {
 
@@ -393,9 +406,17 @@ exports.defineAutoTests = function () {
             expect(chunkedError).toBeNull('chunked getLibrary failed with error: ' + chunkedError);
           });
 
-          it('should return correct number of chunks', function () {
-            expect(libraryChunks.length).toEqual(library.length);
-          });
+          if (chunkOptions.itemsInChunk > 0) {
+            it('should return correct number of chunks', function () {
+              expect(libraryChunks.length).toEqual(library.length);
+            });
+          }
+
+          if (chunkOptions.chunkTimeSec > 0) {
+            it('should return multiple chunks', function () {
+              expect(libraryChunks.length).toBeGreaterThan(0);
+            });
+          }
 
           it('should return same photos in chunks as without chunks', function () {
             var unchunkedNames = library.map(function(item) { return item.fileName; });

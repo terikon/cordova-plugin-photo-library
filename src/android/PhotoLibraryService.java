@@ -16,6 +16,7 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import org.apache.cordova.CordovaInterface;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -62,39 +63,25 @@ public class PhotoLibraryService {
     return instance;
   }
 
+  public void getLibrary(Context context, PhotoLibraryGetLibraryOptions options, ChunkResultRunnable completion) throws JSONException {
+
+    String whereClause = "";
+    queryLibrary(context, options.itemsInChunk, options.chunkTimeSec, options.includeAlbumData, whereClause, completion);
+
+  }
+
   public ArrayList<JSONObject> getAlbums(Context context) throws JSONException {
 
     // All columns here: https://developer.android.com/reference/android/provider/MediaStore.Images.ImageColumns.html,
     // https://developer.android.com/reference/android/provider/MediaStore.MediaColumns.html
     JSONObject columns = new JSONObject() {{
-        put("id", MediaStore.Images.ImageColumns.BUCKET_ID);
-        put("title", MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME);
+      put("id", MediaStore.Images.ImageColumns.BUCKET_ID);
+      put("title", MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME);
     }};
 
     final ArrayList<JSONObject> queryResult = queryContentProvider(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, "1) GROUP BY 1,(2");
 
     return queryResult;
-
-  }
-
-  public static class GetLibraryOptions {
-
-    public final String albumId;
-    public final int itemsInChunk;
-    public final double chunkTimeSec;
-
-    public GetLibraryOptions(String albumId, int itemsInChunk, double chunkTimeSec) {
-      this.albumId = albumId;
-      this.itemsInChunk = itemsInChunk;
-      this.chunkTimeSec = chunkTimeSec;
-    }
-
-  }
-
-  public void getLibrary(Context context, GetLibraryOptions options, ChunkResultRunnable completion) throws JSONException {
-
-    String whereClause = TextUtils.isEmpty(options.albumId) ? "" : MediaStore.Images.ImageColumns.BUCKET_ID + " = \"" + options.albumId + "\"";
-    queryLibrary(context, options.itemsInChunk, options.chunkTimeSec, whereClause, completion);
 
   }
 
@@ -315,7 +302,7 @@ public class PhotoLibraryService {
 
   }
 
-  private void queryLibrary(Context context, int itemsInChunk, double chunkTimeSec, String whereClause, ChunkResultRunnable completion) throws JSONException {
+  private void queryLibrary(Context context, int itemsInChunk, double chunkTimeSec, boolean includeAlbumData, String whereClause, ChunkResultRunnable completion) throws JSONException {
 
     // All columns here: https://developer.android.com/reference/android/provider/MediaStore.Images.ImageColumns.html,
     // https://developer.android.com/reference/android/provider/MediaStore.MediaColumns.html
@@ -338,42 +325,45 @@ public class PhotoLibraryService {
     long chunkStartTime = SystemClock.elapsedRealtime();
 
     for (int i=0; i<queryResults.size(); i++) {
-    //for (JSONObject queryResult : queryResults) {
       JSONObject queryResult = queryResults.get(i);
-      if (queryResult.getInt("height") <=0 || queryResult.getInt("width") <= 0) {
-        System.err.println(queryResult);
-      } else {
 
-        // swap width and height if needed
-        try {
-          int orientation = getImageOrientation(new File(queryResult.getString("nativeURL")));
-          if (isOrientationSwapsDimensions(orientation)) { // swap width and height
-            int tempWidth = queryResult.getInt("width");
-            queryResult.put("width", queryResult.getInt("height"));
-            queryResult.put("height", tempWidth);
-          }
-        } catch (IOException e) {
-          // Do nothing
+      // swap width and height if needed
+      try {
+        int orientation = getImageOrientation(new File(queryResult.getString("nativeURL")));
+        if (isOrientationSwapsDimensions(orientation)) { // swap width and height
+          int tempWidth = queryResult.getInt("width");
+          queryResult.put("width", queryResult.getInt("height"));
+          queryResult.put("height", tempWidth);
         }
-
-        // photoId is in format "imageid;imageurl"
-        queryResult.put("id",
-            queryResult.get("id") + ";" +
-            queryResult.get("nativeURL"));
-
-        queryResult.remove("nativeURL"); // Not needed
-
-        chunk.add(queryResult);
-
-        if (i == queryResults.size() - 1) {
-          completion.run(chunk, true);
-        } else if ((itemsInChunk > 0 && chunk.size() == itemsInChunk) || (chunkTimeSec > 0 && (SystemClock.elapsedRealtime() - chunkStartTime) >= chunkTimeSec*1000)) {
-          completion.run(chunk, false);
-          chunk = new ArrayList<JSONObject>();
-          chunkStartTime = SystemClock.elapsedRealtime();
-        }
-
+      } catch (IOException e) {
+        // Do nothing
       }
+
+      // photoId is in format "imageid;imageurl"
+      queryResult.put("id",
+          queryResult.get("id") + ";" +
+          queryResult.get("nativeURL"));
+
+      queryResult.remove("nativeURL"); // Not needed
+
+      String albumId = queryResult.getString("albumId");
+      queryResult.remove("albumId");
+      if (includeAlbumData) {
+        JSONArray albumsArray = new JSONArray();
+        albumsArray.put(albumId);
+        queryResult.put("albumIds", albumsArray);
+      }
+
+      chunk.add(queryResult);
+
+      if (i == queryResults.size() - 1) { // Last item
+        completion.run(chunk, true);
+      } else if ((itemsInChunk > 0 && chunk.size() == itemsInChunk) || (chunkTimeSec > 0 && (SystemClock.elapsedRealtime() - chunkStartTime) >= chunkTimeSec*1000)) {
+        completion.run(chunk, false);
+        chunk = new ArrayList<JSONObject>();
+        chunkStartTime = SystemClock.elapsedRealtime();
+      }
+
     }
 
   }
