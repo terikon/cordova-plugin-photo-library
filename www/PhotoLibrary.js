@@ -1,5 +1,7 @@
 var exec = require('cordova/exec');
 
+var async = cordova.require('cordova-plugin-photo-library.async');
+
 var defaultThumbnailWidth = 512; // optimal for android
 var defaultThumbnailHeight = 384; // optimal for android
 
@@ -26,17 +28,23 @@ photoLibrary.getLibrary = function (success, error, options) {
     includeAlbumData: options.includeAlbumData || false,
   };
 
+  // queue that keeps order of callbacks that arrive from cordova.exec.
+  var q = async.queue(function(result, done) {
+
+    var library = result.library;
+    var isLastChunk = result.isLastChunk;
+
+    parseDates(library);
+
+    addUrlsToLibrary(library, function(library) {
+      success(library, isLastChunk);
+      done();
+    }, options);
+
+  });
+
   cordova.exec(
-    function (result) {
-
-      var library = result.library;
-      var isLastChunk = result.isLastChunk;
-
-      parseDates(library);
-
-      addUrlsToLibrary(library, function(library) { success(library, isLastChunk); }, options);
-
-    },
+    function (result) { q.push(result); },
     error,
     'PhotoLibrary',
     'getLibrary', [options]

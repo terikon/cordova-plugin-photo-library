@@ -1,9 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
 <plugin id="cordova-plugin-photo-library" version="1.2.2" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>Photo Library</name>
-    <js-module name="PhotoLibrary" src="www/PhotoLibrary.js">
+    <js-module src="www/PhotoLibrary.js" name="PhotoLibrary">
         <clobbers target="cordova.plugins.photoLibrary" />
     </js-module>
+    <js-module src="www/async/dist/async.min.js" name="async" />
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="PhotoLibrary" >
@@ -43,7 +44,6 @@
                   <param name="browser-package" value="PhotoLibrary" />
               </feature>
         </config-file>
-        <js-module src="src/browser/async/dist/async.min.js" name="async" />
         <js-module src="src/browser/PhotoLibraryProxy.js" name="PhotoLibraryProxy">
             <runs />
         </js-module>
