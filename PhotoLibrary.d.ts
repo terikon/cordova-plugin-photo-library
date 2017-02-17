@@ -26,6 +26,10 @@ declare module PhotoLibraryCordova {
 
     requestAuthorization(success: () => void, error: (err: any) => void): void;
 
+    saveImage(url: string, album: AlbumItem | string, success: (libraryItem: LibraryItem) => void, error: (err: any) => void): void;
+
+    saveVideo(url: string, album: AlbumItem | string, success: () => void, error: (err: any) => void): void;
+
   }
 
   export interface AlbumItem {

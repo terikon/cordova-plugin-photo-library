@@ -99,6 +99,8 @@ cordova.plugins.photoLibrary.saveImage(url, album, function () {}, function (err
 cordova.plugins.photoLibrary.saveVideo(url, album, function () {}, function (err) {});
 ```
 
+saveImage and saveVideo both need write permission to be granted by requestAuthorization.
+
 ## Permissions
 
 The library handles tricky parts of aquiring permissions to photo library.
@@ -134,6 +136,15 @@ cordova.plugins.photoLibrary.requestAuthorization(
     write: true
   }
 );
+```
+
+Read permission is added for your app by the plugin automatically. To make writing possible, add following to your config.xml:
+```xml
+<platform name="android">
+  <config-file target="AndroidManifest.xml" parent="/*">
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  </config-file>
+</platform>
 ```
 
 ## Chunked output
@@ -287,9 +298,6 @@ It's always useful to run these tests before submitting changes, for each platfo
 # TODO
 
 - [#7](https://github.com/terikon/cordova-plugin-photo-library/issues/7) saveImage and saveVideo should return saved libraryItem.
-- [#14](https://github.com/terikon/cordova-plugin-photo-library/issues/14) partialCallback currently implemented only for iOS platform.
-Android and browser platform implementations needed.
-- [#16](https://github.com/terikon/cordova-plugin-photo-library/issues/16) Include album name in libraryItem.
 - [#17](https://github.com/terikon/cordova-plugin-photo-library/issues/17) Enable filter option for getLibrary, that will select specific album.
 - Improve documentation.
 - Provide cancellation mechanism for long-running operations, like getLibrary.

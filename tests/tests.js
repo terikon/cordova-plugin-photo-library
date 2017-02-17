@@ -358,6 +358,43 @@ exports.defineAutoTests = function () {
           expect(cordova.plugins.photoLibrary.saveImage).toEqual(jasmine.any(Function));
         });
 
+        describe('saving image as dataURL', function() {
+
+          var saveImageLibraryItem = null;
+          var saveImageError = null;
+
+          beforeAll(function(done) {
+            var canvas = document.createElement('canvas');
+            canvas.width = 150;
+            canvas.height = 150;
+            var ctx = canvas.getContext('2d');
+            ctx.fillRect(25, 25, 100, 100);
+            ctx.clearRect(45, 45, 60, 60);
+            ctx.strokeRect(50, 50, 50, 50);
+            var dataURL = canvas.toDataURL('image/jpg');
+
+            cordova.plugins.photoLibrary.saveImage(dataURL, 'PhotoLibraryTests',
+              function(libraryItem) {
+                saveImageLibraryItem = libraryItem;
+                done();
+              },
+              function(err) {
+                saveImageError = err;
+                done.fail(err);
+              });
+          });
+
+          it('should not fail', function() {
+            expect(saveImageError).toBeNull('failed with error: ' + saveImageError);
+          });
+
+          it('should return valid library item', function() {
+            expect(saveImageLibraryItem).not.toBeNull();
+            expect(saveImageLibraryItem.id).toBeDefined();
+          });
+
+        });
+
         // TODO: add more tests
 
       });
@@ -483,6 +520,10 @@ exports.defineManualTests = function (contentEl, createActionButton) {
       },
       function (err) {
         logMessage('User denied the access: ' + err);
+      },
+      {
+        read: true,
+        write: true // Needed for saveImage tests
       }
     );
   }, 'request_authorization');

@@ -194,6 +194,10 @@ photoLibrary.requestAuthorization = function (success, error, options) {
 // url is file url or dataURL
 photoLibrary.saveImage = function (url, album, success, error) {
 
+  if (album.title) {
+    album = album.title;
+  }
+
   cordova.exec(
     success,
     error,
@@ -205,6 +209,10 @@ photoLibrary.saveImage = function (url, album, success, error) {
 
 // url is file url or dataURL
 photoLibrary.saveVideo = function (url, album, success, error) {
+
+  if (album.title) {
+    album = album.title;
+  }
 
   cordova.exec(
     success,
