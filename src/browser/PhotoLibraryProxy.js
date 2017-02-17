@@ -13,7 +13,7 @@ var photoLibraryProxy = {
     filesElement.addEventListener('change', (evt) => {
 
       let files = getFiles(evt.target);
-      files2Library(files, options.itemsInChunk, options.chunkTimeSec, (library, isLastChunk) => {
+      files2Library(files, options.includeAlbumData, options.itemsInChunk, options.chunkTimeSec, (library, isLastChunk) => {
         if (isLastChunk) {
           removeFilesElement(filesElement);
         }
@@ -22,6 +22,12 @@ var photoLibraryProxy = {
 
     }, false);
 
+  },
+
+  getAlbums: function (success, error) {
+    setTimeout(() => {
+      success( ['browser'] );
+    }, 0);
   },
 
   _getThumbnailURLBrowser: function (success, error, [photoId, options]) {
@@ -162,7 +168,7 @@ function readDataURLAsImage(dataURL) {
   });
 }
 
-function files2Library(files, itemsInChunk, chunkTimeSec, success) {
+function files2Library(files, includeAlbumData, itemsInChunk, chunkTimeSec, success) {
 
   let chunk = [];
   let chunkStartTime = new Date().getTime();
@@ -188,6 +194,9 @@ function files2Library(files, itemsInChunk, chunkTimeSec, success) {
           //TODO: latitude, using exif-js
           //TODO: longitude
         };
+        if (includeAlbumData) {
+          libraryItem.albumIds = [ 'browser' ];
+        }
         counter += 1;
 
         staticLibrary.set(libraryItem.id, { libraryItem: libraryItem, dataURL: dataURL });

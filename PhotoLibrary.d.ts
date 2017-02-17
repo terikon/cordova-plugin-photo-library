@@ -41,7 +41,7 @@ declare module PhotoLibraryCordova {
     creationDate: Date,
     latitude?: number,
     longitude?: number,
-    albumIds: string[],
+    albumIds?: string[],
   }
 
   export interface GetLibraryOptions {

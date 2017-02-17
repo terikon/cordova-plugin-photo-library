@@ -9,19 +9,6 @@ var isBrowser = cordova.platformId == 'browser';
 
 var photoLibrary = {};
 
-photoLibrary.getAlbums = function (success, error) {
-
-  cordova.exec(
-    function (result) {
-      success(result);
-    },
-    error,
-    'PhotoLibrary',
-    'getAlbums', []
-  );
-
-};
-
 // Will start caching for specified size
 photoLibrary.getLibrary = function (success, error, options) {
 
@@ -53,6 +40,19 @@ photoLibrary.getLibrary = function (success, error, options) {
     error,
     'PhotoLibrary',
     'getLibrary', [options]
+  );
+
+};
+
+photoLibrary.getAlbums = function (success, error) {
+
+  cordova.exec(
+    function (result) {
+      success(result);
+    },
+    error,
+    'PhotoLibrary',
+    'getAlbums', []
   );
 
 };
