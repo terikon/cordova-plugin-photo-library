@@ -504,6 +504,9 @@ exports.defineManualTests = function (contentEl, createActionButton) {
       },
       function (err) {
         logMessage('Error occured in getLibrary: ' + err);
+      },
+      {
+        useOriginalFileNames: true,
       }
     );
   }, 'inspect_test_images');
@@ -529,6 +532,7 @@ exports.defineManualTests = function (contentEl, createActionButton) {
       {
         thumbnailWidth: 256,
         thumbnailHeight: 256,
+        useOriginalFileNames: true,
       }
     );
   }, 'inspect_thumbnail_test_images');
