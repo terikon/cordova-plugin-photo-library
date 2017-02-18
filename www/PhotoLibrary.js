@@ -34,9 +34,7 @@ photoLibrary.getLibrary = function (success, error, options) {
     var library = result.library;
     var isLastChunk = result.isLastChunk;
 
-    parseDates(library);
-
-    addUrlsToLibrary(library, function(library) {
+    processLibrary(library, function(library) {
       success(library, isLastChunk);
       done();
     }, options);
@@ -192,14 +190,23 @@ photoLibrary.requestAuthorization = function (success, error, options) {
 };
 
 // url is file url or dataURL
-photoLibrary.saveImage = function (url, album, success, error) {
+photoLibrary.saveImage = function (url, album, success, error, options) {
+
+  options = getThumbnailOptionsWithDefaults(options);
 
   if (album.title) {
     album = album.title;
   }
 
   cordova.exec(
-    success,
+    function (libraryItem) {
+      var library = [libraryItem];
+
+      processLibrary(library, function(library) {
+        success(library[0] || null);
+      }, options);
+
+    },
     error,
     'PhotoLibrary',
     'saveImage', [url, album]
@@ -253,6 +260,14 @@ var getRequestAuthenticationOptionsWithDefaults = function (options) {
   };
 
   return options;
+
+};
+
+var processLibrary = function (library, success, options) {
+
+  parseDates(library);
+
+  addUrlsToLibrary(library, success, options);
 
 };
 

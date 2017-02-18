@@ -1,18 +1,17 @@
 package com.terikon.cordova.photolibrary;
 
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.media.MediaScannerConnection;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.provider.MediaStore;
-import android.text.TextUtils;
 import android.util.Base64;
 
 import org.apache.cordova.CordovaInterface;
@@ -193,19 +192,38 @@ public class PhotoLibraryService {
 
   }
 
-  public void saveImage(CordovaInterface cordova, String url, String album) throws IOException, URISyntaxException {
+  public void saveImage(final Context context, final CordovaInterface cordova, final String url, String album, final JSONObjectRunnable completion)
+    throws IOException, URISyntaxException {
 
-    saveMedia(cordova, url, album, imageMimeToExtension);
-
-    // TODO: call queryLibrary and return libraryItem of what was saved
+    saveMedia(context, cordova, url, album, imageMimeToExtension, new FilePathRunnable() {
+      @Override
+      public void run(String filePath) {
+        try {
+          // Find the saved image in the library and return it as libraryItem
+          String whereClause = MediaStore.MediaColumns.DATA + " = \"" + filePath + "\"";
+          queryLibrary(context, whereClause, new ChunkResultRunnable() {
+            @Override
+            public void run(ArrayList<JSONObject> chunk, boolean isLastChunk) {
+              completion.run(chunk.size() == 1 ? chunk.get(0) : null);
+            }
+          });
+        } catch (Exception e) {
+          completion.run(null);
+        }
+      }
+    });
 
   }
 
-  public void saveVideo(CordovaInterface cordova, String url, String album) throws IOException, URISyntaxException {
+  public void saveVideo(final Context context, final CordovaInterface cordova, String url, String album)
+    throws IOException, URISyntaxException {
 
-    saveMedia(cordova, url, album, videMimeToExtension);
-
-    // TODO: call queryLibrary and return libraryItem of what was saved
+    saveMedia(context, cordova, url, album, videMimeToExtension, new FilePathRunnable() {
+      @Override
+      public void run(String filePath) {
+        // TODO: call queryLibrary and return libraryItem of what was saved
+      }
+    });
 
   }
 
@@ -302,7 +320,12 @@ public class PhotoLibraryService {
 
   }
 
-  private void queryLibrary(Context context, int itemsInChunk, double chunkTimeSec, boolean includeAlbumData, String whereClause, ChunkResultRunnable completion) throws JSONException {
+  private void queryLibrary(Context context, String whereClause, ChunkResultRunnable completion) throws JSONException {
+    queryLibrary(context, 0, 0, false, whereClause, completion);
+  }
+
+  private void queryLibrary(Context context, int itemsInChunk, double chunkTimeSec, boolean includeAlbumData, String whereClause, ChunkResultRunnable completion)
+    throws JSONException {
 
     // All columns here: https://developer.android.com/reference/android/provider/MediaStore.Images.ImageColumns.html,
     // https://developer.android.com/reference/android/provider/MediaStore.MediaColumns.html
@@ -541,11 +564,17 @@ public class PhotoLibraryService {
     return result;
   }
 
-  private void addFileToMediaLibrary(CordovaInterface cordova, File file) {
-    Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-    Uri contentUri = Uri.fromFile(file);
-    mediaScanIntent.setData(contentUri);
-    cordova.getActivity().sendBroadcast(mediaScanIntent);
+  private void addFileToMediaLibrary(Context context, File file, final FilePathRunnable completion) {
+
+    String filePath = file.getAbsolutePath();
+
+    MediaScannerConnection.scanFile(context, new String[]{filePath}, null, new MediaScannerConnection.OnScanCompletedListener() {
+      @Override
+      public void onScanCompleted(String path, Uri uri) {
+        completion.run(path);
+      }
+    });
+
   }
 
   private Map<String, String> imageMimeToExtension = new HashMap<String, String>(){{
@@ -557,7 +586,8 @@ public class PhotoLibraryService {
     put("ogg", ".ogv");
   }};
 
-  private void saveMedia(CordovaInterface cordova, String url, String album, Map<String, String> mimeToExtension) throws IOException, URISyntaxException {
+  private void saveMedia(Context context, CordovaInterface cordova, String url, String album, Map<String, String> mimeToExtension, FilePathRunnable completion)
+    throws IOException, URISyntaxException {
 
     File albumDirectory = makeAlbumInPhotoLibrary(album);
     File targetFile;
@@ -616,13 +646,25 @@ public class PhotoLibraryService {
 
     }
 
-    addFileToMediaLibrary(cordova, targetFile);
+    addFileToMediaLibrary(context, targetFile, completion);
 
   }
 
   public interface ChunkResultRunnable {
 
     void run(ArrayList<JSONObject> chunk, boolean isLastChunk);
+
+  }
+
+  public interface FilePathRunnable {
+
+    void run(String filePath);
+
+  }
+
+  public interface JSONObjectRunnable {
+
+    void run(JSONObject result);
 
   }
 

@@ -91,7 +91,7 @@ cordova.plugins.photoLibrary.getAlbums(
 ``` js
 var url = 'file:///...'; // url can also be dataURL, but giving it a file path is much faster
 var album = 'MyAppName';
-cordova.plugins.photoLibrary.saveImage(url, album, function () {}, function (err) {});
+cordova.plugins.photoLibrary.saveImage(url, album, function (libraryItem) {}, function (err) {});
 ```
 
 ```js
