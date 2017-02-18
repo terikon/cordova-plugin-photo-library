@@ -72,10 +72,10 @@ public class PhotoLibrary extends CordovaPlugin {
 
               service.getLibrary(getContext(), getLibraryOptions, new PhotoLibraryService.ChunkResultRunnable() {
                 @Override
-                public void run(ArrayList<JSONObject> library, boolean isLastChunk) {
+                public void run(ArrayList<JSONObject> library, int chunkNum, boolean isLastChunk) {
                   try {
 
-                    JSONObject result = createGetLibraryResult(library, isLastChunk);
+                    JSONObject result = createGetLibraryResult(library, chunkNum, isLastChunk);
                     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
                     pluginResult.setKeepCallback(!isLastChunk);
                     callbackContext.sendPluginResult(pluginResult);
@@ -395,8 +395,9 @@ public class PhotoLibrary extends CordovaPlugin {
     return new JSONArray(albums);
   }
 
-  private static JSONObject createGetLibraryResult(ArrayList<JSONObject> library, boolean isLastChunk) throws JSONException {
+  private static JSONObject createGetLibraryResult(ArrayList<JSONObject> library, int chunkNum, boolean isLastChunk) throws JSONException {
     JSONObject result = new JSONObject();
+    result.put("chunkNum", chunkNum);
     result.put("isLastChunk", isLastChunk);
     result.put("library", new JSONArray(library));
     return result;

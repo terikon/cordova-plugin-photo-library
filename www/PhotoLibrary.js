@@ -28,11 +28,11 @@ photoLibrary.getLibrary = function (success, error, options) {
     includeAlbumData: options.includeAlbumData || false,
   };
 
-  // queue that keeps order of callbacks that arrive from cordova.exec.
-  var q = async.queue(function(result, done) {
+  // queue that keeps order of async processing
+  var q = async.queue(function(chunk, done) {
 
-    var library = result.library;
-    var isLastChunk = result.isLastChunk;
+    var library = chunk.library;
+    var isLastChunk = chunk.isLastChunk;
 
     processLibrary(library, function(library) {
       success(library, isLastChunk);
@@ -41,8 +41,26 @@ photoLibrary.getLibrary = function (success, error, options) {
 
   });
 
+  var chunksToProcess = []; // chunks are stored in its index
+  var currentChunkNum = 0;
+
   cordova.exec(
-    function (result) { q.push(result); },
+    function (chunk) {
+      // callbacks arrive from cordova.exec not in order, restoring the order here
+      if (chunk.chunkNum === currentChunkNum) {
+        // the chunk arrived in order
+        q.push(chunk);
+        currentChunkNum += 1;
+        while (chunksToProcess[currentChunkNum]) {
+          q.push(chunksToProcess[currentChunkNum]);
+          delete chunksToProcess[currentChunkNum];
+          currentChunkNum += 1;
+        }
+      } else {
+        // the chunk arrived not in order
+        chunksToProcess[chunk.chunkNum] = chunk;
+      }
+    },
     error,
     'PhotoLibrary',
     'getLibrary', [options]

@@ -203,7 +203,7 @@ public class PhotoLibraryService {
           String whereClause = MediaStore.MediaColumns.DATA + " = \"" + filePath + "\"";
           queryLibrary(context, whereClause, new ChunkResultRunnable() {
             @Override
-            public void run(ArrayList<JSONObject> chunk, boolean isLastChunk) {
+            public void run(ArrayList<JSONObject> chunk, int chunkNum, boolean isLastChunk) {
               completion.run(chunk.size() == 1 ? chunk.get(0) : null);
             }
           });
@@ -346,6 +346,7 @@ public class PhotoLibraryService {
     ArrayList<JSONObject> chunk = new ArrayList<JSONObject>();
 
     long chunkStartTime = SystemClock.elapsedRealtime();
+    int chunkNum = 0;
 
     for (int i=0; i<queryResults.size(); i++) {
       JSONObject queryResult = queryResults.get(i);
@@ -380,9 +381,10 @@ public class PhotoLibraryService {
       chunk.add(queryResult);
 
       if (i == queryResults.size() - 1) { // Last item
-        completion.run(chunk, true);
+        completion.run(chunk, chunkNum, true);
       } else if ((itemsInChunk > 0 && chunk.size() == itemsInChunk) || (chunkTimeSec > 0 && (SystemClock.elapsedRealtime() - chunkStartTime) >= chunkTimeSec*1000)) {
-        completion.run(chunk, false);
+        completion.run(chunk, chunkNum, false);
+        chunkNum += 1;
         chunk = new ArrayList<JSONObject>();
         chunkStartTime = SystemClock.elapsedRealtime();
       }
@@ -652,7 +654,7 @@ public class PhotoLibraryService {
 
   public interface ChunkResultRunnable {
 
-    void run(ArrayList<JSONObject> chunk, boolean isLastChunk);
+    void run(ArrayList<JSONObject> chunk, int chunkNum, boolean isLastChunk);
 
   }
 
