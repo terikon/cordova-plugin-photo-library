@@ -98,7 +98,7 @@ exports.defineAutoTests = function () {
         });
 
         it('should return an array', function() {
-          expect(albums instanceof Array).toBeTruthy();
+          expect(albums).toEqual(jasmine.any(Array));
         });
 
         it('shoud return at least one album', function() {
@@ -154,7 +154,7 @@ exports.defineAutoTests = function () {
             });
 
             it('should have albumIds array', function() {
-              expect(this.libraryItem.albumIds instanceof Array).toBeTruthy();
+              expect(this.libraryItem.albumIds).toEqual(jasmine.any(Array));
             });
 
             it('albumIds array should contain at least one album', function() {
