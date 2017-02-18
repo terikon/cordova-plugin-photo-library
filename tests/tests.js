@@ -395,9 +395,9 @@ exports.defineAutoTests = function () {
           }
 
           it('should return same photos in chunks as without chunks', function () {
-            var unchunkedNames = library.map(function(item) { return item.fileName; });
+            var unchunkedNames = library.map(function(item) { return item.id; });
             var flattenedChunks = [].concat.apply([], libraryChunks);
-            var chunkedNames = flattenedChunks.map(function(item) { return item.fileName; });
+            var chunkedNames = flattenedChunks.map(function(item) { return item.id; });
             expect(chunkedNames).toEqual(unchunkedNames);
           });
 
