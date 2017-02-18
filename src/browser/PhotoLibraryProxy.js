@@ -6,21 +6,33 @@ var photoLibraryProxy = {
 
   getLibrary: function (success, error, [options]) {
 
-    checkSupported();
-
-    let filesElement = createFilesElement();
-
-    filesElement.addEventListener('change', (evt) => {
-
-      let files = getFiles(evt.target);
+    let processFiles = (files, filesElement) => {
       files2Library(files, options.includeAlbumData, options.itemsInChunk, options.chunkTimeSec, (library, chunkNum, isLastChunk) => {
-        if (isLastChunk) {
+        if (filesElement && isLastChunk) {
           removeFilesElement(filesElement);
         }
         success({ library: library, chunkNum: chunkNum, isLastChunk: isLastChunk }, {keepCallback: !isLastChunk});
       });
+    };
 
-    }, false);
+    if (files) {
+
+      processFiles(files);
+
+    } else {
+
+      checkSupported();
+
+      let filesElement = createFilesElement();
+
+      filesElement.addEventListener('change', (evt) => {
+
+        files = getFiles(evt.target);
+
+        processFiles(files, filesElement);
+
+      }, false);
+    }
 
   },
 
@@ -119,6 +131,9 @@ const HIGHEST_POSSIBLE_Z_INDEX = 2147483647;
 var staticLibrary = new Map();
 var counter = 0;
 
+var files = null; // files are stored, so multiple calls to getLibrary won't require multiple files selections
+var idCache = {}; // cache of ids
+
 function checkSupported() {
   // Check for the various File API support.
   if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
@@ -185,9 +200,14 @@ function files2Library(files, includeAlbumData, itemsInChunk, chunkTimeSec, succ
       .then(dataURLwithImage => {
         let {image, dataURL} = dataURLwithImage;
         let {width, height} = image;
+        let id = idCache[file.name];
+        if (!id) {
+          id = `${counter}#${file.name}`;
+          idCache[file.name] = id;
+        }
 
         let libraryItem = {
-          id: `${counter}#${file.name}`,
+          id: id,
           fileName: file.name,
           width: width,
           height: height,
