@@ -13,11 +13,11 @@ var photoLibraryProxy = {
     filesElement.addEventListener('change', (evt) => {
 
       let files = getFiles(evt.target);
-      files2Library(files, options.includeAlbumData, options.itemsInChunk, options.chunkTimeSec, (library, isLastChunk) => {
+      files2Library(files, options.includeAlbumData, options.itemsInChunk, options.chunkTimeSec, (library, chunkNum, isLastChunk) => {
         if (isLastChunk) {
           removeFilesElement(filesElement);
         }
-        success({ library: library, isLastChunk: isLastChunk }, {keepCallback: !isLastChunk});
+        success({ library: library, chunkNum: chunkNum, isLastChunk: isLastChunk }, {keepCallback: !isLastChunk});
       });
 
     }, false);
@@ -172,6 +172,7 @@ function files2Library(files, includeAlbumData, itemsInChunk, chunkTimeSec, succ
 
   let chunk = [];
   let chunkStartTime = new Date().getTime();
+  let chunkNum = 0;
 
   async.eachOfSeries(files, (file, index, done) => {
 
@@ -204,9 +205,10 @@ function files2Library(files, includeAlbumData, itemsInChunk, chunkTimeSec, succ
         chunk.push(libraryItem);
 
         if (index === files.length - 1) {
-          success(chunk, true);
+          success(chunk, chunkNum, true);
         } else if ((itemsInChunk > 0 && chunk.length === itemsInChunk) || (chunkTimeSec > 0 && (new Date().getTime() - chunkStartTime) >= chunkTimeSec*1000)) {
-          success(chunk, false);
+          success(chunk, chunkNum, false);
+          chunkNum += 1;
           chunk = [];
           chunkStartTime = new Date().getTime();
         }
