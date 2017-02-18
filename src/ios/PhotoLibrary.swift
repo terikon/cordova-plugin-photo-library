@@ -14,25 +14,6 @@ import Foundation
     //        self.service.stopCaching()
     //    }
 
-    func getAlbums(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(qos: .default).async {
-
-            if !PhotoLibraryService.hasPermission() {
-                let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
-                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
-                return
-            }
-
-            let service = PhotoLibraryService.instance
-
-            let albums = service.getAlbums()
-
-            let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: albums)
-            self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
-
-        }
-    }
-
     // Will sort by creation date
     func getLibrary(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
@@ -81,7 +62,26 @@ import Foundation
 
         }
     }
-
+    
+    func getAlbums(_ command: CDVInvokedUrlCommand) {
+        DispatchQueue.global(qos: .default).async {
+            
+            if !PhotoLibraryService.hasPermission() {
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+                return
+            }
+            
+            let service = PhotoLibraryService.instance
+            
+            let albums = service.getAlbums()
+            
+            let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: albums)
+            self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+            
+        }
+    }
+    
     func getThumbnail(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.global(qos: .default).async {
 
@@ -187,12 +187,12 @@ import Foundation
             let url = command.arguments[0] as! String
             let album = command.arguments[1] as! String
 
-            service.saveImage(url, album: album) { (url: URL?, error: String?) in
+            service.saveImage(url, album: album) { (libraryItem: NSDictionary?, error: String?) in
                 if (error != nil) {
                     let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: error)
                     self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
                 } else {
-                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
+                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: libraryItem as! [String: AnyObject]?)
                     self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
                 }
             }

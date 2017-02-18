@@ -88,31 +88,6 @@ final class PhotoLibraryService {
 
     }
 
-    func getAlbums() -> [NSDictionary] {
-
-        var result = [NSDictionary]()
-
-        for assetCollectionType in assetCollectionTypes {
-
-            let fetchResult = PHAssetCollection.fetchAssetCollections(with: assetCollectionType, subtype: .any, options: nil)
-
-            fetchResult.enumerateObjects({ (assetCollection: PHAssetCollection, index, stop) in
-
-                let albumItem = NSMutableDictionary()
-
-                albumItem["id"] = assetCollection.localIdentifier
-                albumItem["title"] = assetCollection.localizedTitle
-
-                result.append(albumItem)
-
-            });
-
-        }
-
-        return result;
-
-    }
-
     func getLibrary(_ options: PhotoLibraryGetLibraryOptions, completion: @escaping (_ result: [NSDictionary], _ isLastChunk: Bool) -> Void) {
 
         let fetchResult = PHAsset.fetchAssets(with: .image, options: self.fetchOptions)
@@ -136,28 +111,7 @@ final class PhotoLibraryService {
 
         fetchResult.enumerateObjects({ (asset: PHAsset, index, stop) in
 
-            let libraryItem = NSMutableDictionary()
-
-            libraryItem["id"] = asset.localIdentifier
-            libraryItem["fileName"] = options.useOriginalFileNames ? asset.originalFileName : asset.fileName // originalFilename is much slower
-            libraryItem["width"] = asset.pixelWidth
-            libraryItem["height"] = asset.pixelHeight
-            libraryItem["creationDate"] = self.dateFormatter.string(from: asset.creationDate!)
-            if let location = asset.location {
-                libraryItem["latitude"] = location.coordinate.latitude
-                libraryItem["longitude"] = location.coordinate.longitude
-            }
-
-            if options.includeAlbumData {
-                var assetCollectionIds = [String]()
-                for assetCollectionType in self.assetCollectionTypes {
-                    let albumsOfAsset = PHAssetCollection.fetchAssetCollectionsContaining(asset, with: assetCollectionType, options: nil)
-                    albumsOfAsset.enumerateObjects({ (assetCollection: PHAssetCollection, index, stop) in
-                        assetCollectionIds.append(assetCollection.localIdentifier)
-                    })
-                }
-                libraryItem["albumIds"] = assetCollectionIds
-            }
+            let libraryItem = self.assetToLibraryItem(asset: asset, useOriginalFileNames: options.useOriginalFileNames, includeAlbumData: options.includeAlbumData)
 
             chunk.append(libraryItem)
 
@@ -173,7 +127,59 @@ final class PhotoLibraryService {
         })
 
     }
-
+    
+    private func assetToLibraryItem(asset: PHAsset, useOriginalFileNames: Bool, includeAlbumData: Bool) -> NSDictionary {
+        let libraryItem = NSMutableDictionary()
+        
+        libraryItem["id"] = asset.localIdentifier
+        libraryItem["fileName"] = useOriginalFileNames ? asset.originalFileName : asset.fileName // originalFilename is much slower
+        libraryItem["width"] = asset.pixelWidth
+        libraryItem["height"] = asset.pixelHeight
+        libraryItem["creationDate"] = self.dateFormatter.string(from: asset.creationDate!)
+        if let location = asset.location {
+            libraryItem["latitude"] = location.coordinate.latitude
+            libraryItem["longitude"] = location.coordinate.longitude
+        }
+        
+        if includeAlbumData {
+            var assetCollectionIds = [String]()
+            for assetCollectionType in self.assetCollectionTypes {
+                let albumsOfAsset = PHAssetCollection.fetchAssetCollectionsContaining(asset, with: assetCollectionType, options: nil)
+                albumsOfAsset.enumerateObjects({ (assetCollection: PHAssetCollection, index, stop) in
+                    assetCollectionIds.append(assetCollection.localIdentifier)
+                })
+            }
+            libraryItem["albumIds"] = assetCollectionIds
+        }
+        
+        return libraryItem
+    }
+    
+    func getAlbums() -> [NSDictionary] {
+        
+        var result = [NSDictionary]()
+        
+        for assetCollectionType in assetCollectionTypes {
+            
+            let fetchResult = PHAssetCollection.fetchAssetCollections(with: assetCollectionType, subtype: .any, options: nil)
+            
+            fetchResult.enumerateObjects({ (assetCollection: PHAssetCollection, index, stop) in
+                
+                let albumItem = NSMutableDictionary()
+                
+                albumItem["id"] = assetCollection.localIdentifier
+                albumItem["title"] = assetCollection.localizedTitle
+                
+                result.append(albumItem)
+                
+            });
+            
+        }
+        
+        return result;
+        
+    }
+    
     func getThumbnail(_ photoId: String, thumbnailWidth: Int, thumbnailHeight: Int, quality: Float, completion: @escaping (_ result: PictureData?) -> Void) {
 
         let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [photoId], options: self.fetchOptions)
@@ -281,7 +287,7 @@ final class PhotoLibraryService {
     // as described here: http://stackoverflow.com/questions/11972185/ios-save-photo-in-an-app-specific-album
     // but first find a way to save animated gif with it.
     // TODO: should return library item
-    func saveImage(_ url: String, album: String, completion: @escaping (_ url: URL?, _ error: String?)->Void) {
+    func saveImage(_ url: String, album: String, completion: @escaping (_ libraryItem: NSDictionary?, _ error: String?)->Void) {
 
         let sourceData: Data
         do {
@@ -310,7 +316,15 @@ final class PhotoLibraryService {
                     if error != nil {
                         completion(nil, error)
                     } else {
-                        completion(assetUrl, nil)
+                        let fetchResult = PHAsset.fetchAssets(withALAssetURLs: [assetUrl], options: nil)
+                        var libraryItem: NSDictionary? = nil
+                        if fetchResult.count == 1 {
+                            let asset = fetchResult.firstObject
+                            if let asset = asset {
+                                libraryItem = self.assetToLibraryItem(asset: asset, useOriginalFileNames: false, includeAlbumData: true)
+                            }
+                        }
+                        completion(libraryItem, nil)
                     }
                 })
 
