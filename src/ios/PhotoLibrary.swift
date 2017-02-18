@@ -34,8 +34,9 @@ import Foundation
             let useOriginalFileNames = options["useOriginalFileNames"] as! Bool
             let includeAlbumData = options["includeAlbumData"] as! Bool
 
-            func createResult (library: [NSDictionary], isLastChunk: Bool) -> [String: AnyObject] {
+            func createResult (library: [NSDictionary], chunkNum: Int, isLastChunk: Bool) -> [String: AnyObject] {
                 let result: NSDictionary = [
+                    "chunkNum": chunkNum,
                     "isLastChunk": isLastChunk,
                     "library": library
                 ]
@@ -50,9 +51,9 @@ import Foundation
                                                                   includeAlbumData: includeAlbumData)
 
             service.getLibrary(getLibraryOptions,
-                completion: { (library, isLastChunk) in
+                completion: { (library, chunkNum, isLastChunk) in
 
-                    let result = createResult(library: library, isLastChunk: isLastChunk)
+                    let result = createResult(library: library, chunkNum: chunkNum, isLastChunk: isLastChunk)
 
                     let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: result)
                     pluginResult!.setKeepCallbackAs(!isLastChunk)

@@ -88,7 +88,7 @@ final class PhotoLibraryService {
 
     }
 
-    func getLibrary(_ options: PhotoLibraryGetLibraryOptions, completion: @escaping (_ result: [NSDictionary], _ isLastChunk: Bool) -> Void) {
+    func getLibrary(_ options: PhotoLibraryGetLibraryOptions, completion: @escaping (_ result: [NSDictionary], _ chunkNum: Int, _ isLastChunk: Bool) -> Void) {
 
         let fetchResult = PHAsset.fetchAssets(with: .image, options: self.fetchOptions)
 
@@ -106,8 +106,8 @@ final class PhotoLibraryService {
 //        }
 
         var chunk = [NSDictionary]()
-
         var chunkStartTime = NSDate()
+        var chunkNum = 0
 
         fetchResult.enumerateObjects({ (asset: PHAsset, index, stop) in
 
@@ -115,11 +115,12 @@ final class PhotoLibraryService {
 
             chunk.append(libraryItem)
 
-            if index == fetchResult.count - 1 {
-                completion(chunk, true)
+            if index == fetchResult.count - 1 { // Last item
+                completion(chunk, chunkNum, true)
             } else if (options.itemsInChunk > 0 && chunk.count == options.itemsInChunk) ||
                 (options.chunkTimeSec > 0 && abs(chunkStartTime.timeIntervalSinceNow) >= options.chunkTimeSec) {
-                completion(chunk, false)
+                completion(chunk, chunkNum, false)
+                chunkNum += 1
                 chunk = [NSDictionary]()
                 chunkStartTime = NSDate()
             }
@@ -142,6 +143,7 @@ final class PhotoLibraryService {
         }
         
         if includeAlbumData {
+            // This is pretty slow, use only when needed
             var assetCollectionIds = [String]()
             for assetCollectionType in self.assetCollectionTypes {
                 let albumsOfAsset = PHAssetCollection.fetchAssetCollectionsContaining(asset, with: assetCollectionType, options: nil)
