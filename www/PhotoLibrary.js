@@ -200,7 +200,7 @@ photoLibrary.saveImage = function (url, album, success, error, options) {
 
   cordova.exec(
     function (libraryItem) {
-      var library = [libraryItem];
+      var library = libraryItem ? [libraryItem] : [];
 
       processLibrary(library, function(library) {
         success(library[0] || null);
