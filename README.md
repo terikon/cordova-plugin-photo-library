@@ -297,8 +297,7 @@ It's always useful to run these tests before submitting changes, for each platfo
 
 # TODO
 
-- [#7](https://github.com/terikon/cordova-plugin-photo-library/issues/7) saveImage and saveVideo should return saved libraryItem.
-- [#17](https://github.com/terikon/cordova-plugin-photo-library/issues/17) Enable filter option for getLibrary, that will select specific album.
+- [#38](https://github.com/terikon/cordova-plugin-photo-library/issues/38) browser platform: saveImage and saveVideo should download file.
 - Improve documentation.
 - Provide cancellation mechanism for long-running operations, like getLibrary.
 - CI.
@@ -309,7 +308,6 @@ It's always useful to run these tests before submitting changes, for each platfo
 - Browser platform: Separate to multiple files.
 - Android: caching mechanism like [this one](https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html) can be helpful.
 - Implement save protocol with HTTP POST, so no base64 transformation will be needed for saving.
-- Browser - implement saving to folder.
 - EXIF rotation hell is not handled on browser platform.
 - Pre-fetching data to file-based cache on app start can improve responsiveness. Just this caching should occur as low-priority thread. Cache can be updated
 by system photo libraries events.
