@@ -118,17 +118,17 @@ final class PhotoLibraryService {
         let fetchResult = PHAsset.fetchAssets(with: .image, options: self.fetchOptions)
 
 	// TODO: do not restart caching on multiple calls
-        if fetchResult.count > 0 {
-
-            var assets = [PHAsset]()
-            fetchResult.enumerateObjects({(asset, index, stop) in
-                assets.append(asset)
-            })
-
-            self.stopCaching()
-            self.cachingImageManager.startCachingImages(for: assets, targetSize: CGSize(width: options.thumbnailWidth, height: options.thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions)
-            self.cacheActive = true
-        }
+//        if fetchResult.count > 0 {
+//
+//            var assets = [PHAsset]()
+//            fetchResult.enumerateObjects({(asset, index, stop) in
+//                assets.append(asset)
+//            })
+//
+//            self.stopCaching()
+//            self.cachingImageManager.startCachingImages(for: assets, targetSize: CGSize(width: options.thumbnailWidth, height: options.thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions)
+//            self.cacheActive = true
+//        }
 
         var chunk = [NSDictionary]()
 
