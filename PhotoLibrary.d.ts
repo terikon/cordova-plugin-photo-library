@@ -32,11 +32,6 @@ declare module PhotoLibraryCordova {
 
   }
 
-  export interface AlbumItem {
-    id: string,
-    title: string,
-  }
-
   export interface LibraryItem {
     id: string,
     fileName: string,
@@ -46,6 +41,11 @@ declare module PhotoLibraryCordova {
     latitude?: number,
     longitude?: number,
     albumIds?: string[],
+  }
+
+  export interface AlbumItem {
+    id: string,
+    title: string,
   }
 
   export interface GetLibraryOptions {
