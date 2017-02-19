@@ -1,5 +1,7 @@
 var exec = require('cordova/exec');
 
+var async = cordova.require('cordova-plugin-photo-library.async');
+
 var defaultThumbnailWidth = 512; // optimal for android
 var defaultThumbnailHeight = 384; // optimal for android
 
@@ -10,7 +12,7 @@ var isBrowser = cordova.platformId == 'browser';
 var photoLibrary = {};
 
 // Will start caching for specified size
-photoLibrary.getLibrary = function (success, error, options, partialCallback) {
+photoLibrary.getLibrary = function (success, error, options) {
 
   if (!options) {
     options = {};
@@ -20,30 +22,61 @@ photoLibrary.getLibrary = function (success, error, options, partialCallback) {
     thumbnailWidth: options.thumbnailWidth || defaultThumbnailWidth,
     thumbnailHeight: options.thumbnailHeight || defaultThumbnailHeight,
     quality: options.quality || defaultQuality,
+    itemsInChunk: options.itemsInChunk || 0,
+    chunkTimeSec: options.chunkTimeSec || 0,
     useOriginalFileNames: options.useOriginalFileNames || false,
+    includeAlbumData: options.includeAlbumData || false,
   };
 
+  // queue that keeps order of async processing
+  var q = async.queue(function(chunk, done) {
+
+    var library = chunk.library;
+    var isLastChunk = chunk.isLastChunk;
+
+    processLibrary(library, function(library) {
+      success(library, isLastChunk);
+      done();
+    }, options);
+
+  });
+
+  var chunksToProcess = []; // chunks are stored in its index
+  var currentChunkNum = 0;
+
   cordova.exec(
-    function (result) {
-
-      var library = result.library;
-      var isPartial = result.isPartial;
-
-      parseDates(library);
-
-      if (isPartial) {
-        if (typeof partialCallback === 'function') {
-          addUrlsToLibrary(library, partialCallback, options);
+    function (chunk) {
+      // callbacks arrive from cordova.exec not in order, restoring the order here
+      if (chunk.chunkNum === currentChunkNum) {
+        // the chunk arrived in order
+        q.push(chunk);
+        currentChunkNum += 1;
+        while (chunksToProcess[currentChunkNum]) {
+          q.push(chunksToProcess[currentChunkNum]);
+          delete chunksToProcess[currentChunkNum];
+          currentChunkNum += 1;
         }
-        return;
+      } else {
+        // the chunk arrived not in order
+        chunksToProcess[chunk.chunkNum] = chunk;
       }
-
-      addUrlsToLibrary(library, success, options);
-
     },
     error,
     'PhotoLibrary',
     'getLibrary', [options]
+  );
+
+};
+
+photoLibrary.getAlbums = function (success, error) {
+
+  cordova.exec(
+    function (result) {
+      success(result);
+    },
+    error,
+    'PhotoLibrary',
+    'getAlbums', []
   );
 
 };
@@ -175,10 +208,23 @@ photoLibrary.requestAuthorization = function (success, error, options) {
 };
 
 // url is file url or dataURL
-photoLibrary.saveImage = function (url, album, success, error) {
+photoLibrary.saveImage = function (url, album, success, error, options) {
+
+  options = getThumbnailOptionsWithDefaults(options);
+
+  if (album.title) {
+    album = album.title;
+  }
 
   cordova.exec(
-    success,
+    function (libraryItem) {
+      var library = libraryItem ? [libraryItem] : [];
+
+      processLibrary(library, function(library) {
+        success(library[0] || null);
+      }, options);
+
+    },
     error,
     'PhotoLibrary',
     'saveImage', [url, album]
@@ -188,6 +234,10 @@ photoLibrary.saveImage = function (url, album, success, error) {
 
 // url is file url or dataURL
 photoLibrary.saveVideo = function (url, album, success, error) {
+
+  if (album.title) {
+    album = album.title;
+  }
 
   cordova.exec(
     success,
@@ -228,6 +278,14 @@ var getRequestAuthenticationOptionsWithDefaults = function (options) {
   };
 
   return options;
+
+};
+
+var processLibrary = function (library, success, options) {
+
+  parseDates(library);
+
+  addUrlsToLibrary(library, success, options);
 
 };
 

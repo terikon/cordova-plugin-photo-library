@@ -1,7 +1,10 @@
 declare module PhotoLibraryCordova {
 
   export interface Plugin {
-    getLibrary(success: (result: LibraryItem[]) => void, error: (err: any) => void, options: GetLibraryOptions, partialCallback: (result: string) => void): void;
+
+    getAlbums(success: (result: AlbumItem[]) => void, error: (err:any) => void): void;
+
+    getLibrary(success: (result: LibraryItem[], isLastChunk: boolean) => void, error: (err: any) => void, options: GetLibraryOptions): void;
 
     getThumbnailURL(photoId: string, success: (result: string) => void, error: (err: any) => void, options: GetThumbnailOptions): void;
     getThumbnailURL(libraryItem: LibraryItem, success: (result: string) => void, error: (err: any) => void, options: GetThumbnailOptions): void;
@@ -22,6 +25,16 @@ declare module PhotoLibraryCordova {
     stopCaching(success: () => void, error: (err: any) => void): void;
 
     requestAuthorization(success: () => void, error: (err: any) => void): void;
+
+    saveImage(url: string, album: AlbumItem | string, success: (libraryItem: LibraryItem) => void, error: (err: any) => void, options: GetThumbnailOptions): void;
+
+    saveVideo(url: string, album: AlbumItem | string, success: () => void, error: (err: any) => void): void;
+
+  }
+
+  export interface AlbumItem {
+    id: string,
+    title: string,
   }
 
   export interface LibraryItem {
@@ -32,13 +45,17 @@ declare module PhotoLibraryCordova {
     creationDate: Date,
     latitude?: number,
     longitude?: number,
+    albumIds?: string[],
   }
 
   export interface GetLibraryOptions {
     thumbnailWidth?: number,
     thumbnailHeight?: number,
     quality?: number,
+    itemsInChunk?: number,
+    chunkTimeSec?: number,
     useOriginalFileNames?: boolean,
+    includeAlbumData?: boolean,
   }
 
   export interface GetThumbnailOptions {

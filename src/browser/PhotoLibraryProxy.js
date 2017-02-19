@@ -1,25 +1,49 @@
+// Assume browser supports lambdas
+
+var async = cordova.require('cordova-plugin-photo-library.async');
+
 var photoLibraryProxy = {
 
   getLibrary: function (success, error, [options]) {
 
-    checkSupported();
-
-    let filesElement = createFilesElement();
-
-    filesElement.addEventListener('change', (evt) => {
-
-      let files = getFiles(evt.target);
-      files2Library(files).then(library => {
-        removeFilesElement(filesElement);
-        success({ library: library, isPartial: false });
+    let processFiles = (files, filesElement) => {
+      files2Library(files, options.includeAlbumData, options.itemsInChunk, options.chunkTimeSec, (library, chunkNum, isLastChunk) => {
+        if (filesElement && isLastChunk) {
+          removeFilesElement(filesElement);
+        }
+        success({ library: library, chunkNum: chunkNum, isLastChunk: isLastChunk }, {keepCallback: !isLastChunk});
       });
+    };
 
-    }, false);
+    if (files) {
+
+      processFiles(files);
+
+    } else {
+
+      checkSupported();
+
+      let filesElement = createFilesElement();
+
+      filesElement.addEventListener('change', (evt) => {
+
+        files = getFiles(evt.target);
+
+        processFiles(files, filesElement);
+
+      }, false);
+    }
 
   },
 
+  getAlbums: function (success, error) {
+    setTimeout(() => {
+      success( ['browser'] );
+    }, 0);
+  },
+
   _getThumbnailURLBrowser: function (success, error, [photoId, options]) {
-    let thumbnail = photoLibraryProxy.getThumbnail(
+    photoLibraryProxy.getThumbnail(
       imageData => {
         let thumbnailURL = URL.createObjectURL(imageData.data);
         success(thumbnailURL);
@@ -29,7 +53,7 @@ var photoLibraryProxy = {
   },
 
   _getPhotoURLBrowser: function (success, error, [photoId, options]) {
-    let photo = photoLibraryProxy.getPhoto(
+    photoLibraryProxy.getPhoto(
       imageData => {
         let photoURL = URL.createObjectURL(imageData.data);
         success(photoURL);
@@ -45,7 +69,7 @@ var photoLibraryProxy = {
       error(`Photo with id ${photoId} not found in the library`);
       return;
     }
-    let libraryItem = staticItem.libraryItem;
+    //let libraryItem = staticItem.libraryItem;
 
     let {thumbnailWidth, thumbnailHeight, quality} = options;
 
@@ -69,6 +93,7 @@ var photoLibraryProxy = {
       error(`Photo with id ${photoId} not found in the library`);
       return;
     }
+    //let libraryItem = staticItem.libraryItem;
 
     let blob = dataURLToBlob(staticItem.dataURL);
     success({ data: blob, mimeType: blob.type });
@@ -85,12 +110,12 @@ var photoLibraryProxy = {
     success();
   },
 
-  saveImage: function (url, album, success, error) {
+  saveImage: function (success, error, [url, album]) {
     // TODO - implement saving on browser
     error('not implemented');
   },
 
-  saveImage: function (url, album, success, error) {
+  saveVideo: function (success, error, [url, album]) {
     // TODO - implement saving on browser
     error('not implemented');
   },
@@ -105,6 +130,9 @@ const HIGHEST_POSSIBLE_Z_INDEX = 2147483647;
 
 var staticLibrary = new Map();
 var counter = 0;
+
+var files = null; // files are stored, so multiple calls to getLibrary won't require multiple files selections
+var idCache = {}; // cache of ids
 
 function checkSupported() {
   // Check for the various File API support.
@@ -155,57 +183,62 @@ function readDataURLAsImage(dataURL) {
   });
 }
 
-function files2Library(files) {
-  return new Promise((resolve, reject) => {
+function files2Library(files, includeAlbumData, itemsInChunk, chunkTimeSec, success) {
 
-    let filesWithDataPromises = files.map(f => {
-      return new Promise((resolve, reject) => {
-        readFileAsDataURL(f)
-          .then(dataURL => {
-            return readDataURLAsImage(dataURL).then(image => {
-              return { dataURL, image };
-            });
-          })
-          .then(dataURLwithImage => {
-            let {image} = dataURLwithImage;
-            resolve({
-              file: f,
-              dataURL: dataURLwithImage.dataURL,
-              width: image.width,
-              height: image.height,
-            });
-          });
-      });
-    });
+  let chunk = [];
+  let chunkStartTime = new Date().getTime();
+  let chunkNum = 0;
 
-    Promise.all(filesWithDataPromises)
-      .then(filesWithData => {
-        let result = filesWithData.map(fileWithData => {
+  async.eachOfSeries(files, (file, index, done) => {
 
-          let {file, dataURL} = fileWithData;
-
-          let libraryItem = {
-            id: `${counter}#${file.name}`,
-            fileName: file.name,
-            width: fileWithData.width,
-            height: fileWithData.height,
-            creationDate: file.lastModifiedDate.toISOString(), // file contains only lastModifiedDate
-            //TODO: latitude, using exif-js
-            //TODO: longitude
-          };
-          counter += 1;
-
-          staticLibrary.set(libraryItem.id, { libraryItem: libraryItem, dataURL: dataURL });
-
-          return libraryItem;
-
+    readFileAsDataURL(file)
+      .then(dataURL => {
+        return readDataURLAsImage(dataURL).then(image => {
+          return { dataURL, image };
         });
+      })
+      .then(dataURLwithImage => {
+        let {image, dataURL} = dataURLwithImage;
+        let {width, height} = image;
+        let id = idCache[file.name];
+        if (!id) {
+          id = `${counter}#${file.name}`;
+          idCache[file.name] = id;
+        }
 
-        resolve(result);
+        let libraryItem = {
+          id: id,
+          fileName: file.name,
+          width: width,
+          height: height,
+          creationDate: file.lastModifiedDate.toISOString(), // file contains only lastModifiedDate
+          //TODO: latitude, using exif-js
+          //TODO: longitude
+        };
+        if (includeAlbumData) {
+          libraryItem.albumIds = [ 'browser' ];
+        }
+        counter += 1;
+
+        staticLibrary.set(libraryItem.id, { libraryItem: libraryItem, dataURL: dataURL });
+
+        chunk.push(libraryItem);
+
+        if (index === files.length - 1) {
+          success(chunk, chunkNum, true);
+        } else if ((itemsInChunk > 0 && chunk.length === itemsInChunk) || (chunkTimeSec > 0 && (new Date().getTime() - chunkStartTime) >= chunkTimeSec*1000)) {
+          success(chunk, chunkNum, false);
+          chunkNum += 1;
+          chunk = [];
+          chunkStartTime = new Date().getTime();
+        }
+
+        done();
 
       });
 
   });
+
 }
 
 // From here: https://gist.github.com/davoclavo/4424731

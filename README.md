@@ -54,6 +54,7 @@ cordova.plugins.photoLibrary.getLibrary(
       console.log(libraryItem.creationDate);
       console.log(libraryItem.latitude);
       console.log(libraryItem.longitude);
+      console.log(libraryItem.albumIds);    // array of ids of appropriate AlbumItem, only of includeAlbumsData was used
     });
 
   },
@@ -64,23 +65,33 @@ cordova.plugins.photoLibrary.getLibrary(
     thumbnailWidth: 512,
     thumbnailHeight: 384,
     quality: 0.8,
-    useOriginalFileNames: false // default, true will be much slower on iOS
-  },
-  function partialCallback(partialLibrary) { // optional
-    // If this callback provided and loading library takes time, it will be called each 0.5 seconds with
-    // library that filled up to this time. You can start displaying photos to user right then.  
+    includeAlbumData: false // default
   }
 );
 ```
 
 This method is fast, as thumbails will be generated on demand.
 
+## Getting albums
+
+```js
+cordova.plugins.photoLibrary.getAlbums(
+  function (albums) {
+    albums.forEach(function(album) {
+      console.log(album.id);
+      console.log(album.title);
+    });
+  }, 
+  function (err) { }
+);
+```
+
 ## Saving photos and videos
 
 ``` js
 var url = 'file:///...'; // url can also be dataURL, but giving it a file path is much faster
 var album = 'MyAppName';
-cordova.plugins.photoLibrary.saveImage(url, album, function () {}, function (err) {});
+cordova.plugins.photoLibrary.saveImage(url, album, function (libraryItem) {}, function (err) {});
 ```
 
 ```js
@@ -88,6 +99,7 @@ cordova.plugins.photoLibrary.saveImage(url, album, function () {}, function (err
 cordova.plugins.photoLibrary.saveVideo(url, album, function () {}, function (err) {});
 ```
 
+saveImage and saveVideo both need write permission to be granted by requestAuthorization.
 
 ## Permissions
 
@@ -122,6 +134,30 @@ cordova.plugins.photoLibrary.requestAuthorization(
   {
     read: true,
     write: true
+  }
+);
+```
+
+Read permission is added for your app by the plugin automatically. To make writing possible, add following to your config.xml:
+```xml
+<platform name="android">
+  <config-file target="AndroidManifest.xml" parent="/*">
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  </config-file>
+</platform>
+```
+
+## Chunked output
+
+```js
+cordova.plugins.photoLibrary.getLibrary(
+  function (library, isLastChunk) {
+  },
+  function (err) { },
+  {
+    itemsInChunk: 100, // Loading large library takes time, so output can be chunked so that result callback will be called on
+    chunkTimeSec: 0.5, // each X items, or after Y secons passes. You can start displaying photos immediately.
+    useOriginalFileNames: false, // default, true will be much slower on iOS
   }
 );
 ```
@@ -262,13 +298,8 @@ It's always useful to run these tests before submitting changes, for each platfo
 
 # TODO
 
-- [#7](https://github.com/terikon/cordova-plugin-photo-library/issues/7) saveImage and saveVideo should return saved libraryItem.
-- [#14](https://github.com/terikon/cordova-plugin-photo-library/issues/14) partialCallback currently implemented only for iOS platform.
-Android and browser platform implementations needed.
-- [#16](https://github.com/terikon/cordova-plugin-photo-library/issues/16) Include album name in libraryItem.
-- [#17](https://github.com/terikon/cordova-plugin-photo-library/issues/17) Enable filter option for getLibrary, that will select specific album.
+- [#38](https://github.com/terikon/cordova-plugin-photo-library/issues/38) browser platform: saveImage and saveVideo should download file.
 - Improve documentation.
-- iOS: PHImageContentMode.AspectFill returns images that larger than requested. If it really so, perform manual resizing.
 - Provide cancellation mechanism for long-running operations, like getLibrary.
 - CI.
 
@@ -276,14 +307,11 @@ Android and browser platform implementations needed.
 
 - iOS: it seems regex causes slowdown with dataURL, and (possibly) uses too much memory - check how to do regex on iOS in better way.
 - Browser platform: Separate to multiple files.
-- Browser platform: Compile plugin with webpack.
 - Android: caching mechanism like [this one](https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html) can be helpful.
 - Implement save protocol with HTTP POST, so no base64 transformation will be needed for saving.
-- Browser - implement saving to folder.
 - EXIF rotation hell is not handled on browser platform.
 - Pre-fetching data to file-based cache on app start can improve responsiveness. Just this caching should occur as low-priority thread. Cache can be updated
 by system photo libraries events.
-
 
 # References
 
@@ -293,13 +321,3 @@ Parts are based on
 - https://github.com/SuryaL/cordova-gallery-api
 - https://github.com/ryouaki/Cordova-Plugin-Photos
 - https://github.com/devgeeks/Canvas2ImagePlugin
-
-## Relevant platform documentation
-
-https://developer.android.com/reference/org/json/JSONObject.html
-https://developer.android.com/reference/android/provider/MediaStore.Images.Media.html
-https://developer.android.com/reference/android/provider/MediaStore.Images.Thumbnails.html
-https://developer.android.com/reference/android/graphics/BitmapFactory.Options.html
-https://developer.android.com/reference/android/media/ThumbnailUtils.html
-
-https://www.raywenderlich.com/76735/using-nsurlprotocol-swift

@@ -28,6 +28,7 @@ public class PhotoLibrary extends CordovaPlugin {
   public static final double DEFAULT_QUALITY = 0.5;
 
   public static final String ACTION_GET_LIBRARY = "getLibrary";
+  public static final String ACTION_GET_ALBUMS = "getAlbums";
   public static final String ACTION_GET_THUMBNAIL = "getThumbnail";
   public static final String ACTION_GET_PHOTO = "getPhoto";
   public static final String ACTION_STOP_CACHING = "stopCaching";
@@ -57,18 +58,26 @@ public class PhotoLibrary extends CordovaPlugin {
           public void run() {
             try {
 
+              final JSONObject options = args.optJSONObject(0);
+              final int itemsInChunk = options.getInt("itemsInChunk");
+              final double chunkTimeSec = options.getDouble("chunkTimeSec");
+              final boolean includeAlbumData = options.getBoolean("includeAlbumData");
+
               if (!cordova.hasPermission(READ_EXTERNAL_STORAGE)) {
                 callbackContext.error(service.PERMISSION_ERROR);
                 return;
               }
 
-              service.getLibrary(getContext(), new PhotoLibraryService.MyRunnable() { // partialCallback
+              PhotoLibraryGetLibraryOptions getLibraryOptions = new PhotoLibraryGetLibraryOptions(itemsInChunk, chunkTimeSec, includeAlbumData);
+
+              service.getLibrary(getContext(), getLibraryOptions, new PhotoLibraryService.ChunkResultRunnable() {
                 @Override
-                public void run(ArrayList<JSONObject> library) {
+                public void run(ArrayList<JSONObject> library, int chunkNum, boolean isLastChunk) {
                   try {
 
-                    JSONObject result = createGetLibraryResult(library, true);
+                    JSONObject result = createGetLibraryResult(library, chunkNum, isLastChunk);
                     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
+                    pluginResult.setKeepCallback(!isLastChunk);
                     callbackContext.sendPluginResult(pluginResult);
 
                   } catch (Exception e) {
@@ -76,20 +85,29 @@ public class PhotoLibrary extends CordovaPlugin {
                     callbackContext.error(e.getMessage());
                   }
                 }
-              }, new PhotoLibraryService.MyRunnable() { // completion
-                @Override
-                public void run(ArrayList<JSONObject> library) {
-                  try {
-
-                    JSONObject result = createGetLibraryResult(library, false);
-                    callbackContext.success(result);
-
-                  } catch (Exception e) {
-                    e.printStackTrace();
-                    callbackContext.error(e.getMessage());
-                  }
-                }
               });
+
+            } catch (Exception e) {
+              e.printStackTrace();
+              callbackContext.error(e.getMessage());
+            }
+          }
+        });
+        return true;
+
+      } else if (ACTION_GET_ALBUMS.equals(action)) {
+        cordova.getThreadPool().execute(new Runnable() {
+          public void run() {
+            try {
+
+              if (!cordova.hasPermission(READ_EXTERNAL_STORAGE)) {
+                callbackContext.error(service.PERMISSION_ERROR);
+                return;
+              }
+
+              ArrayList<JSONObject> albums = service.getAlbums(getContext());
+
+              callbackContext.success(createGetAlbumsResult(albums));
 
             } catch (Exception e) {
               e.printStackTrace();
@@ -188,8 +206,12 @@ public class PhotoLibrary extends CordovaPlugin {
                 return;
               }
 
-              service.saveImage(cordova, url, album);
-              callbackContext.success();
+              service.saveImage(getContext(), cordova, url, album, new PhotoLibraryService.JSONObjectRunnable() {
+                @Override
+                public void run(JSONObject result) {
+                  callbackContext.success(result);
+                }
+              });
 
             } catch (Exception e) {
               e.printStackTrace();
@@ -212,7 +234,8 @@ public class PhotoLibrary extends CordovaPlugin {
                 return;
               }
 
-              service.saveVideo(cordova, url, album);
+              service.saveVideo(getContext(), cordova, url, album);
+
               callbackContext.success();
 
             } catch (Exception e) {
@@ -293,9 +316,9 @@ public class PhotoLibrary extends CordovaPlugin {
         throw new FileNotFoundException("Could not create thumbnail");
       }
 
-      InputStream is = new ByteArrayInputStream(thumbnailData.getBytes());
+      InputStream is = new ByteArrayInputStream(thumbnailData.bytes);
 
-      return new CordovaResourceApi.OpenForReadResult(uri, is, thumbnailData.getMimeType(), is.available(), null);
+      return new CordovaResourceApi.OpenForReadResult(uri, is, thumbnailData.mimeType, is.available(), null);
 
     } else { // isPhoto == true
 
@@ -340,8 +363,8 @@ public class PhotoLibrary extends CordovaPlugin {
     // see encodeAsJsMessage method of https://github.com/apache/cordova-android/blob/master/framework/src/org/apache/cordova/NativeToJsMessageQueue.java
 
     JSONObject resultJSON = new JSONObject();
-    resultJSON.put("data", Base64.encodeToString(pictureData.getBytes(), Base64.NO_WRAP));
-    resultJSON.put("mimeType", pictureData.getMimeType());
+    resultJSON.put("data", Base64.encodeToString(pictureData.bytes, Base64.NO_WRAP));
+    resultJSON.put("mimeType", pictureData.mimeType);
 
     return new PluginResult(status, resultJSON);
 
@@ -368,9 +391,14 @@ public class PhotoLibrary extends CordovaPlugin {
     cordova.requestPermissions(this, REQUEST_AUTHORIZATION_REQ_CODE, permissions.toArray(new String[0]));
   }
 
-  private static JSONObject createGetLibraryResult(ArrayList<JSONObject> library, boolean isPartial) throws JSONException {
+  private static JSONArray createGetAlbumsResult(ArrayList<JSONObject> albums) throws JSONException {
+    return new JSONArray(albums);
+  }
+
+  private static JSONObject createGetLibraryResult(ArrayList<JSONObject> library, int chunkNum, boolean isLastChunk) throws JSONException {
     JSONObject result = new JSONObject();
-    result.put("isPartial", isPartial);
+    result.put("chunkNum", chunkNum);
+    result.put("isLastChunk", isLastChunk);
     result.put("library", new JSONArray(library));
     return result;
   }

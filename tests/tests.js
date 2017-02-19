@@ -1,3 +1,6 @@
+// Tests should be written on JavaScript version that supported on both iOS and Android WebView (no lambdas).
+// But functionality provided by esshims can be used :)
+
 // Include shims for useful javascript functions to work on all devices
 cordova.require('cordova-plugin-photo-library-tests.es5shim');
 cordova.require('cordova-plugin-photo-library-tests.es6shim');
@@ -38,10 +41,14 @@ exports.defineAutoTests = function () {
 
       var library = null;
       var libraryError = null;
+      var getLibraryResultCalledTimes = 0;
+      var getLibraryIsLastChunk = null;
 
       beforeAll(function (done) {
-        cordova.plugins.photoLibrary.getLibrary(function (lib) {
+        cordova.plugins.photoLibrary.getLibrary(function (lib, isLastChunk) {
           library = lib;
+          getLibraryResultCalledTimes += 1;
+          getLibraryIsLastChunk = isLastChunk;
           done();
         },
         function (err) {
@@ -50,6 +57,7 @@ exports.defineAutoTests = function () {
         },
           {
             useOriginalFileNames: true, // We want to compare file names in test
+            includeAlbumData: true, // We want to check albums
           });
       }, 20000); // In browser platform, gives a time to select photos.
 
@@ -59,6 +67,44 @@ exports.defineAutoTests = function () {
 
       it('should load library', function () {
         expect(library).not.toBeNull();
+      });
+
+      it('result callback should be executed exactly once', function () {
+        expect(getLibraryResultCalledTimes).toEqual(1);
+      });
+
+      it('result callback should be treated as last chunk', function () {
+        expect(getLibraryIsLastChunk).toBeTruthy();
+      });
+
+      describe('cordova.plugins.photoLibrary.getAlbums', function () {
+
+        var albums = null;
+        var getAlbumsError = null;
+
+        beforeAll(function (done) {
+          cordova.plugins.photoLibrary.getAlbums(function (albs) {
+            albums = albs;
+            done();
+          },
+          function (err) {
+            getAlbumsError = err;
+            done.fail(err);
+          });
+        });
+
+        it('should not fail', function() {
+          expect(getAlbumsError).toBeNull('getAlbums failed with error: ' + getAlbumsError);
+        });
+
+        it('should return an array', function() {
+          expect(albums).toEqual(jasmine.any(Array));
+        });
+
+        it('shoud return at least one album', function() {
+          expect(albums.length).toBeGreaterThan(0);
+        });
+
       });
 
       describe('cordova.plugins.photoLibrary.getLibrary', function () {
@@ -107,6 +153,14 @@ exports.defineAutoTests = function () {
               expect(this.libraryItem.creationDate.getFullYear()).toBeGreaterThan(2015);
             });
 
+            it('should have albumIds array', function() {
+              expect(this.libraryItem.albumIds).toEqual(jasmine.any(Array));
+            });
+
+            it('albumIds array should contain at least one album', function() {
+              expect(this.libraryItem.albumIds.length).toBeGreaterThan(0);
+            });
+
           });
 
         });
@@ -114,7 +168,7 @@ exports.defineAutoTests = function () {
         describe('geotagged image', function() {
 
           beforeEach(function () {
-            this.libraryItem = library.find(function (libraryItem) { return libraryItem.fileName === 'geotagged.jpg' });
+            this.libraryItem = library.find(function (libraryItem) { return libraryItem.fileName === 'geotagged.jpg'; });
           });
 
           it('should have correct latitude', function() {
@@ -126,8 +180,6 @@ exports.defineAutoTests = function () {
           });
 
         });
-
-        // TODO: test partialCallback
 
       });
 
@@ -300,25 +352,113 @@ exports.defineAutoTests = function () {
 
       });
 
-      describe('cordova.plugins.photoLibrary.saveImage', function () {
+      var chunkOptionsArray = [{itemsInChunk: 1, chunkTimeSec: 0}, {itemsInChunk: 0, chunkTimeSec: 0.000000001}];
 
-        it('should be defined', function () {
-          expect(cordova.plugins.photoLibrary.saveImage).toEqual(jasmine.any(Function));
+      chunkOptionsArray.forEach(function (chunkOptions) {
+
+        describe('chunked output by ' + (chunkOptions.itemsInChunk > 0? 'itemsInChunk' : 'chunkTimeSec'), function () {
+          var libraryChunks = [];
+          var chunkedError = null;
+
+          beforeAll(function (done) {
+            cordova.plugins.photoLibrary.getLibrary(function (lib, isLastChunk) {
+              libraryChunks.push(lib);
+              if (isLastChunk) {
+                done();
+              }
+            },
+            function (err) {
+              chunkedError = err;
+              done.fail(err);
+            },
+              {
+                itemsInChunk: chunkOptions.itemsInChunk,
+                chunkTimeSec: chunkOptions.chunkTimeSec,
+                useOriginalFileNames: true,
+              });
+          }, 20000); // In browser platform, gives a time to select photos.
+
+          it('should not fail', function () {
+            expect(chunkedError).toBeNull('chunked getLibrary failed with error: ' + chunkedError);
+          });
+
+          if (chunkOptions.itemsInChunk > 0) {
+            it('should return correct number of chunks', function () {
+              expect(libraryChunks.length).toEqual(library.length);
+            });
+          }
+
+          if (chunkOptions.chunkTimeSec > 0) {
+            it('should return multiple chunks', function () {
+              expect(libraryChunks.length).toBeGreaterThan(0);
+            });
+          }
+
+          it('should return same photos in chunks as without chunks', function () {
+            var unchunkedNames = library.map(function(item) { return item.id; });
+            var flattenedChunks = [].concat.apply([], libraryChunks);
+            var chunkedNames = flattenedChunks.map(function(item) { return item.id; });
+            expect(chunkedNames).toEqual(unchunkedNames);
+          });
+
         });
-
-        // TODO: add more tests
 
       });
 
-      describe('cordova.plugins.photoLibrary.saveVideo', function () {
+    });
 
-        it('should be defined', function () {
-          expect(cordova.plugins.photoLibrary.saveVideo).toEqual(jasmine.any(Function));
+    describe('cordova.plugins.photoLibrary.saveImage', function () {
+
+      it('should be defined', function () {
+        expect(cordova.plugins.photoLibrary.saveImage).toEqual(jasmine.any(Function));
+      });
+
+      describe('saving image as dataURL', function() {
+
+        var saveImageLibraryItem = null;
+        var saveImageError = null;
+
+        beforeAll(function(done) {
+          var canvas = document.createElement('canvas');
+          canvas.width = 150;
+          canvas.height = 150;
+          var ctx = canvas.getContext('2d');
+          ctx.fillRect(25, 25, 100, 100);
+          ctx.clearRect(45, 45, 60, 60);
+          ctx.strokeRect(50, 50, 50, 50);
+          var dataURL = canvas.toDataURL('image/jpg');
+
+          cordova.plugins.photoLibrary.saveImage(dataURL, 'PhotoLibraryTests',
+            function(libraryItem) {
+              saveImageLibraryItem = libraryItem;
+              done();
+            },
+            function(err) {
+              saveImageError = err;
+              done.fail(err);
+            });
         });
 
-        // TODO: add more tests
+        it('should not fail', function() {
+          expect(saveImageError).toBeNull('failed with error: ' + saveImageError);
+        });
+
+        it('should return valid library item', function() {
+          expect(saveImageLibraryItem).not.toBeNull();
+          expect(saveImageLibraryItem.id).toBeDefined();
+        });
 
       });
+
+    });
+
+    describe('cordova.plugins.photoLibrary.saveVideo', function () {
+
+      it('should be defined', function () {
+        expect(cordova.plugins.photoLibrary.saveVideo).toEqual(jasmine.any(Function));
+      });
+
+      // TODO: add more tests
 
     });
 
@@ -346,15 +486,23 @@ exports.defineManualTests = function (contentEl, createActionButton) {
   var photo_library_tests = '<h3>Press requestAuthorization button to authorize storage</h3>' +
     '<div id="request_authorization"></div>' +
     'Expected result: If authorized, this fact will be logged. On iOS: settings page will open. On Android: confirmation prompt will open.' +
+
     '<h3>Press the button to visually inspect test-images</h3>' +
     '<div id="inspect_test_images"></div>' +
     'Expected result: All the images should be rotated right way' +
+
     '<h3>Press the button to visually inspect thumbnails of test-images</h3>' +
     '<div id="inspect_thumbnail_test_images"></div>' +
     'Expected result: All the images should be rotated right way' +
+
     '<h3>Press the button to measure speed of getLibrary</h3>' +
     '<div id="measure_get_library_speed"></div>' +
-    'Expected result: Time per image should be adequate';
+    'Expected result: Time per image should be adequate' +
+
+    '<h3>Press the button to display albums</h3>' +
+    '<div id="display_albums"></div>' +
+    'Expected result: Should return all the albums'
+    ;
 
   contentEl.innerHTML = '<div id="info" style="width:100%; max-height:none;"></div>' + photo_library_tests;
 
@@ -366,6 +514,10 @@ exports.defineManualTests = function (contentEl, createActionButton) {
       },
       function (err) {
         logMessage('User denied the access: ' + err);
+      },
+      {
+        read: true,
+        write: true // Needed for saveImage tests
       }
     );
   }, 'request_authorization');
@@ -387,6 +539,9 @@ exports.defineManualTests = function (contentEl, createActionButton) {
       },
       function (err) {
         logMessage('Error occured in getLibrary: ' + err);
+      },
+      {
+        useOriginalFileNames: true,
       }
     );
   }, 'inspect_test_images');
@@ -412,6 +567,7 @@ exports.defineManualTests = function (contentEl, createActionButton) {
       {
         thumbnailWidth: 256,
         thumbnailHeight: 256,
+        useOriginalFileNames: true,
       }
     );
   }, 'inspect_thumbnail_test_images');
@@ -433,5 +589,19 @@ exports.defineManualTests = function (contentEl, createActionButton) {
       }
     );
   }, 'measure_get_library_speed');
+
+  createActionButton('display albums', function () {
+    clearLog();
+    cordova.plugins.photoLibrary.getAlbums(
+      function (albums) {
+        albums.forEach(function(album) {
+          logMessage(JSON.stringify(album));
+        });
+      },
+      function (err) {
+        logMessage('Error occured in getAlbums: ' + err);
+      }
+    );
+  }, 'display_albums');
 
 };

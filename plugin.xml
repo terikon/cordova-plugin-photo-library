@@ -1,9 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-photo-library" version="1.2.2" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="cordova-plugin-photo-library" version="2.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>Photo Library</name>
-    <js-module name="PhotoLibrary" src="www/PhotoLibrary.js">
+    <js-module src="www/PhotoLibrary.js" name="PhotoLibrary">
         <clobbers target="cordova.plugins.photoLibrary" />
     </js-module>
+    <js-module src="www/async/dist/async.min.js" name="async" />
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="PhotoLibrary" >
@@ -18,6 +19,7 @@
         </config-file>
         <source-file src="src/android/PhotoLibrary.java" target-dir="src/com/terikon/cordova/photolibrary" />
         <source-file src="src/android/PhotoLibraryService.java" target-dir="src/com/terikon/cordova/photolibrary" />
+        <source-file src="src/android/PhotoLibraryGetLibraryOptions.java" target-dir="src/com/terikon/cordova/photolibrary" />
     </platform>
     <platform name="ios">
         <config-file target="config.xml" parent="/*">
