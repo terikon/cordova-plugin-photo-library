@@ -269,8 +269,9 @@ var app = angular
   .config([
     '$compileProvider',
     function ($compileProvider) {
-      $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|cdvphotolibrary):/);
-      // Angular before v1.2 uses $compileProvider.urlSanitizationWhitelist(...)
+		$compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|cdvphotolibrary):/);
+		//Angular 1.2 and above has two sanitization methods, one for links (aHrefSanitizationWhitelist) and 
+		//one for images (imgSrcSanitizationWhitelist). Versions prior to 1.2 use $compileProvider.urlSanitizationWhitelist(...)
     }
   ]);
 ```
