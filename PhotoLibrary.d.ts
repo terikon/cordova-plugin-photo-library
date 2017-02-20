@@ -4,7 +4,7 @@ declare module PhotoLibraryCordova {
 
     getLibrary(success: (result: { chunk: LibraryItem[], isLastChunk: boolean }) => void, error: (err: any) => void, options?: GetLibraryOptions): void;
 
-    requestAuthorization(success: () => void, error: (err: any) => void): void;
+    requestAuthorization(success: () => void, error: (err: any) => void, options?: RequestAuthorizationOptions): void;
 
     getAlbums(success: (result: AlbumItem[]) => void, error: (err:any) => void): void;
 
@@ -56,6 +56,11 @@ declare module PhotoLibraryCordova {
     chunkTimeSec?: number;
     useOriginalFileNames?: boolean;
     includeAlbumData?: boolean;
+  }
+
+  export interface RequestAuthorizationOptions {
+    read?: boolean;
+    write?: boolean;
   }
 
   export interface GetThumbnailOptions {
