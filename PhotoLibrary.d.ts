@@ -34,6 +34,8 @@ declare module PhotoLibraryCordova {
 
   export interface LibraryItem {
     id: string;
+    photoURL: string;
+    thumbnailURL: string;
     fileName: string;
     width: number;
     height: number;
