@@ -35,7 +35,8 @@ photoLibrary.getLibrary = function (success, error, options) {
     var isLastChunk = chunk.isLastChunk;
 
     processLibrary(library, function(library) {
-      success(library, isLastChunk);
+      var result = { library: library, isLastChunk: isLastChunk };
+      success(result);
       done();
     }, options);
 

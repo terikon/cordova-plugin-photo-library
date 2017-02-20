@@ -40,8 +40,8 @@ For remarks about angular/ionic usage, see below.
 
 ```js
 cordova.plugins.photoLibrary.getLibrary(
-  function (library) {
-
+  function (result) {
+    var library = result.library;
     // Here we have the library as array
 
     library.forEach(function(libraryItem) {
@@ -108,7 +108,7 @@ The library handles tricky parts of aquiring permissions to photo library.
 If any of methods fail because lack of permissions, error string will be returned that begins with 'Permission'. So, to process on aquiring permissions, do the following:
 ```js
 cordova.plugins.photoLibrary.getLibrary(
-  function (library) { },
+  function ({library}) { },
   function (err) {
     if (err.startsWith('Permission')) {
       // call requestAuthorization, and retry
@@ -151,7 +151,9 @@ Read permission is added for your app by the plugin automatically. To make writi
 
 ```js
 cordova.plugins.photoLibrary.getLibrary(
-  function (library, isLastChunk) {
+  function (result) {
+    var library = result.library;
+    var isLastChunk = result.isLastChunk;
   },
   function (err) { },
   {

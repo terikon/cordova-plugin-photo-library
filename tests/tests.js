@@ -45,10 +45,10 @@ exports.defineAutoTests = function () {
       var getLibraryIsLastChunk = null;
 
       beforeAll(function (done) {
-        cordova.plugins.photoLibrary.getLibrary(function (lib, isLastChunk) {
-          library = lib;
+        cordova.plugins.photoLibrary.getLibrary(function (result) {
+          library = result.library;
           getLibraryResultCalledTimes += 1;
-          getLibraryIsLastChunk = isLastChunk;
+          getLibraryIsLastChunk = result.isLastChunk;
           done();
         },
         function (err) {
@@ -361,9 +361,9 @@ exports.defineAutoTests = function () {
           var chunkedError = null;
 
           beforeAll(function (done) {
-            cordova.plugins.photoLibrary.getLibrary(function (lib, isLastChunk) {
-              libraryChunks.push(lib);
-              if (isLastChunk) {
+            cordova.plugins.photoLibrary.getLibrary(function (result) {
+              libraryChunks.push(result.library);
+              if (result.isLastChunk) {
                 done();
               }
             },
@@ -525,9 +525,9 @@ exports.defineManualTests = function (contentEl, createActionButton) {
   createActionButton('inspect test images', function () {
     clearLog();
     cordova.plugins.photoLibrary.getLibrary(
-      function (library) {
+      function (result) {
         var found = 0;
-        library.forEach(function (libraryItem) {
+        result.library.forEach(function (libraryItem) {
           if (expectedImages.some(function (expectedImage) { return expectedImage.fileName === libraryItem.fileName; })) {
             found += 1;
             logMessage('<img src="' + libraryItem.photoURL + '" width="256">');
@@ -549,9 +549,9 @@ exports.defineManualTests = function (contentEl, createActionButton) {
   createActionButton('inspect thumbnail test images', function () {
     clearLog();
     cordova.plugins.photoLibrary.getLibrary(
-      function (library) {
+      function (result) {
         var found = 0;
-        library.forEach(function (libraryItem) {
+        result.library.forEach(function (libraryItem) {
           if (expectedImages.some(function (expectedImage) { return expectedImage.fileName === libraryItem.fileName; })) {
             found += 1;
             logMessage('<img src="' + libraryItem.thumbnailURL + '" width="256">');
@@ -577,7 +577,8 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     logMessage('measuring, please wait...');
     var start = performance.now();
     cordova.plugins.photoLibrary.getLibrary(
-      function (library) {
+      function (result) {
+        var library = result.library;
         var end = performance.now();
         var elapsedMs = end - start;
         logMessage('getLibrary returned ' + library.length + ' items.');

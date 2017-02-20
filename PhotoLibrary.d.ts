@@ -2,7 +2,7 @@ declare module PhotoLibraryCordova {
 
   export interface Plugin {
 
-    getLibrary(success: (result: LibraryItem[], isLastChunk: boolean) => void, error: (err: any) => void, options?: GetLibraryOptions): void;
+    getLibrary(success: (result: { chunk: LibraryItem[], isLastChunk: boolean }) => void, error: (err: any) => void, options?: GetLibraryOptions): void;
 
     requestAuthorization(success: () => void, error: (err: any) => void): void;
 
