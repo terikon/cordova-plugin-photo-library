@@ -501,7 +501,11 @@ exports.defineManualTests = function (contentEl, createActionButton) {
 
     '<h3>Press the button to display albums</h3>' +
     '<div id="display_albums"></div>' +
-    'Expected result: Should return all the albums'
+    'Expected result: Should return all the albums'+
+
+    '<h3>Press the button to play video</h3>' +
+    '<div id="play_video"></div>' +
+    'Expected result: Should play the video'
     ;
 
   contentEl.innerHTML = '<div id="info" style="width:100%; max-height:none;"></div>' + photo_library_tests;
@@ -604,5 +608,14 @@ exports.defineManualTests = function (contentEl, createActionButton) {
       }
     );
   }, 'display_albums');
+
+  createActionButton('play video', function () {
+    clearLog();
+
+    // TODO
+
+    logMessage('<video src="' + libraryItem.videoURL + '" width="256"></video>');
+
+  }, 'play_video');
 
 };

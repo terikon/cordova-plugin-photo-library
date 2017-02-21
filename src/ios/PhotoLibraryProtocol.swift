@@ -97,6 +97,15 @@ import Foundation
 
                     return
 
+                } else if url.host?.lowercased() == "video" {
+
+                    DispatchQueue.global(qos: .default).async {
+                        service.getVideo(photoId!) {
+                        }
+                    }
+
+                    return
+
                 }
             }
         }
