@@ -242,8 +242,24 @@ final class PhotoLibraryService {
 
     }
 
-    func getVideo(_ videoId: String, completion: @escaping (_ result: NSInputStream) -> Void) {
-        // TODO: read video as stream
+    func getVideo(_ videoId: String, completion: @escaping (_ result: NSInputStream?) -> Void) {
+        let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [photoId], options: self.videoFetchOptions)
+
+        if fetchResult.count == 0 {
+            completion(nil)
+            return
+        }
+
+        fetchResult.enumerateObjects({
+            (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
+
+            let asset = obj as! PHAsset
+
+            // TODO: get PHAssetResource
+            // TODO: read video as stream
+            PHAssetResourceManager.requestData(for assetResource, options, dataReceivedHandler, completionHandler)
+
+        })
     }
 
     func stopCaching() {
