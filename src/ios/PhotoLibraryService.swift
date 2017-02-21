@@ -128,10 +128,10 @@ final class PhotoLibraryService {
         })
 
     }
-    
+
     private func assetToLibraryItem(asset: PHAsset, useOriginalFileNames: Bool, includeAlbumData: Bool) -> NSDictionary {
         let libraryItem = NSMutableDictionary()
-        
+
         libraryItem["id"] = asset.localIdentifier
         libraryItem["fileName"] = useOriginalFileNames ? asset.originalFileName : asset.fileName // originalFilename is much slower
         libraryItem["width"] = asset.pixelWidth
@@ -141,7 +141,7 @@ final class PhotoLibraryService {
             libraryItem["latitude"] = location.coordinate.latitude
             libraryItem["longitude"] = location.coordinate.longitude
         }
-        
+
         if includeAlbumData {
             // This is pretty slow, use only when needed
             var assetCollectionIds = [String]()
@@ -153,35 +153,35 @@ final class PhotoLibraryService {
             }
             libraryItem["albumIds"] = assetCollectionIds
         }
-        
+
         return libraryItem
     }
-    
+
     func getAlbums() -> [NSDictionary] {
-        
+
         var result = [NSDictionary]()
-        
+
         for assetCollectionType in assetCollectionTypes {
-            
+
             let fetchResult = PHAssetCollection.fetchAssetCollections(with: assetCollectionType, subtype: .any, options: nil)
-            
+
             fetchResult.enumerateObjects({ (assetCollection: PHAssetCollection, index, stop) in
-                
+
                 let albumItem = NSMutableDictionary()
-                
+
                 albumItem["id"] = assetCollection.localIdentifier
                 albumItem["title"] = assetCollection.localizedTitle
-                
+
                 result.append(albumItem)
-                
+
             });
-            
+
         }
-        
+
         return result;
-        
+
     }
-    
+
     func getThumbnail(_ photoId: String, thumbnailWidth: Int, thumbnailHeight: Int, quality: Float, completion: @escaping (_ result: PictureData?) -> Void) {
 
         let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [photoId], options: self.fetchOptions)
@@ -240,6 +240,10 @@ final class PhotoLibraryService {
             }
         })
 
+    }
+
+    func getVideo(_ videoId: String, completion: @escaping (_ result: NSInputStream) -> Void) {
+        // TODO: read video as stream
     }
 
     func stopCaching() {
