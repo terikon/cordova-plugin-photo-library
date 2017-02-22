@@ -317,7 +317,7 @@ tcc.db file is located at $HOME/Library/Developer/CoreSimulator/Devices/$DEVICEI
 
 ## Helper app
 
-To run tests, use [special cordova-plugin-photo-library-tester](https://github.com/terikon/cordova-plugin-photo-library-tester).
+To run tests, use [special photo-library-tester](https://github.com/terikon/photo-library-tester).
 It's always useful to run these tests before submitting changes, for each platform (android, ios, browser).
 
 # TODO
