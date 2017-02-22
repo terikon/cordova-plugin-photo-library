@@ -5,6 +5,7 @@
         <clobbers target="cordova.plugins.photoLibrary" />
     </js-module>
     <js-module src="www/async/dist/async.min.js" name="async" />
+    <js-module src="www/async/dist/async.min.map" name="async_map" />
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="PhotoLibrary" >
