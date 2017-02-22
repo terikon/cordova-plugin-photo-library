@@ -236,22 +236,40 @@ In angular2, do following:
 Define Pipe that will tell to bypass trusted urls. cdvphotolibrary urls should be trusted:
 
 ```js
-@Pipe({name: 'safeUrl'})
-export class SafeUrl {
-  constructor(private sanitizer:DomSanitizer){}
-  transform(url) {
-    return this.sanitizer.bypassSecurityTrustUrl(url);
+// cdvphotolibrary.pipe.ts
+import { Pipe, PipeTransform } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+
+@Pipe({name: 'cdvphotolibrary'})
+export class CDVPhotoLibraryPipe implements PipeTransform {
+
+  constructor(private sanitizer: DomSanitizer) {}
+
+  transform(url: string) {
+    return url.startsWith('cdvphotolibrary://') ? this.sanitizer.bypassSecurityTrustUrl(url) : url;
   }
 }
 ```
 
-Then in your component, use cdvphotolibrary urls applying the safeUrl pipe:
+Register the pipe in your module:
+
+```js
+import { CDVPhotoLibraryPipe } from './cdvphotolibrary.pipe.ts';
+
+@NgModule({
+  declarations: [
+    CDVPhotoLibraryPipe,
+    // ...
+  ],
+})
+```
+
+Then in your component, use cdvphotolibrary urls applying the cdvphotolibrary pipe:
 
 ```js
 @Component({
    selector: 'app',
-   template: '<img [src]="url | safeUrl"></div>',
-   pipes: [ SafeUrl ]
+   template: '<img [src]="url | cdvphotolibrary">'
 })
 
 export class AppComponent {
