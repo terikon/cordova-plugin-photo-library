@@ -7,6 +7,14 @@ import Foundation
     static let DEFAULT_HEIGHT = "384"
     static let DEFAULT_QUALITY = "0.5"
     
+    lazy var concurrentQueue: OperationQueue = {
+        var queue = OperationQueue()
+        queue.name = "PhotoLibrary Protocol Queue"
+        queue.qualityOfService = .background
+        queue.maxConcurrentOperationCount = 4
+        return queue
+    }()
+    
     override init(request: URLRequest, cachedResponse: CachedURLResponse?, client: URLProtocolClient?) {
         super.init(request: request, cachedResponse: cachedResponse, client: client)
     }
@@ -67,7 +75,7 @@ import Foundation
                         return
                     }
                     
-                    DispatchQueue.global(qos: .default).async {
+                    concurrentQueue.addOperation {
                         service.getThumbnail(photoId!, thumbnailWidth: width!, thumbnailHeight: height!, quality: quality!) { (imageData) in
                             if (imageData == nil) {
                                 self.sendErrorResponse(404, error: PhotoLibraryService.PERMISSION_ERROR)
@@ -81,7 +89,7 @@ import Foundation
                     
                 } else if url.host?.lowercased() == "photo" {
                     
-                    DispatchQueue.global(qos: .default).async {
+                    concurrentQueue.addOperation {
                         service.getPhoto(photoId!) { (imageData) in
                             if (imageData == nil) {
                                 self.sendErrorResponse(404, error: PhotoLibraryService.PERMISSION_ERROR)

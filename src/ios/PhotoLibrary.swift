@@ -2,6 +2,8 @@ import Foundation
 
 @objc(PhotoLibrary) class PhotoLibrary : CDVPlugin {
 
+    lazy var concurrentQueue: DispatchQueue = DispatchQueue(label: "photo-library.queue.plugin", qos: DispatchQoS.utility, attributes: [.concurrent])
+    
     override func pluginInitialize() {
 
         // Do not call PhotoLibraryService here, as it will cause permission prompt to appear on app start.
@@ -16,7 +18,7 @@ import Foundation
 
     // Will sort by creation date
     func getLibrary(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(qos: .default).async {
+        concurrentQueue.async {
 
             if !PhotoLibraryService.hasPermission() {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
@@ -65,7 +67,7 @@ import Foundation
     }
     
     func getAlbums(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(qos: .default).async {
+        concurrentQueue.async {
             
             if !PhotoLibraryService.hasPermission() {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
@@ -84,7 +86,7 @@ import Foundation
     }
     
     func getThumbnail(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(qos: .default).async {
+        concurrentQueue.async {
 
             if !PhotoLibraryService.hasPermission() {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
@@ -119,7 +121,7 @@ import Foundation
     }
 
     func getPhoto(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(qos: .default).async {
+        concurrentQueue.async {
 
             if !PhotoLibraryService.hasPermission() {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
@@ -175,7 +177,7 @@ import Foundation
     }
 
     func saveImage(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(qos: .default).async {
+        concurrentQueue.async {
 
             if !PhotoLibraryService.hasPermission() {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
@@ -202,7 +204,7 @@ import Foundation
     }
 
     func saveVideo(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(qos: .default).async {
+        concurrentQueue.async {
 
             if !PhotoLibraryService.hasPermission() {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
