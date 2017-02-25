@@ -1,20 +1,21 @@
 [![Build Status](https://travis-ci.org/terikon/cordova-plugin-photo-library.svg?branch=master)](https://travis-ci.org/terikon/cordova-plugin-photo-library)
 
-That's how it looks in real app:
+That's how it looks and performs in real app:
 
 [![](https://img.youtube.com/vi/qHnnRsZ7klE/0.jpg)](https://www.youtube.com/watch?v=qHnnRsZ7klE)
 
-[Demo project for Ionic2](https://github.com/terikon/photo-library-demo-ionic2)
+Demo projects (runnable online):
 
-We needed a code to displays photo library on HTML page. That gets thumbnail of arbitrary sizes, works on multiple platforms, and is fast.
+- [For jQuery](https://github.com/terikon/photo-library-demo-jquery)
+- [For Ionic 2](https://github.com/terikon/photo-library-demo-ionic2)
 
-So here it is.
+Displays photo library on cordova's HTML page, by URL. Gets thumbnail of arbitrary sizes, works on multiple platforms, and is fast.
 
 - Displays photo gallery as web page, and not as boring native screen which you cannot modify. This brings back control over your app to you.
 For example, you can use [PhotoSwipe](https://github.com/dimsemenov/photoswipe) library to present photos.
+- Provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5 .
 - Works on Android, iOS and browser (cordova serve).
-- Fast - does not do base64 and uses browser cache.
-- On device, provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5 .
+- Fast - uses browser cache.
 - Can save photos (jpg, png, animated gifs) and videos to specified album on device.
 - Handles permissions.
 - Handles images [EXIF rotation hell](http://www.daveperrett.com/articles/2012/07/28/exif-orientation-handling-is-a-ghetto/).
