@@ -8,6 +8,7 @@ Demo projects (runnable online):
 
 - [For jQuery](https://github.com/terikon/photo-library-demo-jquery)
 - [For Ionic 2](https://github.com/terikon/photo-library-demo-ionic2)
+- [Vanilla JS with PhotoSwipe](https://github.com/terikon/photo-library-demo-photoswipe)
 
 Displays photo library on cordova's HTML page, by URL. Gets thumbnail of arbitrary sizes, works on multiple platforms, and is fast.
 
