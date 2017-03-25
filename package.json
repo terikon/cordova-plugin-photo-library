@@ -31,6 +31,7 @@
     "es5-shim": "4.5.9",
     "es6-shim": "0.35.3",
     "es7-shim": "6.0.0",
+    "blueimp-canvastoblob": "2.1.0",
     "cordova-paramedic": "https://github.com/apache/cordova-paramedic.git"
   },
   "dependencies": {

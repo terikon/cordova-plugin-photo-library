@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URL;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -636,8 +637,7 @@ public class PhotoLibraryService {
         String assetUrl = url.replace("file:///android_asset/", "");
         is = cordova.getActivity().getApplicationContext().getAssets().open(assetUrl);
       } else {
-        File sourceFile = new File(new URI(url));
-        is = new FileInputStream(sourceFile);
+        is = new URL(url).openStream();
       }
 
       copyStream(is, os);

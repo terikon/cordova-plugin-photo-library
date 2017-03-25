@@ -2,9 +2,12 @@
 // But functionality provided by esshims can be used :)
 
 // Include shims for useful javascript functions to work on all devices
-cordova.require('cordova-plugin-photo-library-tests.es5shim');
-cordova.require('cordova-plugin-photo-library-tests.es6shim');
-cordova.require('cordova-plugin-photo-library-tests.es7shim');
+cordova.require('cordova-plugin-photo-library-tests.es5-shim');
+cordova.require('cordova-plugin-photo-library-tests.es6-shim');
+cordova.require('cordova-plugin-photo-library-tests.es7-shim');
+cordova.require('cordova-plugin-photo-library-tests.blueimp-canvastoblob');
+
+var testUtils = cordova.require('cordova-plugin-photo-library-tests.test-utils');
 
 var expectedImages = [
     { fileName: 'Landscape_1.jpg', width: 600, height: 450, },
@@ -429,6 +432,104 @@ exports.defineAutoTests = function () {
           var dataURL = canvas.toDataURL('image/jpg');
 
           cordova.plugins.photoLibrary.saveImage(dataURL, 'PhotoLibraryTests',
+            function(libraryItem) {
+              saveImageLibraryItem = libraryItem;
+              done();
+            },
+            function(err) {
+              saveImageError = err;
+              done.fail(err);
+            });
+        });
+
+        it('should not fail', function() {
+          expect(saveImageError).toBeNull('failed with error: ' + saveImageError);
+        });
+
+        it('should return valid library item', function() {
+          expect(saveImageLibraryItem).not.toBeNull();
+          expect(saveImageLibraryItem.id).toBeDefined();
+        });
+
+      });
+
+      describe('saving image from local URL', function() {
+
+        var saveImageLibraryItem = null;
+        var saveImageError = null;
+
+        beforeAll(function(done) {
+          var canvas = document.createElement('canvas');
+          canvas.width = 150;
+          canvas.height = 150;
+          var ctx = canvas.getContext('2d');
+          ctx.fillRect(25, 25, 100, 100);
+          ctx.clearRect(45, 45, 60, 60);
+          ctx.strokeStyle = '#87CEEB'; // Sky blue
+          ctx.strokeRect(50, 50, 50, 50);
+
+          testUtils.resolveLocalFileSystemURL(cordova.file.cacheDirectory)
+          .then(function (dirEntry) {
+
+            return testUtils.createFile(dirEntry, 'test-image.jpg');
+
+          })
+          .then(function (fileEntry) {
+
+            return new Promise(function (resolve, reject) {
+              canvas.toBlob(function(blob) {
+                resolve({fileEntry: fileEntry, blob: blob});
+              }, 'image/jpeg');
+            });
+
+          })
+          .then(function (result) {
+
+            var fileEntry = result.fileEntry;
+            var blob = result.blob;
+            return testUtils.writeFile(fileEntry, blob);
+
+          })
+          .then(function(fileEntry) {
+
+            var localURL = fileEntry.toURL();
+            return new Promise(function (resolve, reject) {
+              cordova.plugins.photoLibrary.saveImage(localURL, 'PhotoLibraryTests',
+              function(libraryItem) {
+                saveImageLibraryItem = libraryItem;
+                resolve();
+              },
+              function(err) {
+                saveImageError = err;
+                reject(err);
+              });
+            });
+
+          })
+          .then(done)
+          .catch(function (err) { done.fail(err); });
+        });
+
+        it('should not fail', function() {
+          expect(saveImageError).toBeNull('failed with error: ' + saveImageError);
+        });
+
+        it('should return valid library item', function() {
+          expect(saveImageLibraryItem).not.toBeNull();
+          expect(saveImageLibraryItem.id).toBeDefined();
+        });
+
+      });
+
+      describe('saving image from remote URL', function() {
+
+        var saveImageLibraryItem = null;
+        var saveImageError = null;
+
+        beforeAll(function(done) {
+          var remoteURL = 'http://openphoto.net/volumes/nmarchildon/20041218/opl_imgp0196.jpg';
+
+          cordova.plugins.photoLibrary.saveImage(remoteURL, 'PhotoLibraryTests',
             function(libraryItem) {
               saveImageLibraryItem = libraryItem;
               done();
