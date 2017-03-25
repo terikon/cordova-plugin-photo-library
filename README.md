@@ -235,6 +235,8 @@ cordova.plugins.photoLibrary.getPhoto(
 
 # ionic / angular
 
+It's best to use from [ionic-native](https://ionicframework.com/docs/v2/native/photo-library). The the docs.
+
 As mentioned [here](https://github.com/terikon/cordova-plugin-photo-library/issues/15) by dnmd, cdvphotolibrary urls should bypass sanitization to work.
 
 In angular2, do following:
