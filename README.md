@@ -22,7 +22,10 @@ For example, you can use [PhotoSwipe](https://github.com/dimsemenov/photoswipe) 
 - Handles images [EXIF rotation hell](http://www.daveperrett.com/articles/2012/07/28/exif-orientation-handling-is-a-ghetto/).
 - On iOS, written in Swift and not Objective-C.
 
-**Work in progress**
+**Co-maintainer needed**
+
+Currently Android code is pretty stable, iOS has few stability [issues](https://github.com/terikon/cordova-plugin-photo-library/issues).
+**Co-maintainer with iOS/Swift knowlege is needed, please [contact](https://github.com/viskin)**.
 
 Contributions are welcome.
 Please add only features that can be supported on both Android and iOS.
