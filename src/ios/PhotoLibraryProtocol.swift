@@ -90,7 +90,7 @@ import Foundation
                 } else if url.host?.lowercased() == "photo" {
                     
                     concurrentQueue.addOperation {
-                        service.getPhoto(photoId!) { (imageData) in
+                        service.getPhoto(photoId!) { (imageData, includeCloudData) in
                             if (imageData == nil) {
                                 self.sendErrorResponse(404, error: PhotoLibraryService.PERMISSION_ERROR)
                                 return

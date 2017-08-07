@@ -58,6 +58,7 @@ declare module PhotoLibraryCordova {
     chunkTimeSec?: number;
     useOriginalFileNames?: boolean;
     includeAlbumData?: boolean;
+    includeCloudData?: boolean;
   }
 
   export interface RequestAuthorizationOptions {

@@ -37,6 +37,7 @@ final class PhotoLibraryService {
     let contentMode = PHImageContentMode.aspectFill // AspectFit: can be smaller, AspectFill - can be larger. TODO: resize to exact size
 
     var cacheActive = false
+    var includeCloudData = true
 
     static let PERMISSION_ERROR = "Permission Denial: This application is not allowed to access Photo data."
 
@@ -212,12 +213,12 @@ final class PhotoLibraryService {
 
     }
 
-    func getPhoto(_ photoId: String, completion: @escaping (_ result: PictureData?) -> Void) {
+    func getPhoto(_ photoId: String, completion: @escaping (_ result: PictureData?, _ includeCloudData: Bool) -> Void) {
 
         let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [photoId], options: self.fetchOptions)
 
         if fetchResult.count == 0 {
-            completion(nil)
+            completion(nil, self.includeCloudData)
             return
         }
 
@@ -230,13 +231,13 @@ final class PhotoLibraryService {
                 (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
 
                 guard let image = imageData != nil ? UIImage(data: imageData!) : nil else {
-                    completion(nil)
+                    completion(nil, self.includeCloudData)
                     return
                 }
 
                 let imageData = PhotoLibraryService.image2PictureData(image, quality: 1.0)
 
-                completion(imageData)
+                completion(imageData, self.includeCloudData)
             }
         })
 
