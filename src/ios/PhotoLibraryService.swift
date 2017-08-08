@@ -37,7 +37,6 @@ final class PhotoLibraryService {
     let contentMode = PHImageContentMode.aspectFill // AspectFit: can be smaller, AspectFill - can be larger. TODO: resize to exact size
 
     var cacheActive = false
-    var includeCloudData = true
 
     static let PERMISSION_ERROR = "Permission Denial: This application is not allowed to access Photo data."
 
@@ -87,6 +86,12 @@ final class PhotoLibraryService {
 
         return PHPhotoLibrary.authorizationStatus() == .authorized
 
+    }
+    
+    func excludeCloudData() {
+        if #available(iOS 9.0, *) {
+            fetchOptions.includeAssetSourceTypes = [.typeUserLibrary, .typeiTunesSynced]
+        }
     }
 
     func getLibrary(_ options: PhotoLibraryGetLibraryOptions, completion: @escaping (_ result: [NSDictionary], _ chunkNum: Int, _ isLastChunk: Bool) -> Void) {
@@ -213,12 +218,12 @@ final class PhotoLibraryService {
 
     }
 
-    func getPhoto(_ photoId: String, completion: @escaping (_ result: PictureData?, _ includeCloudData: Bool) -> Void) {
+    func getPhoto(_ photoId: String, completion: @escaping (_ result: PictureData?) -> Void) {
 
         let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [photoId], options: self.fetchOptions)
 
         if fetchResult.count == 0 {
-            completion(nil, self.includeCloudData)
+            completion(nil)
             return
         }
 
@@ -231,13 +236,13 @@ final class PhotoLibraryService {
                 (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
 
                 guard let image = imageData != nil ? UIImage(data: imageData!) : nil else {
-                    completion(nil, self.includeCloudData)
+                    completion(nil)
                     return
                 }
 
                 let imageData = PhotoLibraryService.image2PictureData(image, quality: 1.0)
 
-                completion(imageData, self.includeCloudData)
+                completion(imageData)
             }
         })
 

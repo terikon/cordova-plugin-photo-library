@@ -26,7 +26,7 @@ photoLibrary.getLibrary = function (success, error, options) {
     chunkTimeSec: options.chunkTimeSec || 0,
     useOriginalFileNames: options.useOriginalFileNames || false,
     includeAlbumData: options.includeAlbumData || false,
-    includeCloudData: options.includeCloudData || true
+    includeCloudData: options.includeCloudData !== undefined ? options.includeCloudData : true
   };
 
   // queue that keeps order of async processing

@@ -37,7 +37,9 @@ import Foundation
             let includeAlbumData = options["includeAlbumData"] as! Bool
             let includeCloudData = options["includeCloudData"] as! Bool
             
-            service.includeCloudData = includeCloudData
+            if(includeCloudData == false) {
+                service.excludeCloudData()
+            }
 
             func createResult (library: [NSDictionary], chunkNum: Int, isLastChunk: Bool) -> [String: AnyObject] {
                 let result: NSDictionary = [
@@ -136,35 +138,18 @@ import Foundation
 
             let photoId = command.arguments[0] as! String
 
-            service.getPhoto(photoId) { (imageData, includeCloudData) in
+            service.getPhoto(photoId) { (imageData) in
                 
-                if(imageData != nil) {
-                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK,
-                                                       messageAsMultipart: [imageData!.data, imageData!.mimeType])
-                    self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
-                }
-                else if(includeCloudData == true) {
-                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR,
-                                                       messageAs: "Could not fetch the image")
-                    
-                    self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
-                }
-                else {
-                    // do not notify
-                    NSLog("iCloud image ?")
-                }
-                
-//                let pluginResult = imageData != nil ?
-//                    CDVPluginResult(
-//                        status: CDVCommandStatus_OK,
-//                        messageAsMultipart: [imageData!.data, imageData!.mimeType])
-//                    :
-//                    CDVPluginResult(
-//                        status: CDVCommandStatus_ERROR,
-//                        messageAs: "Could not fetch the image")
-//
-//                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
+                let pluginResult = imageData != nil ?
+                    CDVPluginResult(
+                        status: CDVCommandStatus_OK,
+                        messageAsMultipart: [imageData!.data, imageData!.mimeType])
+                    :
+                    CDVPluginResult(
+                        status: CDVCommandStatus_ERROR,
+                        messageAs: "Could not fetch the image")
 
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
             }
 
         }
