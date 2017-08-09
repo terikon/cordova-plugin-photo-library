@@ -15,8 +15,6 @@ import Foundation
     override func onMemoryWarning() {
         // self.service.stopCaching()
         NSLog("-- MEMORY WARNING --")
-        
-
     }
 
 
@@ -68,7 +66,6 @@ import Foundation
                 completion: { (library, chunkNum, isLastChunk) in
 
                     let result = createResult(library: library, chunkNum: chunkNum, isLastChunk: isLastChunk)
-
                     let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: result)
                     pluginResult!.setKeepCallbackAs(!isLastChunk)
                     self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
@@ -161,7 +158,6 @@ import Foundation
         }
     }
 
-    
     func getLibraryItem(_ command: CDVInvokedUrlCommand) {
         concurrentQueue.async {
             
