@@ -87,17 +87,37 @@ final class PhotoLibraryService {
         return PHPhotoLibrary.authorizationStatus() == .authorized
 
     }
-    
-    func excludeCloudData() {
-        if #available(iOS 9.0, *) {
-            fetchOptions.includeAssetSourceTypes = [.typeUserLibrary, .typeiTunesSynced]
-        }
-    }
 
     func getLibrary(_ options: PhotoLibraryGetLibraryOptions, completion: @escaping (_ result: [NSDictionary], _ chunkNum: Int, _ isLastChunk: Bool) -> Void) {
 
-        let fetchResult = PHAsset.fetchAssets(with: .image, options: self.fetchOptions)
+        if(options.includeCloudData == false) {
+            if #available(iOS 9.0, *) {
+                // remove iCloud source type
+                fetchOptions.includeAssetSourceTypes = [.typeUserLibrary, .typeiTunesSynced]
+            }
+        }
+        
+        // let fetchResult = PHAsset.fetchAssets(with: .image, options: self.fetchOptions)
+        if(options.includeImages == true && options.includeVideos == true) {
+            fetchOptions.predicate = NSPredicate(format: "mediaType == %d || mediaType == %d",
+                                                 PHAssetMediaType.image.rawValue,
+                                                 PHAssetMediaType.video.rawValue)
+        }
+        else {
+            if(options.includeImages == true) {
+                fetchOptions.predicate = NSPredicate(format: "mediaType == %d",
+                                                     PHAssetMediaType.image.rawValue)
+            }
+            else if(options.includeVideos == true) {
+                fetchOptions.predicate = NSPredicate(format: "mediaType == %d",
+                                                     PHAssetMediaType.video.rawValue)
+            }
+        }
+        
+        let fetchResult = PHAsset.fetchAssets(with: fetchOptions)
 
+
+        
 	// TODO: do not restart caching on multiple calls
 //        if fetchResult.count > 0 {
 //
@@ -132,7 +152,6 @@ final class PhotoLibraryService {
             }
 
         })
-
     }
     
     private func assetToLibraryItem(asset: PHAsset, useOriginalFileNames: Bool, includeAlbumData: Bool) -> NSDictionary {
@@ -142,6 +161,16 @@ final class PhotoLibraryService {
         libraryItem["fileName"] = useOriginalFileNames ? asset.originalFileName : asset.fileName // originalFilename is much slower
         libraryItem["width"] = asset.pixelWidth
         libraryItem["height"] = asset.pixelHeight
+        switch asset.mediaType {
+        case .audio:
+            libraryItem["mediaType"] = "audio"
+        case .image:
+            libraryItem["mediaType"] = "image"
+        case .video:
+            libraryItem["mediaType"] = "video"
+        default:
+            libraryItem["mediaType"] = "unknown"
+        }
         libraryItem["creationDate"] = self.dateFormatter.string(from: asset.creationDate!)
         if let location = asset.location {
             libraryItem["latitude"] = location.coordinate.latitude
@@ -231,7 +260,7 @@ final class PhotoLibraryService {
             (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
 
             let asset = obj as! PHAsset
-
+            
             PHImageManager.default().requestImageData(for: asset, options: self.imageRequestOptions) {
                 (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
 
@@ -245,8 +274,109 @@ final class PhotoLibraryService {
                 completion(imageData)
             }
         })
-
     }
+    
+    
+    func getLibraryItem(_ itemId: String, mediaType: String, completion: @escaping (_ base64: String?, _ mimeType: String?) -> Void) {
+        let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [itemId], options: self.fetchOptions)
+        if fetchResult.count == 0 {
+            completion(nil, nil)
+            return
+        }
+        
+        // TODO: data should be returned as chunks, even for pics.
+        // a massive data object might increase RAM usage too much, and iOS will then kill the app.
+        fetchResult.enumerateObjects({
+            (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
+            let asset = obj as! PHAsset
+            
+            if(mediaType == "image") {
+                PHImageManager.default().requestImageData(for: asset, options: self.imageRequestOptions) {
+                    (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
+                    
+                    if(imageData == nil) {
+                        completion(nil, nil)
+                    }
+                    else {
+//                    guard let image = imageData != nil ? UIImage(data: imageData!) : nil else {
+//                        completion(nil)
+//                        return
+//                    }
+//                    
+//                    if (imageHasAlpha(image)){
+//                        data = UIImagePNGRepresentation(image)
+//                        mimeType = data != nil ? "image/png" : nil
+//                    } else {
+//                        data = UIImageJPEGRepresentation(image, CGFloat(quality))
+//                        mimeType = data != nil ? "image/jpeg" : nil
+//                    }
+//
+//                    
+//                    let imageData = PhotoLibraryService.image2PictureData(image, quality: 1.0)
+                        completion(imageData!.base64EncodedString(), "image/jpeg")
+                    }
+                }
+            }
+            else if(mediaType == "video") {
+                PHImageManager.default().requestAVAsset(forVideo: asset, options: nil, resultHandler: { (avAsset: AVAsset?, avAudioMix: AVAudioMix?, info: [AnyHashable : Any]?) in
+                    
+                    let video_asset = avAsset as! AVURLAsset
+                    let url = URL(fileURLWithPath: video_asset.url.relativePath)
+                    
+                    do {
+                        var video_data = try Data(contentsOf: url)
+                        let video_base64 = try video_data.base64EncodedString()
+                        
+//                        let pic_data = PictureData(data: video_base64, mimeType: "video/quicktime") // TODO: get mime from info dic ?
+                        completion(video_base64, "video/quicktime")
+                    }
+                    catch _ {
+                        completion(nil, nil)
+                    }
+                })
+            }
+            else if(mediaType == "audio") {
+                // TODO:
+                completion(nil, nil)
+            }
+            else {
+                completion(nil, nil) // unknown
+            }
+            
+        })
+    }
+    
+    
+    func getVideo(_ videoId: String, completion: @escaping (_ result: PictureData?) -> Void) {
+        let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [videoId], options: self.fetchOptions)
+        if fetchResult.count == 0 {
+            completion(nil)
+            return
+        }
+     
+        fetchResult.enumerateObjects({
+            (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
+            
+            let asset = obj as! PHAsset
+            
+            
+            PHImageManager.default().requestAVAsset(forVideo: asset, options: nil, resultHandler: { (avAsset: AVAsset?, avAudioMix: AVAudioMix?, info: [AnyHashable : Any]?) in
+                
+                let video_asset = avAsset as! AVURLAsset
+                let url = URL(fileURLWithPath: video_asset.url.relativePath)
+                
+                do {
+                    let video_data = try Data(contentsOf: url)
+                    let pic_data = PictureData(data: video_data, mimeType: "video/quicktime") // TODO: get mime from info dic ?
+                    completion(pic_data)
+                }
+                catch _ {
+                    completion(nil)
+                }
+            })
+        })
+    }
+    
 
     func stopCaching() {
 
@@ -428,7 +558,7 @@ final class PhotoLibraryService {
         var data: Data
         var mimeType: String
     }
-
+    
     // TODO: currently seems useless
     enum PhotoLibraryError: Error, CustomStringConvertible {
         case error(description: String)

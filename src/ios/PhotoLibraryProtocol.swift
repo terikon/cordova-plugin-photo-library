@@ -101,7 +101,22 @@ import Foundation
                     
                     return
                     
+                } else if url.host?.lowercased() == "video" {
+                    
+                    concurrentQueue.addOperation {
+                        service.getVideo(photoId!) { (videoData) in
+                            if (videoData == nil) {
+                                self.sendErrorResponse(404, error: PhotoLibraryService.PERMISSION_ERROR)
+                                return
+                            }
+                            self.sendResponseWithResponseCode(200, data: videoData!.data, mimeType: videoData!.mimeType)
+                        }
+                    }
+                    
+                    return
+                    
                 }
+                
             }
         }
         
