@@ -158,11 +158,11 @@ final class PhotoLibraryService {
 
             chunk.append(libraryItem)
             
-            self.getCompleteInfo(libraryItem, completion: { (info) in
-                
-                libraryItem["mimeType"] = info?.mimeType
-                libraryItem["fullPath"] = info?.fullPath
-                
+//            self.getCompleteInfo(libraryItem, completion: { (info) in
+//                
+//                libraryItem["mimeType"] = info?.mimeType
+//                libraryItem["fullPath"] = info?.fullPath
+            
                 if index == fetchResult.count - 1 { // Last item
                     completion(chunk, chunkNum, true)
                 } else if (options.itemsInChunk > 0 && chunk.count == options.itemsInChunk) ||
@@ -172,7 +172,7 @@ final class PhotoLibraryService {
                     chunk = [NSDictionary]()
                     chunkStartTime = NSDate()
                 }
-            })
+//            })
         })
     }
     
