@@ -169,8 +169,9 @@ import Foundation
             
             let service = PhotoLibraryService.instance
             let info = command.arguments[0] as! NSDictionary
-            service.getLibraryItem(info["id"] as! String, mediaType: info["mediaType"] as! String, completion: { (base64: String?, mimeType: String?) in
-                self.returnPictureData(callbackId: command.callbackId, base64: base64, mimeType: mimeType)
+            let mime_type = info["mimeType"] as! String
+            service.getLibraryItem(info["id"] as! String, mimeType: mime_type, completion: { (base64: String?) in
+                self.returnPictureData(callbackId: command.callbackId, base64: base64, mimeType: mime_type)
             })
         }
     }
