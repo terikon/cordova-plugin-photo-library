@@ -85,6 +85,19 @@ photoLibrary.getAlbums = function (success, error) {
 
 };
 
+photoLibrary.isAuthorized = function (success, error) {
+
+  cordova.exec(
+    function (result) {
+      success(result);
+    },
+    error,
+    'PhotoLibrary',
+    'isAuthorized', []
+  );
+
+};
+
 // Generates url that can be accessed directly, so it will work more efficiently than getThumbnail, which does base64 encode/decode.
 // If success callback not provided, will return value immediately, but use overload with success as it browser-friendly
 photoLibrary.getThumbnailURL = function (photoIdOrLibraryItem, success, error, options) {

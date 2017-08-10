@@ -93,6 +93,15 @@ import Foundation
         }
     }
     
+    
+    func isAuthorized(_ command: CDVInvokedUrlCommand) {
+        concurrentQueue.async {
+            let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: PhotoLibraryService.hasPermission())
+            self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+        }
+    }
+    
+    
     func getThumbnail(_ command: CDVInvokedUrlCommand) {
         concurrentQueue.async {
 
