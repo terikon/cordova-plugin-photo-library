@@ -157,10 +157,9 @@ final class PhotoLibraryService {
 
             chunk.append(libraryItem)
             
-//            self.getCompleteInfo(libraryItem, completion: { (info) in
-//                
-//                libraryItem["mimeType"] = info?.mimeType
-//                libraryItem["fullPath"] = info?.fullPath
+            self.getCompleteInfo(libraryItem, completion: { (fullPath) in
+                
+                libraryItem["filePath"] = fullPath
             
                 if index == fetchResult.count - 1 { // Last item
                     completion(chunk, chunkNum, true)
@@ -171,7 +170,7 @@ final class PhotoLibraryService {
                     chunk = [NSDictionary]()
                     chunkStartTime = NSDate()
                 }
-//            })
+            })
         })
     }
     
@@ -190,59 +189,63 @@ final class PhotoLibraryService {
     }
     
     
-//    struct CompleteInfo {
-//        var fullPath: String
-//        var mimeType: String
-//    }
-//    
-//    func getCompleteInfo(_ libraryItem: NSDictionary, completion: @escaping (_ completeInfo: CompleteInfo?) -> Void) {
-//        
-//        let ident = libraryItem.object(forKey: "id") as! String
-//        let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [ident], options: self.fetchOptions)
-//        if fetchResult.count == 0 {
-//            completion(nil)
-//            return
-//        }
-//        
-//        let mediaType = libraryItem.object(forKey: "mediaType") as! String
-//        fetchResult.enumerateObjects({
-//            (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
-//            let asset = obj as! PHAsset
-//            
-//            if(mediaType == "image") {
-//                PHImageManager.default().requestImageData(for: asset, options: self.imageRequestOptions) {
-//                    (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
-//                    
-//                    if(imageData == nil) {
-//                        completion(nil)
-//                    }
-//                    else {
-//                        let file_url:URL = info!["PHImageFileURLKey"] as! URL
+    func getCompleteInfo(_ libraryItem: NSDictionary, completion: @escaping (_ fullPath: String?) -> Void) {
+        
+        
+        let ident = libraryItem.object(forKey: "id") as! String
+        let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [ident], options: self.fetchOptions)
+        if fetchResult.count == 0 {
+            completion(nil)
+            return
+        }
+        
+        let mime_type = libraryItem.object(forKey: "mimeType") as! String
+        let mediaType = mime_type.components(separatedBy: "/").first
+        
+        
+        fetchResult.enumerateObjects({
+            (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
+            let asset = obj as! PHAsset
+            
+            if(mediaType == "image") {
+                PHImageManager.default().requestImageData(for: asset, options: self.imageRequestOptions) {
+                    (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
+                    
+                    if(imageData == nil) {
+                        completion(nil)
+                    }
+                    else {
+                        let file_url:URL = info!["PHImageFileURLKey"] as! URL
 //                        let mime_type = self.mimeTypes[file_url.pathExtension.lowercased()]!
-//                        completion(CompleteInfo(fullPath: "cdvfile://" + file_url.relativePath, mimeType: mime_type))
-//                    }
-//                }
-//            }
-//            else if(mediaType == "video") {
-//                
-//                PHImageManager.default().requestAVAsset(forVideo: asset, options: nil, resultHandler: { (avAsset: AVAsset?, avAudioMix: AVAudioMix?, info: [AnyHashable : Any]?) in
-//                    
-//                    let video_asset = avAsset as! AVURLAsset
-//                    let url = URL(fileURLWithPath: video_asset.url.relativePath)
-//                    let mime_type = self.mimeTypes[url.pathExtension.lowercased()]!
-//                    completion(CompleteInfo(fullPath: "cdvfile://" + url.relativePath, mimeType: mime_type))
-//                    
-//                })
-//            }
-//            else if(mediaType == "audio") {
-//                // TODO:
-//                completion(nil)
-//            }
-//            else {
-//                completion(nil) // unknown
-//            }
-//        })
-//    }
+                        completion(file_url.relativePath)
+                    }
+                }
+            }
+            else if(mediaType == "video") {
+                
+                PHImageManager.default().requestAVAsset(forVideo: asset, options: nil, resultHandler: { (avAsset: AVAsset?, avAudioMix: AVAudioMix?, info: [AnyHashable : Any]?) in
+                    
+                    if( avAsset is AVURLAsset ) {
+                        let video_asset = avAsset as! AVURLAsset
+                        let url = URL(fileURLWithPath: video_asset.url.relativePath)
+                        completion(url.relativePath)
+                    }
+                    else if(avAsset is AVComposition) {
+                        let token = info?["PHImageFileSandboxExtensionTokenKey"] as! String
+                        let path = token.components(separatedBy: ";").last
+                        completion(path)
+                    }                    
+                })
+            }
+            else if(mediaType == "audio") {
+                // TODO:
+                completion(nil)
+            }
+            else {
+                completion(nil) // unknown
+            }
+        })
+    }
     
     
     private func assetToLibraryItem(asset: PHAsset, useOriginalFileNames: Bool, includeAlbumData: Bool) -> NSMutableDictionary {
@@ -252,16 +255,6 @@ final class PhotoLibraryService {
         libraryItem["fileName"] = useOriginalFileNames ? asset.originalFileName : asset.fileName // originalFilename is much slower
         libraryItem["width"] = asset.pixelWidth
         libraryItem["height"] = asset.pixelHeight
-//        switch asset.mediaType {
-//        case .audio:
-//            libraryItem["mediaType"] = "audio"
-//        case .image:
-//            libraryItem["mediaType"] = "image"
-//        case .video:
-//            libraryItem["mediaType"] = "video"
-//        default:
-//            libraryItem["mediaType"] = "unknown"
-//        }
         
         let fname = libraryItem["fileName"] as! String
         libraryItem["mimeType"] = self.mimeTypeForPath(path: fname)
@@ -271,6 +264,7 @@ final class PhotoLibraryService {
             libraryItem["latitude"] = location.coordinate.latitude
             libraryItem["longitude"] = location.coordinate.longitude
         }
+        
         
         if includeAlbumData {
             // This is pretty slow, use only when needed
