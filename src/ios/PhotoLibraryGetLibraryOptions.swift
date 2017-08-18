@@ -6,5 +6,8 @@ struct PhotoLibraryGetLibraryOptions {
     let itemsInChunk: Int
     let chunkTimeSec: Double
     let useOriginalFileNames: Bool
+    let includeImages: Bool
     let includeAlbumData: Bool
+    let includeCloudData: Bool
+    let includeVideos: Bool
 }

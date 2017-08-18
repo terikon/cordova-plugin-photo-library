@@ -25,7 +25,10 @@ photoLibrary.getLibrary = function (success, error, options) {
     itemsInChunk: options.itemsInChunk || 0,
     chunkTimeSec: options.chunkTimeSec || 0,
     useOriginalFileNames: options.useOriginalFileNames || false,
+    includeImages: options.includeImages !== undefined ? options.includeImages : true,
     includeAlbumData: options.includeAlbumData || false,
+    includeCloudData: options.includeCloudData !== undefined ? options.includeCloudData : true,
+    includeVideos: options.includeVideos || false
   };
 
   // queue that keeps order of async processing
@@ -78,6 +81,19 @@ photoLibrary.getAlbums = function (success, error) {
     error,
     'PhotoLibrary',
     'getAlbums', []
+  );
+
+};
+
+photoLibrary.isAuthorized = function (success, error) {
+
+  cordova.exec(
+    function (result) {
+      success(result);
+    },
+    error,
+    'PhotoLibrary',
+    'isAuthorized', []
   );
 
 };
@@ -178,6 +194,24 @@ photoLibrary.getPhoto = function (photoIdOrLibraryItem, success, error, options)
     error,
     'PhotoLibrary',
     'getPhoto', [photoId, options]
+  );
+
+};
+
+photoLibrary.getLibraryItem = function (libraryItem, success, error, options) {
+
+  if (!options) {
+    options = {};
+  }
+
+  cordova.exec(
+    function (data, mimeType) {
+      var blob = dataAndMimeTypeToBlob(data, mimeType);
+      success(blob);
+    },
+    error,
+    'PhotoLibrary',
+    'getLibraryItem', [libraryItem, options]
   );
 
 };

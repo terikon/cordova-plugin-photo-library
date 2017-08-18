@@ -12,9 +12,11 @@ import Foundation
 
     }
 
-    //    override func onMemoryWarning() {
-    //        self.service.stopCaching()
-    //    }
+    override func onMemoryWarning() {
+        // self.service.stopCaching()
+        NSLog("-- MEMORY WARNING --")
+    }
+
 
     // Will sort by creation date
     func getLibrary(_ command: CDVInvokedUrlCommand) {
@@ -29,13 +31,18 @@ import Foundation
             let service = PhotoLibraryService.instance
 
             let options = command.arguments[0] as! NSDictionary
+            
+            
             let thumbnailWidth = options["thumbnailWidth"] as! Int
             let thumbnailHeight = options["thumbnailHeight"] as! Int
             let itemsInChunk = options["itemsInChunk"] as! Int
             let chunkTimeSec = options["chunkTimeSec"] as! Double
             let useOriginalFileNames = options["useOriginalFileNames"] as! Bool
             let includeAlbumData = options["includeAlbumData"] as! Bool
-
+            let includeCloudData = options["includeCloudData"] as! Bool
+            let includeVideos = options["includeVideos"] as! Bool
+            let includeImages = options["includeImages"] as! Bool
+            
             func createResult (library: [NSDictionary], chunkNum: Int, isLastChunk: Bool) -> [String: AnyObject] {
                 let result: NSDictionary = [
                     "chunkNum": chunkNum,
@@ -50,19 +57,20 @@ import Foundation
                                                                   itemsInChunk: itemsInChunk,
                                                                   chunkTimeSec: chunkTimeSec,
                                                                   useOriginalFileNames: useOriginalFileNames,
-                                                                  includeAlbumData: includeAlbumData)
+                                                                  includeImages: includeImages,
+                                                                  includeAlbumData: includeAlbumData,
+                                                                  includeCloudData: includeCloudData,
+                                                                  includeVideos: includeVideos)
 
             service.getLibrary(getLibraryOptions,
                 completion: { (library, chunkNum, isLastChunk) in
 
                     let result = createResult(library: library, chunkNum: chunkNum, isLastChunk: isLastChunk)
-
                     let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: result)
                     pluginResult!.setKeepCallbackAs(!isLastChunk)
                     self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
-
-                })
-
+                }
+            )
         }
     }
     
@@ -84,6 +92,15 @@ import Foundation
             
         }
     }
+    
+    
+    func isAuthorized(_ command: CDVInvokedUrlCommand) {
+        concurrentQueue.async {
+            let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: PhotoLibraryService.hasPermission())
+            self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+        }
+    }
+    
     
     func getThumbnail(_ command: CDVInvokedUrlCommand) {
         concurrentQueue.async {
@@ -134,7 +151,7 @@ import Foundation
             let photoId = command.arguments[0] as! String
 
             service.getPhoto(photoId) { (imageData) in
-
+                
                 let pluginResult = imageData != nil ?
                     CDVPluginResult(
                         status: CDVCommandStatus_OK,
@@ -145,12 +162,45 @@ import Foundation
                         messageAs: "Could not fetch the image")
 
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
-
             }
 
         }
     }
 
+    func getLibraryItem(_ command: CDVInvokedUrlCommand) {
+        concurrentQueue.async {
+            
+            if !PhotoLibraryService.hasPermission() {
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+                return
+            }
+            
+            let service = PhotoLibraryService.instance
+            let info = command.arguments[0] as! NSDictionary
+            let mime_type = info["mimeType"] as! String
+            service.getLibraryItem(info["id"] as! String, mimeType: mime_type, completion: { (base64: String?) in
+                self.returnPictureData(callbackId: command.callbackId, base64: base64, mimeType: mime_type)
+            })
+        }
+    }
+    
+    
+    func returnPictureData(callbackId : String, base64: String?, mimeType: String?) {
+        let pluginResult = (base64 != nil) ?
+            CDVPluginResult(
+                status: CDVCommandStatus_OK,
+                messageAsMultipart: [base64!, mimeType!])
+            :
+            CDVPluginResult(
+                status: CDVCommandStatus_ERROR,
+                messageAs: "Could not fetch the image")
+        
+        self.commandDelegate!.send(pluginResult, callbackId: callbackId)
+
+    }
+    
+    
     func stopCaching(_ command: CDVInvokedUrlCommand) {
 
         let service = PhotoLibraryService.instance

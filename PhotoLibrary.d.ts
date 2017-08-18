@@ -7,6 +7,7 @@ declare module PhotoLibraryCordova {
     requestAuthorization(success: () => void, error: (err: any) => void, options?: RequestAuthorizationOptions): void;
 
     getAlbums(success: (result: AlbumItem[]) => void, error: (err:any) => void): void;
+    isAuthorized(success: (result: boolean) => void, error: (err:any) => void): void;
 
     getThumbnailURL(photoId: string, success: (result: string) => void, error: (err: any) => void, options?: GetThumbnailOptions): void;
     getThumbnailURL(libraryItem: LibraryItem, success: (result: string) => void, error: (err: any) => void, options?: GetThumbnailOptions): void;
@@ -23,6 +24,7 @@ declare module PhotoLibraryCordova {
 
     getPhoto(photoId: string, success: (result: Blob) => void, error: (err: any) => void, options?: GetPhotoOptions): void;
     getPhoto(libraryItem: LibraryItem, success: (result: Blob) => void, error: (err: any) => void, options?: GetPhotoOptions): void;
+    getLibraryItem(libraryItem: LibraryItem, success: (result: Blob) => void, error: (err: any) => void, options?: GetPhotoOptions): void;
 
     stopCaching(success: () => void, error: (err: any) => void): void;
 
@@ -57,7 +59,10 @@ declare module PhotoLibraryCordova {
     itemsInChunk?: number;
     chunkTimeSec?: number;
     useOriginalFileNames?: boolean;
+    includeImages?: boolean;
     includeAlbumData?: boolean;
+    includeCloudData?: boolean;
+    includeVideos?: boolean;
   }
 
   export interface RequestAuthorizationOptions {
