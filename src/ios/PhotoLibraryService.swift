@@ -509,7 +509,7 @@ final class PhotoLibraryService {
         do {
             sourceData = try getDataFromURL(url)
         } catch {
-            completion(nil, "\(error)")
+            completion(nil, "\(String(describing: error))")
             return
         }
 
@@ -519,7 +519,7 @@ final class PhotoLibraryService {
             assetsLibrary.writeImageData(toSavedPhotosAlbum: sourceData, metadata: nil) { (assetUrl: URL?, error: Error?) in
 
                 if error != nil {
-                    completion(nil, "Could not write image to album: \(error)")
+                    completion(nil, "Could not write image to album: \(String(describing: error))")
                     return
                 }
 
@@ -594,7 +594,7 @@ final class PhotoLibraryService {
             assetsLibrary.writeVideoAtPath(toSavedPhotosAlbum: videoURL) { (assetUrl: URL?, error: Error?) in
 
                 if error != nil {
-                    completion(nil, "Could not write video to album: \(error)")
+                    completion(nil, "Could not write video to album: \(String(describing: error))")
                     return
                 }
 
@@ -688,7 +688,7 @@ final class PhotoLibraryService {
             PhotoLibraryService.getAlPhotoAlbum(assetsLibrary, album: album, completion: { (alPhotoAlbum: ALAssetsGroup?, error: String?) in
 
                 if error != nil {
-                    completion("getting photo album caused error: \(error)")
+                    completion("getting photo album caused error: \(String(describing: error))")
                     return
                 }
 
@@ -698,7 +698,7 @@ final class PhotoLibraryService {
             })
 
         }, failureBlock: { (error: Error?) in
-            completion("Could not retrieve saved asset: \(error)")
+            completion("Could not retrieve saved asset: \(String(describing: error))")
         })
 
     }
@@ -771,7 +771,7 @@ final class PhotoLibraryService {
                 completion(photoAlbum, nil)
             }
             else {
-                completion(nil, "\(error)")
+                completion(nil, "\(String(describing: error))")
             }
         }
     }
