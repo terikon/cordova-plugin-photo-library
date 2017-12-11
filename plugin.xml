@@ -49,5 +49,5 @@
             <runs />
         </js-module>
     </platform>
-    <dependency id="cordova-plugin-file" version="4.3.2"/>
+    <dependency id="cordova-plugin-file" version="^5.0.0"/>
 </plugin>
