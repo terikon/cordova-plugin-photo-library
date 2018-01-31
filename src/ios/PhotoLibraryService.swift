@@ -509,7 +509,7 @@ final class PhotoLibraryService {
         do {
             sourceData = try getDataFromURL(url)
         } catch {
-            completion(nil, "\(String(describing: error))")
+            completion(nil, "\(error)")
             return
         }
 
@@ -519,7 +519,7 @@ final class PhotoLibraryService {
             assetsLibrary.writeImageData(toSavedPhotosAlbum: sourceData, metadata: nil) { (assetUrl: URL?, error: Error?) in
 
                 if error != nil {
-                    completion(nil, "Could not write image to album: \(String(describing: error))")
+                    completion(nil, "Could not write image to album: \(error)")
                     return
                 }
 
@@ -565,7 +565,7 @@ final class PhotoLibraryService {
 
     }
 
-    func saveVideo(_ url: String, album: String, completion: @escaping (_ url: URL?, _ error: String?)->Void) { // TODO: should return library item
+    func saveVideo(_ url: String, album: String, completion: @escaping (_ libraryItem: NSDictionary?, _ error: String?)->Void) {
 
         guard let videoURL = URL(string: url) else {
             completion(nil, "Could not parse DataURL")
@@ -594,7 +594,7 @@ final class PhotoLibraryService {
             assetsLibrary.writeVideoAtPath(toSavedPhotosAlbum: videoURL) { (assetUrl: URL?, error: Error?) in
 
                 if error != nil {
-                    completion(nil, "Could not write video to album: \(String(describing: error))")
+                    completion(nil, "Could not write video to album: \(error)")
                     return
                 }
 
@@ -604,10 +604,20 @@ final class PhotoLibraryService {
                 }
 
                 self.putMediaToAlbum(assetsLibrary, url: assetUrl, album: album, completion: { (error) in
+  
+                    
                     if error != nil {
                         completion(nil, error)
                     } else {
-                        completion(assetUrl, nil)
+                        let fetchResult = PHAsset.fetchAssets(withALAssetURLs: [assetUrl], options: nil)
+                        var libraryItem: NSDictionary? = nil
+                        if fetchResult.count == 1 {
+                            let asset = fetchResult.firstObject
+                            if let asset = asset {
+                                libraryItem = self.assetToLibraryItem(asset: asset, useOriginalFileNames: false, includeAlbumData: true)
+                            }
+                        }
+                        completion(libraryItem, nil)
                     }
                 })
             }
@@ -688,7 +698,7 @@ final class PhotoLibraryService {
             PhotoLibraryService.getAlPhotoAlbum(assetsLibrary, album: album, completion: { (alPhotoAlbum: ALAssetsGroup?, error: String?) in
 
                 if error != nil {
-                    completion("getting photo album caused error: \(String(describing: error))")
+                    completion("getting photo album caused error: \(error)")
                     return
                 }
 
@@ -698,7 +708,7 @@ final class PhotoLibraryService {
             })
 
         }, failureBlock: { (error: Error?) in
-            completion("Could not retrieve saved asset: \(String(describing: error))")
+            completion("Could not retrieve saved asset: \(error)")
         })
 
     }
@@ -771,7 +781,7 @@ final class PhotoLibraryService {
                 completion(photoAlbum, nil)
             }
             else {
-                completion(nil, "\(String(describing: error))")
+                completion(nil, "\(error)")
             }
         }
     }
