@@ -63,6 +63,7 @@ declare module PhotoLibraryCordova {
     includeAlbumData?: boolean;
     includeCloudData?: boolean;
     includeVideos?: boolean;
+    maxItems?: number;
   }
 
   export interface RequestAuthorizationOptions {

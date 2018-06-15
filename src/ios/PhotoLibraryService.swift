@@ -153,6 +153,11 @@ final class PhotoLibraryService {
 
         fetchResult.enumerateObjects({ (asset: PHAsset, index, stop) in
 
+            if (options.maxItems > 0 && index + 1 > options.maxItems) {
+                completion(chunk, chunkNum, true)
+                return
+            }
+
             let libraryItem = self.assetToLibraryItem(asset: asset, useOriginalFileNames: options.useOriginalFileNames, includeAlbumData: options.includeAlbumData)
 
             chunk.append(libraryItem)
