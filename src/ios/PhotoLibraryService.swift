@@ -513,56 +513,86 @@ final class PhotoLibraryService {
             return
         }
 
-        let assetsLibrary = ALAssetsLibrary()
-
-        func saveImage(_ photoAlbum: PHAssetCollection) {
-            assetsLibrary.writeImageData(toSavedPhotosAlbum: sourceData, metadata: nil) { (assetUrl: URL?, error: Error?) in
-
-                if error != nil {
-                    completion(nil, "Could not write image to album: \(String(describing: error))")
-                    return
+        func fetchAssets(_ photoId: String) {
+            let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [photoId], options: nil)
+            var libraryItem: NSDictionary? = nil
+            if fetchResult.count == 1 {
+                let asset = fetchResult.firstObject
+                if let asset = asset {
+                    libraryItem = self.assetToLibraryItem(asset: asset, useOriginalFileNames: false, includeAlbumData: true)
                 }
-
-                guard let assetUrl = assetUrl else {
-                    completion(nil, "Writing image to album resulted empty asset")
-                    return
-                }
-
-                self.putMediaToAlbum(assetsLibrary, url: assetUrl, album: album, completion: { (error) in
-                    if error != nil {
-                        completion(nil, error)
-                    } else {
-                        let fetchResult = PHAsset.fetchAssets(withALAssetURLs: [assetUrl], options: nil)
-                        var libraryItem: NSDictionary? = nil
-                        if fetchResult.count == 1 {
-                            let asset = fetchResult.firstObject
-                            if let asset = asset {
-                                libraryItem = self.assetToLibraryItem(asset: asset, useOriginalFileNames: false, includeAlbumData: true)
-                            }
-                        }
-                        completion(libraryItem, nil)
-                    }
-                })
-
             }
+            completion(libraryItem, nil)
         }
 
+        func saveImage(_ photoAlbum: PHAssetCollection) {
+            
+            if #available(iOS 9.0, *) {
+                var localId: String = String()
+                
+                PHPhotoLibrary.shared().performChanges({
+                    let image = UIImage(data : sourceData)
+                    let assetRequest = PHAssetChangeRequest.creationRequestForAsset(from: image!)
+                    let albumChangeRequest = PHAssetCollectionChangeRequest(for: photoAlbum)
+                    let placeHolder = assetRequest.placeholderForCreatedAsset
+                    albumChangeRequest?.addAssets([placeHolder!] as NSArray)
+                    localId = placeHolder!.localIdentifier;
+                }) { (isSuccess, error) in
+                    if isSuccess {
+                        fetchAssets(localId)
+                    } else {
+                        completion(nil,"Could not write video to album: \(String(describing: error))")
+                    }
+                }
+            } else {
+                let assetsLibrary = ALAssetsLibrary()
+                
+                assetsLibrary.writeImageData(toSavedPhotosAlbum: sourceData, metadata: nil) { (assetUrl: URL?, error: Error?) in
+                    
+                    if error != nil {
+                        completion(nil, "Could not write image to album: \(String(describing: error))")
+                        return
+                    }
+                    
+                    guard let assetUrl = assetUrl else {
+                        completion(nil, "Writing image to album resulted empty asset")
+                        return
+                    }
+                    
+                    self.putMediaToAlbum(assetsLibrary, url: assetUrl, album: album, completion: { (error) in
+                        if error != nil {
+                            completion(nil, error)
+                        } else {
+                            let fetchResult = PHAsset.fetchAssets(withALAssetURLs: [assetUrl], options: nil)
+                            var libraryItem: NSDictionary? = nil
+                            if fetchResult.count == 1 {
+                                let asset = fetchResult.firstObject
+                                if let asset = asset {
+                                    libraryItem = self.assetToLibraryItem(asset: asset, useOriginalFileNames: false, includeAlbumData: true)
+                                }
+                            }
+                            completion(libraryItem, nil)
+                        }
+                    })
+                }
+            }
+        }
+        
         if let photoAlbum = PhotoLibraryService.getPhotoAlbum(album) {
             saveImage(photoAlbum)
             return
         }
-
+        
         PhotoLibraryService.createPhotoAlbum(album) { (photoAlbum: PHAssetCollection?, error: String?) in
-
+            
             guard let photoAlbum = photoAlbum else {
                 completion(nil, error)
                 return
             }
-
+            
             saveImage(photoAlbum)
-
+            
         }
-
     }
 
     func saveVideo(_ url: String, album: String, completion: @escaping (_ url: URL?, _ error: String?)->Void) { // TODO: should return library item
@@ -582,36 +612,51 @@ final class PhotoLibraryService {
             //                return
             //            }
             //            UISaveVideoAtPathToSavedPhotosAlbum(videoURL.relativePath!, nil, nil, nil)
-
-            if !assetsLibrary.videoAtPathIs(compatibleWithSavedPhotosAlbum: videoURL) {
-
-                // TODO: try to convert to MP4 as described here?: http://stackoverflow.com/a/39329155/1691132
-
-                completion(nil, "Provided video is not compatible with Saved Photo album")
-                return
-            }
-
-            assetsLibrary.writeVideoAtPath(toSavedPhotosAlbum: videoURL) { (assetUrl: URL?, error: Error?) in
-
-                if error != nil {
-                    completion(nil, "Could not write video to album: \(String(describing: error))")
-                    return
-                }
-
-                guard let assetUrl = assetUrl else {
-                    completion(nil, "Writing video to album resulted empty asset")
-                    return
-                }
-
-                self.putMediaToAlbum(assetsLibrary, url: assetUrl, album: album, completion: { (error) in
-                    if error != nil {
-                        completion(nil, error)
+            
+            if #available(iOS 9.0, *) {
+                PHPhotoLibrary.shared().performChanges({
+                    let assetRequest = PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: videoURL)!
+                    let albumChangeRequest = PHAssetCollectionChangeRequest(for: photoAlbum)
+                    let placeHolder = assetRequest.placeholderForCreatedAsset
+                    albumChangeRequest?.addAssets([placeHolder!] as NSArray)
+                }) { (isSuccess, error) in
+                    if isSuccess {
+                        completion(videoURL, nil)
                     } else {
-                        completion(assetUrl, nil)
+                        completion(nil, "Could not write video to album:  \(String(describing: error))")
                     }
-                })
-            }
+                }
+            } else {
+                if !assetsLibrary.videoAtPathIs(compatibleWithSavedPhotosAlbum: videoURL) {
 
+                    // TODO: try to convert to MP4 as described here?: http://stackoverflow.com/a/39329155/1691132
+
+                    completion(nil, "Provided video is not compatible with Saved Photo album")
+                    return
+                }
+
+                assetsLibrary.writeVideoAtPath(toSavedPhotosAlbum: videoURL) { (assetUrl: URL?, error: Error?) in
+
+                    if error != nil {
+                        completion(nil, "Could not write video to album: \(String(describing: error))")
+                        return
+                    }
+
+                    guard let assetUrl = assetUrl else {
+                        completion(nil, "Writing video to album resulted empty asset")
+                        return
+                    }
+
+                    self.putMediaToAlbum(assetsLibrary, url: assetUrl, album: album, completion: { (error) in
+                        if error != nil {
+                            completion(nil, error)
+                        } else {
+                            completion(assetUrl, nil)
+                        }
+                    })
+                }
+
+            }
         }
 
         if let photoAlbum = PhotoLibraryService.getPhotoAlbum(album) {
