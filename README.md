@@ -33,7 +33,7 @@ Please write tests for your contribution.
 
 # Install
 
-    cordova plugin add cordova-plugin-photo-library --variable PHOTO_LIBRARY_USAGE_DESCRIPTION="To choose photos" --save
+    cordova plugin add https://github.com/joaoduartemariucio/cordova-plugin-photo-library.git --variable PHOTO_LIBRARY_USAGE_DESCRIPTION="Acessar Galeria para salvar arquivos" --save
 
 # Usage
 
