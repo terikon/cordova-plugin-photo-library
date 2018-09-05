@@ -489,17 +489,25 @@ final class PhotoLibraryService {
                     completion(nil, "Could not write image to album: \(String(describing: error))")
                     return
                 }
-                
                 if success {
                     let newCollection = self.fetchAssetCollectionWithAlbumName(albumName: album)
-                    self.insertImage(url: sourceData, intoAssetCollection: newCollection!)
-                    completion(sourceData, nil)
+                    self.insertImage(url: sourceData, intoAssetCollection: newCollection!, completion: {(success,error) in
+                        if(error != nil && !success){
+                            completion(nil, "Cold not save image to album: \(String(describing: error))")
+                        }else{
+                            completion(sourceData, nil)
+                        }
+                    })
                 }
-                
                 } as? (Bool, Error?) -> Void)
         } else {
-            self.insertImage(url: sourceData, intoAssetCollection: collection!)
-            completion(sourceData, nil)
+            self.insertImage(url: sourceData, intoAssetCollection: collection!, completion: {(success,error) in
+                if(error != nil && !success){
+                    completion(nil, "Cold not save image to album: \(String(describing: error))")
+                }else{
+                    completion(sourceData, nil)
+                }
+            })
         }
     }
 
@@ -519,21 +527,30 @@ final class PhotoLibraryService {
                 
                 if success {
                     let newCollection = self.fetchAssetCollectionWithAlbumName(albumName: album)
-                    self.insertVideo(url: sourceData, intoAssetCollection: newCollection!)
-                    completion(sourceData, nil)
+                    self.insertVideo(url: sourceData, intoAssetCollection: newCollection!,completion: {(success,error) in
+                        if(error != nil && !success){
+                            completion(nil, "Cold not save video to album: \(String(describing: error))")
+                        }else{
+                            completion(sourceData, nil)
+                        }
+                    })
                 }
                 
                 } as? (Bool, Error?) -> Void)
         } else {
-            self.insertVideo(url: sourceData, intoAssetCollection: collection!)
-            completion(sourceData, nil)
+            self.insertVideo(url: sourceData, intoAssetCollection: collection!, completion: {(success,error) in
+                if(error != nil && !success){
+                    completion(nil, "Cold not save video to album: \(String(describing: error))")
+                }else{
+                    completion(sourceData, nil)
+                }
+            })
         }
     }
     
-    func insertImage(url: URL, intoAssetCollection collection : PHAssetCollection) {
+    func insertImage(url: URL, intoAssetCollection collection : PHAssetCollection, completion: @escaping (_ success: Bool, _ error: Error?)->Void) {
         
         PHPhotoLibrary.shared().performChanges({
-            
             let creationRequest = PHAssetCreationRequest.creationRequestForAssetFromImage(atFileURL: url)
             let asset = creationRequest?.placeholderForCreatedAsset
             let request = PHAssetCollectionChangeRequest(for: collection)
@@ -542,13 +559,14 @@ final class PhotoLibraryService {
                 let enumeration: NSArray = [asset!]
                 request!.addAssets(enumeration)
             }
-        });
+        }, completionHandler: {(success, error) in
+            completion(success, error)
+        })
     }
     
-    func insertVideo(url: URL, intoAssetCollection collection : PHAssetCollection) {
+    func insertVideo(url: URL, intoAssetCollection collection : PHAssetCollection, completion: @escaping (_ success: Bool, _ error: Error?)->Void) {
         
         PHPhotoLibrary.shared().performChanges({
-            
             let creationRequest = PHAssetCreationRequest.creationRequestForAssetFromVideo(atFileURL: url)
             let asset = creationRequest?.placeholderForCreatedAsset
             let request = PHAssetCollectionChangeRequest(for: collection)
@@ -557,7 +575,9 @@ final class PhotoLibraryService {
                 let enumeration: NSArray = [asset!]
                 request!.addAssets(enumeration)
             }
-        });
+        }, completionHandler: {(success,error) in
+            completion(success, error)
+        })
     }
     
     func fetchAssetCollectionWithAlbumName(albumName : String) -> PHAssetCollection? {
