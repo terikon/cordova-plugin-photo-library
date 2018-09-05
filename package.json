@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/joaoduartemariucio/cordova-plugin-photo-library.git"
+    "url": "git+https://github.com/terikon/cordova-plugin-photo-library.git"
   },
   "author": {
     "name": "Roman Viskin",
@@ -21,9 +21,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/joaoduartemariucio/cordova-plugin-photo-library.git/issues"
+    "url": "https://github.com/terikon/cordova-plugin-photo-library/issues"
   },
-  "homepage": "https://github.com/joaoduartemariucio/cordova-plugin-photo-library.git#readme",
+  "homepage": "https://github.com/terikon/cordova-plugin-photo-library#readme",
   "devDependencies": {
     "eslint": "^3.14.1",
     "@types/cordova": "^0.0.34",
