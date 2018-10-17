@@ -157,9 +157,10 @@ final class PhotoLibraryService {
 
             chunk.append(libraryItem)
             
-            self.getCompleteInfo(libraryItem, completion: { (fullPath) in
+            self.getCompleteInfo(libraryItem, completion: { (fullPath, orientation) in
                 
                 libraryItem["filePath"] = fullPath
+                libraryItem["orientation"] = orientation
             
                 if index == fetchResult.count - 1 { // Last item
                     completion(chunk, chunkNum, true)
@@ -189,13 +190,13 @@ final class PhotoLibraryService {
     }
     
     
-    func getCompleteInfo(_ libraryItem: NSDictionary, completion: @escaping (_ fullPath: String?) -> Void) {
+    func getCompleteInfo(_ libraryItem: NSDictionary, completion: @escaping (_ fullPath: String?, _ orientation: Int?) -> Void) {
         
         
         let ident = libraryItem.object(forKey: "id") as! String
         let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [ident], options: self.fetchOptions)
         if fetchResult.count == 0 {
-            completion(nil)
+            completion(nil, nil)
             return
         }
         
@@ -212,12 +213,38 @@ final class PhotoLibraryService {
                     (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
                     
                     if(imageData == nil) {
-                        completion(nil)
+                        completion(nil, nil)
                     }
                     else {
                         let file_url:URL = info!["PHImageFileURLKey"] as! URL
 //                        let mime_type = self.mimeTypes[file_url.pathExtension.lowercased()]!
-                        completion(file_url.relativePath)
+                        switch orientation.rawValue {
+                            case 0:
+                                completion(file_url.relativePath, 1)
+                                break
+                            case 1:
+                                completion(file_url.relativePath, 3)
+                                break
+                            case 2:
+                                completion(file_url.relativePath, 8)
+                                break
+                            case 3:
+                                completion(file_url.relativePath, 6)
+                                break
+                            case 4:
+                                completion(file_url.relativePath, 2)
+                                break
+                            case 5:
+                                completion(file_url.relativePath, 4)
+                                break
+                            case 6:
+                                completion(file_url.relativePath, 5)
+                                break
+                            case 7:
+                                completion(file_url.relativePath, 7)
+                                break
+                            default: break
+                        }
                     }
                 }
             }
@@ -228,21 +255,21 @@ final class PhotoLibraryService {
                     if( avAsset is AVURLAsset ) {
                         let video_asset = avAsset as! AVURLAsset
                         let url = URL(fileURLWithPath: video_asset.url.relativePath)
-                        completion(url.relativePath)
+                        completion(url.relativePath, nil)
                     }
                     else if(avAsset is AVComposition) {
                         let token = info?["PHImageFileSandboxExtensionTokenKey"] as! String
                         let path = token.components(separatedBy: ";").last
-                        completion(path)
+                        completion(path, nil)
                     }                    
                 })
             }
             else if(mediaType == "audio") {
                 // TODO:
-                completion(nil)
+                completion(nil, nil)
             }
             else {
-                completion(nil) // unknown
+                completion(nil, nil) // unknown
             }
         })
     }
