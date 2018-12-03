@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.media.ExifInterface;
 import android.media.MediaScannerConnection;
 import android.media.ThumbnailUtils;
@@ -163,7 +164,18 @@ public class PhotoLibraryService {
       int orientation = getImageOrientation(imageFile);
       if (orientation > 1) { // Image should be rotated
 
-        Bitmap bitmap = BitmapFactory.decodeStream(is, null, null);
+        BitmapFactory.Options opt = new BitmapFactory.Options();
+
+        ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
+        int width = exif.getAttributeInt( ExifInterface.TAG_IMAGE_WIDTH, 0 );
+        int height = exif.getAttributeInt( ExifInterface.TAG_IMAGE_LENGTH, 0 );
+
+        if (((height / width) > 2) || ((width / height) > 2)) {
+          opt.inTempStorage = new byte[16 * 1024];
+          opt.inSampleSize = 4;
+        }
+
+        Bitmap bitmap = BitmapFactory.decodeStream(is, new Rect(), opt);
         is.close();
 
         Bitmap rotatedBitmap = rotateImage(bitmap, orientation);
