@@ -26,6 +26,24 @@ extension PHAsset {
 
 }
 
+extension UIImage {
+    // MARK: - UIImage+Resize
+    func compressTo(_ expectedSizeInMb:Int) -> Data? {
+        let sizeInBytes = expectedSizeInMb * 1024 * 1024
+        var compressingValue:CGFloat = 1.0
+        
+        if let data:Data = UIImageJPEGRepresentation(self, compressingValue) {
+            if data.count < sizeInBytes {
+                compressingValue = 0.75
+            } else {
+                compressingValue = 0.5
+            }
+        }
+        
+        return UIImageJPEGRepresentation(self, compressingValue)
+    }
+}
+
 final class PhotoLibraryService {
 
     let fetchOptions: PHFetchOptions!
@@ -355,7 +373,7 @@ final class PhotoLibraryService {
                     return
                 }
 
-                let imageData = PhotoLibraryService.image2PictureData(image, quality: quality)
+                let imageData = PhotoLibraryService.image2PictureData(image, quality: quality, isGetPhoto: false)
 
                 completion(imageData)
             }
@@ -385,7 +403,7 @@ final class PhotoLibraryService {
                     return
                 }
 
-                let imageData = PhotoLibraryService.image2PictureData(image, quality: 1.0)
+                let imageData = PhotoLibraryService.image2PictureData(image, quality: 1.0, isGetPhoto: true)
 
                 completion(imageData)
             }
@@ -730,7 +748,7 @@ final class PhotoLibraryService {
 
     }
 
-    fileprivate static func image2PictureData(_ image: UIImage, quality: Float) -> PictureData? {
+    fileprivate static func image2PictureData(_ image: UIImage, quality: Float, isGetPhoto: Bool?) -> PictureData? {
         //        This returns raw data, but mime type is unknown. Anyway, crodova performs base64 for messageAsArrayBuffer, so there's no performance gain visible
         //        let provider: CGDataProvider = CGImageGetDataProvider(image.CGImage)!
         //        let data = CGDataProviderCopyData(provider)
@@ -743,7 +761,11 @@ final class PhotoLibraryService {
             data = UIImagePNGRepresentation(image)
             mimeType = data != nil ? "image/png" : nil
         } else {
-            data = UIImageJPEGRepresentation(image, CGFloat(quality))
+            if isGetPhoto! {
+                data = image.compressTo(16)
+            } else {
+                data = UIImageJPEGRepresentation(image, CGFloat(quality))
+            }
             mimeType = data != nil ? "image/jpeg" : nil
         }
 
