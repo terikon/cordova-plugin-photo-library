@@ -184,7 +184,7 @@ public class PhotoLibraryService {
 
         // Here we perform conversion with data loss, but it seems better than handling orientation in JavaScript.
         // Converting to PNG can be an option to prevent data loss, but in price of very large files.
-        byte[] bytes = getJpegBytesFromBitmap(rotatedBitmap, 1.0); // minimize data loss with 1.0 quality
+        byte[] bytes = getJpegBytesFromBitmap(rotatedBitmap, 0.75); // minimize data loss with 1.0 quality
 
         is = new ByteArrayInputStream(bytes);
       }
