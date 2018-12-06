@@ -170,9 +170,11 @@ public class PhotoLibraryService {
         int width = exif.getAttributeInt( ExifInterface.TAG_IMAGE_WIDTH, 0 );
         int height = exif.getAttributeInt( ExifInterface.TAG_IMAGE_LENGTH, 0 );
 
+        opt.inTempStorage = new byte[16 * 1024];
         if (((height / width) > 2) || ((width / height) > 2)) {
-          opt.inTempStorage = new byte[16 * 1024];
           opt.inSampleSize = 4;
+        } else {
+          opt.inSampleSize = 2;
         }
 
         Bitmap bitmap = BitmapFactory.decodeStream(is, new Rect(), opt);
