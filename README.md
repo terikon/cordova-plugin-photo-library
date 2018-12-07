@@ -169,6 +169,7 @@ cordova.plugins.photoLibrary.getLibrary(
     itemsInChunk: 100, // Loading large library takes time, so output can be chunked so that result callback will be called on
     chunkTimeSec: 0.5, // each X items, or after Y secons passes. You can start displaying photos immediately.
     useOriginalFileNames: false, // default, true will be much slower on iOS
+    maxItems: 200, // limit the number of items to return
   }
 );
 ```
