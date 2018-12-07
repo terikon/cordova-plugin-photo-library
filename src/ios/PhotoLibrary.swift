@@ -266,14 +266,15 @@ import Foundation
 
             let url = command.arguments[0] as! String
             let album = command.arguments[1] as! String
+            
 
-            service.saveVideo(url, album: album) { (url: URL?, error: String?) in
+            service.saveVideo(url, album: album) { (_ libraryItem: NSDictionary?, error: String?) in
                 if (error != nil) {
                     let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: error)
                     self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
                 } else {
-                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
-                    self.commandDelegate!.send(pluginResult, callbackId: command.callbackId	)
+                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: libraryItem as! [String: AnyObject]?)
+                    self.commandDelegate!.send(pluginResult, callbackId: command.callbackId    )
                 }
             }
 
