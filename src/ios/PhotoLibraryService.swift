@@ -762,7 +762,7 @@ final class PhotoLibraryService {
             mimeType = data != nil ? "image/png" : nil
         } else {
             if isGetPhoto! {
-                data = image.compressTo(16)
+                data = UIImageJPEGRepresentation(image.compressTo(16), CGFloat(quality))
             } else {
                 data = UIImageJPEGRepresentation(image, CGFloat(quality))
             }
