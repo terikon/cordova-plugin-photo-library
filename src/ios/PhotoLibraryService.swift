@@ -252,7 +252,7 @@ final class PhotoLibraryService {
                     return
                 }
 
-                let imageData = PhotoLibraryService.image2PictureData(image, quality: 1.0, isGetPhoto: true)
+                let imageData = PhotoLibraryService.image2PictureData(image, quality: 0.75, isGetPhoto: true)
 
                 completion(imageData)
             }

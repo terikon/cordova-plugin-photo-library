@@ -160,37 +160,32 @@ public class PhotoLibraryService {
 
     InputStream is = context.getContentResolver().openInputStream(imageUri);
 
-    if (mimeType.equals("image/jpeg")) {
-      int orientation = getImageOrientation(imageFile);
-      if (orientation > 1) { // Image should be rotated
+    int orientation = getImageOrientation(imageFile);
+    BitmapFactory.Options opt = new BitmapFactory.Options();
 
-        BitmapFactory.Options opt = new BitmapFactory.Options();
+    ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
+    int width = exif.getAttributeInt( ExifInterface.TAG_IMAGE_WIDTH, 0 );
+    int height = exif.getAttributeInt( ExifInterface.TAG_IMAGE_LENGTH, 0 );
 
-        ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
-        int width = exif.getAttributeInt( ExifInterface.TAG_IMAGE_WIDTH, 0 );
-        int height = exif.getAttributeInt( ExifInterface.TAG_IMAGE_LENGTH, 0 );
-
-        opt.inTempStorage = new byte[16 * 1024];
-        if (((height / width) > 2) || ((width / height) > 2)) {
-          opt.inSampleSize = 4;
-        } else {
-          opt.inSampleSize = 2;
-        }
-
-        Bitmap bitmap = BitmapFactory.decodeStream(is, new Rect(), opt);
-        is.close();
-
-        Bitmap rotatedBitmap = rotateImage(bitmap, orientation);
-
-        bitmap.recycle();
-
-        // Here we perform conversion with data loss, but it seems better than handling orientation in JavaScript.
-        // Converting to PNG can be an option to prevent data loss, but in price of very large files.
-        byte[] bytes = getJpegBytesFromBitmap(rotatedBitmap, 0.75); // minimize data loss with 1.0 quality
-
-        is = new ByteArrayInputStream(bytes);
-      }
+    opt.inTempStorage = new byte[16 * 1024];
+    if (((height / width) > 2) || ((width / height) > 2)) {
+      opt.inSampleSize = 4;
+    } else {
+      opt.inSampleSize = 2;
     }
+
+    Bitmap bitmap = BitmapFactory.decodeStream(is, new Rect(), opt);
+    is.close();
+
+    Bitmap rotatedBitmap = rotateImage(bitmap, orientation);
+    
+    // Here we perform conversion with data loss, but it seems better than handling orientation in JavaScript.
+    // Converting to PNG can be an option to prevent data loss, but in price of very large files.
+    byte[] bytes = getJpegBytesFromBitmap(rotatedBitmap, 0.75); // minimize data loss with 1.0 quality
+
+    bitmap.recycle();
+
+    is = new ByteArrayInputStream(bytes);
 
     return new PictureAsStream(is, mimeType);
 
