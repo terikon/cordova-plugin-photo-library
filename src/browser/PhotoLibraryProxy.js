@@ -6,11 +6,10 @@ var photoLibraryProxy = {
 
   getLibrary: function (success, error, [options]) {
 
-  let processFiles = (chunkFiles, filesElement) => {
-      files2Library(chunkFiles, options.includeAlbumData, options.itemsInChunk, options.chunkTimeSec, (library, chunkNum, isLastChunk) => {
+    let processFiles = (files, filesElement) => {
+      files2Library(files, options.includeAlbumData, options.itemsInChunk, options.chunkTimeSec, (library, chunkNum, isLastChunk) => {
         if (filesElement && isLastChunk) {
           removeFilesElement(filesElement);
-          files = null;
         }
         success({ library: library, chunkNum: chunkNum, isLastChunk: isLastChunk }, {keepCallback: !isLastChunk});
       });
