@@ -95,6 +95,34 @@ import Foundation
         }
     }
     
+    @objc(getPhotosFromAlbum:) func getPhotosFromAlbum(_ command: CDVInvokedUrlCommand) {
+        print("C getPhotosFromAlbum 0");
+        concurrentQueue.async {
+            
+            print("C getPhotosFromAlbum 1");
+            
+            if !PhotoLibraryService.hasPermission() {
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+                return
+            }
+            
+            print("C getPhotosFromAlbum 2");
+            
+            let service = PhotoLibraryService.instance
+            
+            let albumTitle = command.arguments[0] as! String
+            
+            let photos = service.getPhotosFromAlbum(albumTitle);
+            
+            print("C getPhotosFromAlbum 3");
+            
+            let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: photos)
+            self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+            
+        }
+    }
+    
     
     @objc(isAuthorized:) func isAuthorized(_ command: CDVInvokedUrlCommand) {
         concurrentQueue.async {

@@ -37,6 +37,9 @@ final class PhotoLibraryService {
     let contentMode = PHImageContentMode.aspectFill // AspectFit: can be smaller, AspectFill - can be larger. TODO: resize to exact size
 
     var cacheActive = false
+    
+    var photo : UIImage? = nil
+    var images : [NSDictionary] = [NSDictionary]()
 
     let mimeTypes = [
         "flv":  "video/x-flv",
@@ -103,6 +106,94 @@ final class PhotoLibraryService {
         return PHPhotoLibrary.authorizationStatus() == .authorized
 
     }
+    
+    func getPhotosFromAlbum(_ albumTitle: String) -> [NSDictionary] {
+        
+        print("getPhotosFromAlbum 1");
+        print(albumTitle);
+        
+        self.images = [NSDictionary]()
+        
+        var assetCollection = PHAssetCollection()
+        var albumFound = Bool()
+        var photoAssets = PHFetchResult<AnyObject>()
+        let fetchOptions = PHFetchOptions()
+        
+        fetchOptions.predicate = NSPredicate(format: "title = %@", albumTitle)
+        let collection:PHFetchResult = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: fetchOptions)
+        
+        print("getPhotosFromAlbum 2");
+        
+        if let firstObject = collection.firstObject{
+            //found the album
+            assetCollection = firstObject
+            albumFound = true
+        }
+        else { albumFound = false }
+        _ = collection.count
+        photoAssets = PHAsset.fetchAssets(in: assetCollection, options: nil) as! PHFetchResult<AnyObject>
+
+        
+        
+        photoAssets.enumerateObjects{(object: AnyObject!,
+            count: Int,
+            stop: UnsafeMutablePointer<ObjCBool>) in
+            
+            if object is PHAsset{
+                let asset = object as! PHAsset
+                print("Asset")
+                print(asset)
+                
+                let semaphore = DispatchSemaphore(value: 0)
+                
+                let libraryItem = self.assetToLibraryItem(asset: asset, useOriginalFileNames: false, includeAlbumData: false);
+                
+                self.getCompleteInfo(libraryItem, completion: { (fullPath, libraryItemOrigin) in
+                    libraryItem["filePath"] = fullPath
+                    semaphore.signal()
+                })
+                
+                semaphore.wait()
+                
+                self.images.append(libraryItem)
+                
+//                let imageSize = CGSize(width: asset.pixelWidth,
+//                                       height: asset.pixelHeight)
+//
+//                /* For faster performance, and maybe degraded image */
+//                let options = PHImageRequestOptions()
+//                options.deliveryMode = .fastFormat
+//                options.isSynchronous = true
+//
+//                imageManager.requestImage(for: asset,
+//                                          targetSize: imageSize,
+//                                          contentMode: .aspectFill,
+//                                          options: options,
+//                                          resultHandler: {
+//                                            (image, info) -> Void in
+//                                            self.photo = image!
+//                                            /* The image is now available to us */
+//                                            self.addImgToArray(uploadImage: self.photo!)
+//                                            print("enum for image, This is number 2")
+//
+//                })
+                
+            }
+        }
+        
+        print("getPhotosFromAlbum 3");
+        
+        return self.images;
+    }
+    
+    
+    
+    
+    
+//    func addImgToArray(uploadImage:UIImage)
+//    {
+//        self.images.append(uploadImage)
+//    }
 
     func getLibrary(_ options: PhotoLibraryGetLibraryOptions, completion: @escaping (_ result: [NSDictionary], _ chunkNum: Int, _ isLastChunk: Bool) -> Void) {
 
@@ -162,7 +253,7 @@ final class PhotoLibraryService {
 
             chunk.append(libraryItem)
 
-            self.getCompleteInfo(libraryItem, completion: { (fullPath) in
+            self.getCompleteInfo(libraryItem, completion: { (fullPath, libraryItemOrigin) in
 
                 libraryItem["filePath"] = fullPath
 
@@ -194,13 +285,13 @@ final class PhotoLibraryService {
     }
 
 
-    func getCompleteInfo(_ libraryItem: NSDictionary, completion: @escaping (_ fullPath: String?) -> Void) {
+    func getCompleteInfo(_ libraryItem: NSDictionary, completion: @escaping (_ fullPath: String?,_ libraryItemOrigin: NSDictionary) -> Void) {
 
 
         let ident = libraryItem.object(forKey: "id") as! String
         let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [ident], options: self.fetchOptions)
         if fetchResult.count == 0 {
-            completion(nil)
+            completion(nil, libraryItem)
             return
         }
 
@@ -217,12 +308,12 @@ final class PhotoLibraryService {
                     (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
 
                     if(imageData == nil) {
-                        completion(nil)
+                        completion(nil, libraryItem)
                     }
                     else {
                         let file_url:URL = info!["PHImageFileURLKey"] as! URL
 //                        let mime_type = self.mimeTypes[file_url.pathExtension.lowercased()]!
-                        completion(file_url.relativePath)
+                        completion(file_url.relativePath, libraryItem)
                     }
                 }
             }
@@ -233,21 +324,21 @@ final class PhotoLibraryService {
                     if( avAsset is AVURLAsset ) {
                         let video_asset = avAsset as! AVURLAsset
                         let url = URL(fileURLWithPath: video_asset.url.relativePath)
-                        completion(url.relativePath)
+                        completion(url.relativePath, libraryItem)
                     }
                     else if(avAsset is AVComposition) {
                         let token = info?["PHImageFileSandboxExtensionTokenKey"] as! String
                         let path = token.components(separatedBy: ";").last
-                        completion(path)
+                        completion(path, libraryItem)
                     }
                 })
             }
             else if(mediaType == "audio") {
                 // TODO:
-                completion(nil)
+                completion(nil, libraryItem)
             }
             else {
-                completion(nil) // unknown
+                completion(nil, libraryItem) // unknown
             }
         })
     }
@@ -556,16 +647,17 @@ final class PhotoLibraryService {
             saveImage(photoAlbum)
             return
         }
-
-        PhotoLibraryService.createPhotoAlbum(album) { (photoAlbum: PHAssetCollection?, error: String?) in
-
-            guard let photoAlbum = photoAlbum else {
-                completion(nil, error)
-                return
+        else{
+            PhotoLibraryService.createPhotoAlbum(album) { (photoAlbum: PHAssetCollection?, error: String?) in
+                
+                guard let photoAlbum = photoAlbum else {
+                    completion(nil, error)
+                    return
+                }
+                
+                saveImage(photoAlbum)
+                
             }
-
-            saveImage(photoAlbum)
-
         }
 
     }
