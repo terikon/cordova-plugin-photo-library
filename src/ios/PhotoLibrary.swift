@@ -19,7 +19,7 @@ import Foundation
 
 
     // Will sort by creation date
-    func getLibrary(_ command: CDVInvokedUrlCommand) {
+    @objc func getLibrary(_ command: CDVInvokedUrlCommand) {
         concurrentQueue.async {
 
             if !PhotoLibraryService.hasPermission() {
@@ -76,7 +76,7 @@ import Foundation
         }
     }
     
-    func getAlbums(_ command: CDVInvokedUrlCommand) {
+    @objc func getAlbums(_ command: CDVInvokedUrlCommand) {
         concurrentQueue.async {
             
             if !PhotoLibraryService.hasPermission() {
@@ -96,7 +96,7 @@ import Foundation
     }
     
     
-    func isAuthorized(_ command: CDVInvokedUrlCommand) {
+    @objc func isAuthorized(_ command: CDVInvokedUrlCommand) {
         concurrentQueue.async {
             let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: PhotoLibraryService.hasPermission())
             self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
@@ -104,7 +104,7 @@ import Foundation
     }
     
     
-    func getThumbnail(_ command: CDVInvokedUrlCommand) {
+    @objc func getThumbnail(_ command: CDVInvokedUrlCommand) {
         concurrentQueue.async {
 
             if !PhotoLibraryService.hasPermission() {
@@ -139,7 +139,7 @@ import Foundation
         }
     }
 
-    func getPhoto(_ command: CDVInvokedUrlCommand) {
+    @objc func getPhoto(_ command: CDVInvokedUrlCommand) {
         concurrentQueue.async {
 
             if !PhotoLibraryService.hasPermission() {
@@ -169,7 +169,7 @@ import Foundation
         }
     }
 
-    func getLibraryItem(_ command: CDVInvokedUrlCommand) {
+    @objc func getLibraryItem(_ command: CDVInvokedUrlCommand) {
         concurrentQueue.async {
             
             if !PhotoLibraryService.hasPermission() {
@@ -188,7 +188,7 @@ import Foundation
     }
     
     
-    func returnPictureData(callbackId : String, base64: String?, mimeType: String?) {
+    @objc func returnPictureData(callbackId : String, base64: String?, mimeType: String?) {
         let pluginResult = (base64 != nil) ?
             CDVPluginResult(
                 status: CDVCommandStatus_OK,
@@ -203,7 +203,7 @@ import Foundation
     }
     
     
-    func stopCaching(_ command: CDVInvokedUrlCommand) {
+    @objc func stopCaching(_ command: CDVInvokedUrlCommand) {
 
         let service = PhotoLibraryService.instance
 
@@ -214,7 +214,7 @@ import Foundation
 
     }
 
-    func requestAuthorization(_ command: CDVInvokedUrlCommand) {
+    @objc func requestAuthorization(_ command: CDVInvokedUrlCommand) {
 
         let service = PhotoLibraryService.instance
 
@@ -228,7 +228,7 @@ import Foundation
 
     }
 
-    func saveImage(_ command: CDVInvokedUrlCommand) {
+    @objc func saveImage(_ command: CDVInvokedUrlCommand) {
         concurrentQueue.async {
 
             if !PhotoLibraryService.hasPermission() {
@@ -255,7 +255,7 @@ import Foundation
         }
     }
 
-    func saveVideo(_ command: CDVInvokedUrlCommand) {
+    @objc func saveVideo(_ command: CDVInvokedUrlCommand) {
         concurrentQueue.async {
 
             if !PhotoLibraryService.hasPermission() {
