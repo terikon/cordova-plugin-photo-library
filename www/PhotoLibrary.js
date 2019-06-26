@@ -86,6 +86,19 @@ photoLibrary.getAlbums = function (success, error) {
 
 };
 
+photoLibrary.getPhotosFromAlbum = function (albumTitle, success, error) {
+
+  cordova.exec(
+    function (result) {
+      success(result);
+    },
+    error,
+    'PhotoLibrary',
+    'getPhotosFromAlbum', [albumTitle]
+  );
+
+};
+
 photoLibrary.isAuthorized = function (success, error) {
 
   cordova.exec(
