@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/terikon/cordova-plugin-photo-library#readme",
   "devDependencies": {
-    "eslint": "^3.14.1",
+    "eslint": "^6.6.0",
     "@types/cordova": "^0.0.34",
     "@types/jasmine": "^2.5.41",
     "es5-shim": "4.5.9",
