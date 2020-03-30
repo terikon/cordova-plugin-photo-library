@@ -192,14 +192,15 @@ final class PhotoLibraryService {
         }
         return "application/octet-stream"
     }
-public static func getFileURLFromPHAssetResourceDescription(description: String) -> String? {
-    let regex = try! NSRegularExpression(pattern: "(?<=fileURL: ).*(?=\\s)")
-    if let result = regex.firstMatch(in: description, options: [], range: NSRange(location: 0, length: description.count)) {
-        let url = String(description[Range(result.range, in: description)!])
-        return url
+                                
+    public static func getFileURLFromPHAssetResourceDescription(description: String) -> String? {
+        let regex = try! NSRegularExpression(pattern: "(?<=fileURL: ).*(?=\\s)")
+        if let result = regex.firstMatch(in: description, options: [], range: NSRange(location: 0, length: description.count)) {
+            let url = String(description[Range(result.range, in: description)!])
+            return url
+        }
+        return nil
     }
-    return nil
-}
 
 
     func getCompleteInfo(_ libraryItem: NSDictionary, completion: @escaping (_ fullPath: String?) -> Void) {
@@ -219,7 +220,7 @@ public static func getFileURLFromPHAssetResourceDescription(description: String)
         fetchResult.enumerateObjects({
             (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
             let asset = obj as! PHAsset
-             let asset2 = obj as! PHAsset
+          
             if(mediaType == "image") {
 
                 self.imageRequestOptions.isNetworkAccessAllowed = true
@@ -230,20 +231,15 @@ public static func getFileURLFromPHAssetResourceDescription(description: String)
                         completion(nil)
                     }
                     else {
-                         let version = OperatingSystemVersion(majorVersion: 13, minorVersion: 0, patchVersion: 0)
-                            if ProcessInfo.processInfo.isOperatingSystemAtLeast(version) {
-                                let resourse = PHAssetResource.assetResources(for: asset)
-                               let url = PhotoLibraryService.getFileURLFromPHAssetResourceDescription(description:resourse.description)
-                               print("photoAsset.localIdentifier url", url)
-
-                                completion(url)
-                            } else {
-                                   
-                                let file_url:URL = info!["PHImageFileURLKey"] as! URL
-                                completion(file_url.relativePath)
-                            }
-                      
-
+                        let version = OperatingSystemVersion(majorVersion: 13, minorVersion: 0, patchVersion: 0)
+                        if ProcessInfo.processInfo.isOperatingSystemAtLeast(version) {
+                           let resourse = PHAssetResource.assetResources(for: asset)
+                           let url = PhotoLibraryService.getFileURLFromPHAssetResourceDescription(description:resourse.description)
+                           completion(url)
+                        } else {    
+                           let file_url:URL = info!["PHImageFileURLKey"] as! URL
+                           completion(file_url.relativePath)
+                        }
                     }
                 }
             }
