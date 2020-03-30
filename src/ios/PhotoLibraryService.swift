@@ -192,6 +192,14 @@ final class PhotoLibraryService {
         }
         return "application/octet-stream"
     }
+public static func getFileURLFromPHAssetResourceDescription(description: String) -> String? {
+    let regex = try! NSRegularExpression(pattern: "(?<=fileURL: ).*(?=\\s)")
+    if let result = regex.firstMatch(in: description, options: [], range: NSRange(location: 0, length: description.count)) {
+        let url = String(description[Range(result.range, in: description)!])
+        return url
+    }
+    return nil
+}
 
 
     func getCompleteInfo(_ libraryItem: NSDictionary, completion: @escaping (_ fullPath: String?) -> Void) {
@@ -211,18 +219,31 @@ final class PhotoLibraryService {
         fetchResult.enumerateObjects({
             (obj: AnyObject, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
             let asset = obj as! PHAsset
-
+             let asset2 = obj as! PHAsset
             if(mediaType == "image") {
+
+                self.imageRequestOptions.isNetworkAccessAllowed = true
                 PHImageManager.default().requestImageData(for: asset, options: self.imageRequestOptions) {
-                    (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
+                    (imageData: Data?, dataUTI: String?, orientation: UIImage.Orientation, info: [AnyHashable: Any]?) in
 
                     if(imageData == nil) {
                         completion(nil)
                     }
                     else {
-                        let file_url:URL = info!["PHImageFileURLKey"] as! URL
-//                        let mime_type = self.mimeTypes[file_url.pathExtension.lowercased()]!
-                        completion(file_url.relativePath)
+                         let version = OperatingSystemVersion(majorVersion: 13, minorVersion: 0, patchVersion: 0)
+                            if ProcessInfo.processInfo.isOperatingSystemAtLeast(version) {
+                                let resourse = PHAssetResource.assetResources(for: asset)
+                               let url = PhotoLibraryService.getFileURLFromPHAssetResourceDescription(description:resourse.description)
+                               print("photoAsset.localIdentifier url", url)
+
+                                completion(url)
+                            } else {
+                                   
+                                let file_url:URL = info!["PHImageFileURLKey"] as! URL
+                                completion(file_url.relativePath)
+                            }
+                      
+
                     }
                 }
             }
@@ -356,7 +377,7 @@ final class PhotoLibraryService {
             let asset = obj as! PHAsset
 
             PHImageManager.default().requestImageData(for: asset, options: self.imageRequestOptions) {
-                (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
+                (imageData: Data?, dataUTI: String?, orientation: UIImage.Orientation, info: [AnyHashable: Any]?) in
 
                 guard let image = imageData != nil ? UIImage(data: imageData!) : nil else {
                     completion(nil)
@@ -387,8 +408,9 @@ final class PhotoLibraryService {
             let mediaType = mimeType.components(separatedBy: "/")[0]
 
             if(mediaType == "image") {
+               
                 PHImageManager.default().requestImageData(for: asset, options: self.imageRequestOptions) {
-                    (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
+                    (imageData: Data?, dataUTI: String?, orientation: UIImage.Orientation, info: [AnyHashable: Any]?) in
 
                     if(imageData == nil) {
                         completion(nil)
@@ -493,7 +515,7 @@ final class PhotoLibraryService {
         }
 
         // Permission was manually denied by user, open settings screen
-        let settingsUrl = URL(string: UIApplicationOpenSettingsURLString)
+        let settingsUrl = URL(string: UIApplication.openSettingsURLString)
         if let url = settingsUrl {
             UIApplication.shared.openURL(url)
             // TODO: run callback only when return ?
@@ -666,7 +688,7 @@ final class PhotoLibraryService {
     fileprivate func getDataFromURL(_ url: String) throws -> Data {
         if url.hasPrefix("data:") {
 
-            guard let match = self.dataURLPattern.firstMatch(in: url, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, url.characters.count)) else { // TODO: firstMatchInString seems to be slow for unknown reason
+            guard let match = self.dataURLPattern.firstMatch(in: url, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, url.count)) else { // TODO: firstMatchInString seems to be slow for unknown reason
                 throw PhotoLibraryError.error(description: "The dataURL could not be parsed")
             }
             let dataPos = match.range(at: 0).length
@@ -728,10 +750,10 @@ final class PhotoLibraryService {
         var mimeType: String?
 
         if (imageHasAlpha(image)){
-            data = UIImagePNGRepresentation(image)
+            data = image.pngData()
             mimeType = data != nil ? "image/png" : nil
         } else {
-            data = UIImageJPEGRepresentation(image, CGFloat(quality))
+            data = image.jpegData(compressionQuality: CGFloat(quality))
             mimeType = data != nil ? "image/jpeg" : nil
         }
 
