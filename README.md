@@ -1,22 +1,34 @@
 [![Build Status](https://travis-ci.org/terikon/cordova-plugin-photo-library.svg?branch=master)](https://travis-ci.org/terikon/cordova-plugin-photo-library)
 
-[![That's how it looks in real app](https://img.youtube.com/vi/qHnnRsZ7klE/0.jpg)](https://www.youtube.com/watch?v=qHnnRsZ7klE)
+Known issues:
+- This plugin does not work with WKWebView. Please do not use it if you planning to switch to WKWebView, until someone will resolve this issue.
 
-We needed a code to displays photo library on HTML page. That gets thumbnail of arbitrary sizes, works on multiple platforms, and is fast.
+That's how it looks and performs in real app:
 
-So here it is.
+[![](https://img.youtube.com/vi/qHnnRsZ7klE/0.jpg)](https://www.youtube.com/watch?v=qHnnRsZ7klE)
+
+Demo projects (runnable online):
+
+- [For jQuery](https://github.com/terikon/photo-library-demo-jquery)
+- [For Ionic 2](https://github.com/terikon/photo-library-demo-ionic2)
+- [Vanilla JS with PhotoSwipe](https://github.com/terikon/photo-library-demo-photoswipe)
+
+Displays photo library on cordova's HTML page, by URL. Gets thumbnail of arbitrary sizes, works on multiple platforms, and is fast.
 
 - Displays photo gallery as web page, and not as boring native screen which you cannot modify. This brings back control over your app to you.
 For example, you can use [PhotoSwipe](https://github.com/dimsemenov/photoswipe) library to present photos.
+- Provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5 .
 - Works on Android, iOS and browser (cordova serve).
-- Fast - does not do base64 and uses browser cache.
-- On device, provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5 .
+- Fast - uses browser cache.
 - Can save photos (jpg, png, animated gifs) and videos to specified album on device.
 - Handles permissions.
 - Handles images [EXIF rotation hell](http://www.daveperrett.com/articles/2012/07/28/exif-orientation-handling-is-a-ghetto/).
 - On iOS, written in Swift and not Objective-C.
 
-**Work in progress**
+**Co-maintainer needed**
+
+Currently Android code is pretty stable, iOS has few stability [issues](https://github.com/terikon/cordova-plugin-photo-library/issues).
+**Co-maintainer with iOS/Swift knowlege is needed, please [contact](https://github.com/viskin)**.
 
 Contributions are welcome.
 Please add only features that can be supported on both Android and iOS.
@@ -31,7 +43,7 @@ Please write tests for your contribution.
 Add cdvphotolibrary protocol to Content-Security-Policy, like this:
 
 ```
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: cdvphotolibrary:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: gap: ws: https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: cdvphotolibrary:">
 ```
 
 For remarks about angular/ionic usage, see below.
@@ -40,8 +52,8 @@ For remarks about angular/ionic usage, see below.
 
 ```js
 cordova.plugins.photoLibrary.getLibrary(
-  function (library) {
-
+  function (result) {
+    var library = result.library;
     // Here we have the library as array
 
     library.forEach(function(libraryItem) {
@@ -89,15 +101,17 @@ cordova.plugins.photoLibrary.getAlbums(
 ## Saving photos and videos
 
 ``` js
-var url = 'file:///...'; // url can also be dataURL, but giving it a file path is much faster
+var url = 'file:///...'; // file or remote URL. url can also be dataURL, but giving it a file path is much faster
 var album = 'MyAppName';
-cordova.plugins.photoLibrary.saveImage(url, album, function () {}, function (err) {});
+cordova.plugins.photoLibrary.saveImage(url, album, function (libraryItem) {}, function (err) {});
 ```
 
 ```js
 // iOS quirks: video provided cannot be .webm . Use .mov or .mp4 .
 cordova.plugins.photoLibrary.saveVideo(url, album, function () {}, function (err) {});
 ```
+
+saveImage and saveVideo both need write permission to be granted by requestAuthorization.
 
 ## Permissions
 
@@ -106,7 +120,7 @@ The library handles tricky parts of aquiring permissions to photo library.
 If any of methods fail because lack of permissions, error string will be returned that begins with 'Permission'. So, to process on aquiring permissions, do the following:
 ```js
 cordova.plugins.photoLibrary.getLibrary(
-  function (library) { },
+  function ({library}) { },
   function (err) {
     if (err.startsWith('Permission')) {
       // call requestAuthorization, and retry
@@ -136,17 +150,29 @@ cordova.plugins.photoLibrary.requestAuthorization(
 );
 ```
 
+Read permission is added for your app by the plugin automatically. To make writing possible, add following to your config.xml:
+```xml
+<platform name="android">
+  <config-file target="AndroidManifest.xml" parent="/*">
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  </config-file>
+</platform>
+```
+
 ## Chunked output
 
 ```js
 cordova.plugins.photoLibrary.getLibrary(
-  function (library, isLastChunk) {
+  function (result) {
+    var library = result.library;
+    var isLastChunk = result.isLastChunk;
   },
   function (err) { },
   {
     itemsInChunk: 100, // Loading large library takes time, so output can be chunked so that result callback will be called on
     chunkTimeSec: 0.5, // each X items, or after Y secons passes. You can start displaying photos immediately.
     useOriginalFileNames: false, // default, true will be much slower on iOS
+    maxItems: 200, // limit the number of items to return
   }
 );
 ```
@@ -216,6 +242,8 @@ cordova.plugins.photoLibrary.getPhoto(
 
 # ionic / angular
 
+It's best to use from [ionic-native](https://ionicframework.com/docs/v2/native/photo-library). The the docs.
+
 As mentioned [here](https://github.com/terikon/cordova-plugin-photo-library/issues/15) by dnmd, cdvphotolibrary urls should bypass sanitization to work.
 
 In angular2, do following:
@@ -223,22 +251,40 @@ In angular2, do following:
 Define Pipe that will tell to bypass trusted urls. cdvphotolibrary urls should be trusted:
 
 ```js
-@Pipe({name: 'safeUrl'})
-export class SafeUrl {
-  constructor(private sanitizer:DomSanitizer){}
-  transform(url) {
-    return this.sanitizer.bypassSecurityTrustUrl(url);
+// cdvphotolibrary.pipe.ts
+import { Pipe, PipeTransform } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+
+@Pipe({name: 'cdvphotolibrary'})
+export class CDVPhotoLibraryPipe implements PipeTransform {
+
+  constructor(private sanitizer: DomSanitizer) {}
+
+  transform(url: string) {
+    return url.startsWith('cdvphotolibrary://') ? this.sanitizer.bypassSecurityTrustUrl(url) : url;
   }
 }
 ```
 
-Then in your component, use cdvphotolibrary urls applying the safeUrl pipe:
+Register the pipe in your module:
+
+```js
+import { CDVPhotoLibraryPipe } from './cdvphotolibrary.pipe.ts';
+
+@NgModule({
+  declarations: [
+    CDVPhotoLibraryPipe,
+    // ...
+  ],
+})
+```
+
+Then in your component, use cdvphotolibrary urls applying the cdvphotolibrary pipe:
 
 ```js
 @Component({
    selector: 'app',
-   template: '<img [src]="url | safeUrl"></div>',
-   pipes: [ SafeUrl ]
+   template: '<img [src]="url | cdvphotolibrary">'
 })
 
 export class AppComponent {
@@ -258,8 +304,9 @@ var app = angular
   .config([
     '$compileProvider',
     function ($compileProvider) {
-      $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|cdvphotolibrary):/);
-      // Angular before v1.2 uses $compileProvider.urlSanitizationWhitelist(...)
+		$compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|cdvphotolibrary):/);
+		//Angular 1.2 and above has two sanitization methods, one for links (aHrefSanitizationWhitelist) and 
+		//one for images (imgSrcSanitizationWhitelist). Versions prior to 1.2 use $compileProvider.urlSanitizationWhitelist(...)
     }
   ]);
 ```
@@ -281,16 +328,12 @@ tcc.db file is located at $HOME/Library/Developer/CoreSimulator/Devices/$DEVICEI
 
 ## Helper app
 
-To run tests, use [special cordova-plugin-photo-library-tester](https://github.com/terikon/cordova-plugin-photo-library-tester).
+To run tests, use [special photo-library-tester](https://github.com/terikon/photo-library-tester).
 It's always useful to run these tests before submitting changes, for each platform (android, ios, browser).
 
 # TODO
 
-- [#7](https://github.com/terikon/cordova-plugin-photo-library/issues/7) saveImage and saveVideo should return saved libraryItem.
-- [#14](https://github.com/terikon/cordova-plugin-photo-library/issues/14) partialCallback currently implemented only for iOS platform.
-Android and browser platform implementations needed.
-- [#16](https://github.com/terikon/cordova-plugin-photo-library/issues/16) Include album name in libraryItem.
-- [#17](https://github.com/terikon/cordova-plugin-photo-library/issues/17) Enable filter option for getLibrary, that will select specific album.
+- [#38](https://github.com/terikon/cordova-plugin-photo-library/issues/38) browser platform: saveImage and saveVideo should download file.
 - Improve documentation.
 - Provide cancellation mechanism for long-running operations, like getLibrary.
 - CI.
@@ -301,7 +344,6 @@ Android and browser platform implementations needed.
 - Browser platform: Separate to multiple files.
 - Android: caching mechanism like [this one](https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html) can be helpful.
 - Implement save protocol with HTTP POST, so no base64 transformation will be needed for saving.
-- Browser - implement saving to folder.
 - EXIF rotation hell is not handled on browser platform.
 - Pre-fetching data to file-based cache on app start can improve responsiveness. Just this caching should occur as low-priority thread. Cache can be updated
 by system photo libraries events.

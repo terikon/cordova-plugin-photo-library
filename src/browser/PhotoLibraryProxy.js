@@ -6,21 +6,34 @@ var photoLibraryProxy = {
 
   getLibrary: function (success, error, [options]) {
 
-    checkSupported();
-
-    let filesElement = createFilesElement();
-
-    filesElement.addEventListener('change', (evt) => {
-
-      let files = getFiles(evt.target);
-      files2Library(files, options.includeAlbumData, options.itemsInChunk, options.chunkTimeSec, (library, isLastChunk) => {
-        if (isLastChunk) {
+  let processFiles = (chunkFiles, filesElement) => {
+      files2Library(chunkFiles, options.includeAlbumData, options.itemsInChunk, options.chunkTimeSec, (library, chunkNum, isLastChunk) => {
+        if (filesElement && isLastChunk) {
           removeFilesElement(filesElement);
+          files = null;
         }
-        success({ library: library, isLastChunk: isLastChunk }, {keepCallback: !isLastChunk});
+        success({ library: library, chunkNum: chunkNum, isLastChunk: isLastChunk }, {keepCallback: !isLastChunk});
       });
+    };
 
-    }, false);
+    if (files) {
+
+      processFiles(files);
+
+    } else {
+
+      checkSupported();
+
+      let filesElement = createFilesElement();
+
+      filesElement.addEventListener('change', (evt) => {
+
+        files = getFiles(evt.target);
+
+        processFiles(files, filesElement);
+
+      }, false);
+    }
 
   },
 
@@ -98,12 +111,12 @@ var photoLibraryProxy = {
     success();
   },
 
-  saveImage: function (url, album, success, error) {
+  saveImage: function (success, error, [url, album]) {
     // TODO - implement saving on browser
     error('not implemented');
   },
 
-  saveVideo: function (url, album, success, error) {
+  saveVideo: function (success, error, [url, album]) {
     // TODO - implement saving on browser
     error('not implemented');
   },
@@ -118,6 +131,9 @@ const HIGHEST_POSSIBLE_Z_INDEX = 2147483647;
 
 var staticLibrary = new Map();
 var counter = 0;
+
+var files = null; // files are stored, so multiple calls to getLibrary won't require multiple files selections
+var idCache = {}; // cache of ids
 
 function checkSupported() {
   // Check for the various File API support.
@@ -172,6 +188,7 @@ function files2Library(files, includeAlbumData, itemsInChunk, chunkTimeSec, succ
 
   let chunk = [];
   let chunkStartTime = new Date().getTime();
+  let chunkNum = 0;
 
   async.eachOfSeries(files, (file, index, done) => {
 
@@ -184,9 +201,14 @@ function files2Library(files, includeAlbumData, itemsInChunk, chunkTimeSec, succ
       .then(dataURLwithImage => {
         let {image, dataURL} = dataURLwithImage;
         let {width, height} = image;
+        let id = idCache[file.name];
+        if (!id) {
+          id = `${counter}#${file.name}`;
+          idCache[file.name] = id;
+        }
 
         let libraryItem = {
-          id: `${counter}#${file.name}`,
+          id: id,
           fileName: file.name,
           width: width,
           height: height,
@@ -204,9 +226,10 @@ function files2Library(files, includeAlbumData, itemsInChunk, chunkTimeSec, succ
         chunk.push(libraryItem);
 
         if (index === files.length - 1) {
-          success(chunk, true);
+          success(chunk, chunkNum, true);
         } else if ((itemsInChunk > 0 && chunk.length === itemsInChunk) || (chunkTimeSec > 0 && (new Date().getTime() - chunkStartTime) >= chunkTimeSec*1000)) {
-          success(chunk, false);
+          success(chunk, chunkNum, false);
+          chunkNum += 1;
           chunk = [];
           chunkStartTime = new Date().getTime();
         }

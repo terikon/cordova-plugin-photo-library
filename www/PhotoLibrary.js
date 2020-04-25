@@ -25,26 +25,47 @@ photoLibrary.getLibrary = function (success, error, options) {
     itemsInChunk: options.itemsInChunk || 0,
     chunkTimeSec: options.chunkTimeSec || 0,
     useOriginalFileNames: options.useOriginalFileNames || false,
+    includeImages: options.includeImages !== undefined ? options.includeImages : true,
     includeAlbumData: options.includeAlbumData || false,
+    includeCloudData: options.includeCloudData !== undefined ? options.includeCloudData : true,
+    includeVideos: options.includeVideos || false,
+    maxItems: options.maxItems || 0
   };
 
-  // queue that keeps order of callbacks that arrive from cordova.exec.
-  var q = async.queue(function(result, done) {
+  // queue that keeps order of async processing
+  var q = async.queue(function(chunk, done) {
 
-    var library = result.library;
-    var isLastChunk = result.isLastChunk;
+    var library = chunk.library;
+    var isLastChunk = chunk.isLastChunk;
 
-    parseDates(library);
-
-    addUrlsToLibrary(library, function(library) {
-      success(library, isLastChunk);
+    processLibrary(library, function(library) {
+      var result = { library: library, isLastChunk: isLastChunk };
+      success(result);
       done();
     }, options);
 
   });
 
+  var chunksToProcess = []; // chunks are stored in its index
+  var currentChunkNum = 0;
+
   cordova.exec(
-    function (result) { q.push(result); },
+    function (chunk) {
+      // callbacks arrive from cordova.exec not in order, restoring the order here
+      if (chunk.chunkNum === currentChunkNum) {
+        // the chunk arrived in order
+        q.push(chunk);
+        currentChunkNum += 1;
+        while (chunksToProcess[currentChunkNum]) {
+          q.push(chunksToProcess[currentChunkNum]);
+          delete chunksToProcess[currentChunkNum];
+          currentChunkNum += 1;
+        }
+      } else {
+        // the chunk arrived not in order
+        chunksToProcess[chunk.chunkNum] = chunk;
+      }
+    },
     error,
     'PhotoLibrary',
     'getLibrary', [options]
@@ -61,6 +82,19 @@ photoLibrary.getAlbums = function (success, error) {
     error,
     'PhotoLibrary',
     'getAlbums', []
+  );
+
+};
+
+photoLibrary.isAuthorized = function (success, error) {
+
+  cordova.exec(
+    function (result) {
+      success(result);
+    },
+    error,
+    'PhotoLibrary',
+    'isAuthorized', []
   );
 
 };
@@ -165,6 +199,24 @@ photoLibrary.getPhoto = function (photoIdOrLibraryItem, success, error, options)
 
 };
 
+photoLibrary.getLibraryItem = function (libraryItem, success, error, options) {
+
+  if (!options) {
+    options = {};
+  }
+
+  cordova.exec(
+    function (data, mimeType) {
+      var blob = dataAndMimeTypeToBlob(data, mimeType);
+      success(blob);
+    },
+    error,
+    'PhotoLibrary',
+    'getLibraryItem', [libraryItem, options]
+  );
+
+};
+
 // Call when thumbnails are not longer needed for better performance
 photoLibrary.stopCaching = function (success, error) {
 
@@ -192,10 +244,23 @@ photoLibrary.requestAuthorization = function (success, error, options) {
 };
 
 // url is file url or dataURL
-photoLibrary.saveImage = function (url, album, success, error) {
+photoLibrary.saveImage = function (url, album, success, error, options) {
+
+  options = getThumbnailOptionsWithDefaults(options);
+
+  if (album.title) {
+    album = album.title;
+  }
 
   cordova.exec(
-    success,
+    function (libraryItem) {
+      var library = libraryItem ? [libraryItem] : [];
+
+      processLibrary(library, function(library) {
+        success(library[0] || null);
+      }, options);
+
+    },
     error,
     'PhotoLibrary',
     'saveImage', [url, album]
@@ -205,6 +270,10 @@ photoLibrary.saveImage = function (url, album, success, error) {
 
 // url is file url or dataURL
 photoLibrary.saveVideo = function (url, album, success, error) {
+
+  if (album.title) {
+    album = album.title;
+  }
 
   cordova.exec(
     success,
@@ -245,6 +314,14 @@ var getRequestAuthenticationOptionsWithDefaults = function (options) {
   };
 
   return options;
+
+};
+
+var processLibrary = function (library, success, options) {
+
+  parseDates(library);
+
+  addUrlsToLibrary(library, success, options);
 
 };
 

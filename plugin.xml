@@ -1,10 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-photo-library" version="1.2.2" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="cordova-plugin-photo-library" version="2.2.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>Photo Library</name>
     <js-module src="www/PhotoLibrary.js" name="PhotoLibrary">
         <clobbers target="cordova.plugins.photoLibrary" />
     </js-module>
     <js-module src="www/async/dist/async.min.js" name="async" />
+    <js-module src="www/async/dist/async.min.map" name="async_map" />
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="PhotoLibrary" >
@@ -36,7 +37,7 @@
         <source-file src="src/ios/PhotoLibraryProtocol.swift" />
         <source-file src="src/ios/PhotoLibraryService.swift" />
         <source-file src="src/ios/PhotoLibraryGetLibraryOptions.swift" />
-        <dependency id="cordova-plugin-add-swift-support" version="1.6.0"/>
+        <dependency id="cordova-plugin-add-swift-support" version="^1.6.0"/>
     </platform>
     <platform name="browser">
         <config-file target="config.xml" parent="/*">
@@ -48,4 +49,5 @@
             <runs />
         </js-module>
     </platform>
+    <dependency id="cordova-plugin-file" version="^6.0.1"/>
 </plugin>

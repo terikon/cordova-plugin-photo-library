@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-photo-library",
-  "version": "1.2.2",
+  "version": "2.3.1",
   "description": "Plugin that just gets photos from the gallery",
   "main": "index.js",
   "scripts": {
@@ -25,12 +25,13 @@
   },
   "homepage": "https://github.com/terikon/cordova-plugin-photo-library#readme",
   "devDependencies": {
-    "eslint": "^3.14.1",
+    "eslint": "^6.6.0",
     "@types/cordova": "^0.0.34",
     "@types/jasmine": "^2.5.41",
     "es5-shim": "4.5.9",
     "es6-shim": "0.35.3",
     "es7-shim": "6.0.0",
+    "blueimp-canvastoblob": "2.1.0",
     "cordova-paramedic": "https://github.com/apache/cordova-paramedic.git"
   },
   "dependencies": {
