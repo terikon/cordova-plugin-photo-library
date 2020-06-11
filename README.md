@@ -1,4 +1,4 @@
-The project is now supported Swift 4
+The project is now supported WKWebView
 
 That's how it looks and performs in real app:
 
