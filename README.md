@@ -1,7 +1,4 @@
-[![Build Status](https://travis-ci.org/terikon/cordova-plugin-photo-library.svg?branch=master)](https://travis-ci.org/terikon/cordova-plugin-photo-library)
-
-Known issues:
-- This plugin does not work with WKWebView. Please do not use it if you planning to switch to WKWebView, until someone will resolve this issue.
+The project is now supported Swift 4
 
 That's how it looks and performs in real app:
 
