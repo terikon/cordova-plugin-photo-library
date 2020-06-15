@@ -99,11 +99,6 @@ final class PhotoLibraryService {
 
     }
 
-    static func hasPermission() -> Bool {
-        return PHPhotoLibrary.authorizationStatus() == .authorized
-
-    }
-
     func getLibrary(_ options: PhotoLibraryGetLibraryOptions, completion: @escaping (_ result: [NSDictionary], _ chunkNum: Int, _ isLastChunk: Bool) -> Void) {
 
         if(options.includeCloudData == false) {
@@ -728,7 +723,7 @@ final class PhotoLibraryService {
         var mimeType: String?
 
         if (imageHasAlpha(image)){
-            data = UIImageJPEGRepresentation(image, 0.75)
+            data = UIImagePNGRepresentation(image)
             mimeType = data != nil ? "image/png" : nil
         } else {
             data = UIImageJPEGRepresentation(image, CGFloat(quality))
