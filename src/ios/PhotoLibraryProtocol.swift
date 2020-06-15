@@ -1,6 +1,7 @@
 import Foundation
+import Photos
 
-@objc(PhotoLibraryProtocol) class PhotoLibraryProtocol : CDVURLProtocol {
+@objc(PhotoLibraryProtocol) class PhotoLibraryProtocol : URLProtocol {
     
     static let PHOTO_LIBRARY_PROTOCOL = "cdvphotolibrary"
     static let DEFAULT_WIDTH = "512"
@@ -45,7 +46,7 @@ import Foundation
                     return
                 }
                 
-                if !PhotoLibraryService.hasPermission() {
+                if PHPhotoLibrary.authorizationStatus() != .authorized {
                     self.sendErrorResponse(404, error: PhotoLibraryService.PERMISSION_ERROR)
                     return
                 }
