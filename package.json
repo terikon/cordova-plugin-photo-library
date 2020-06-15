@@ -1,29 +1,25 @@
 {
-  "name": "cordova-plugin-photo-library",
-  "version": "2.3.1",
+  "name": "cordova-plugin-photo-library-wkwebview",
+  "version": "3.0.1",
   "description": "Plugin that just gets photos from the gallery",
   "main": "index.js",
   "scripts": {
     "test:android": "cordova-paramedic --platform android --plugin . --verbose",
     "test:ios": "cordova-paramedic --platform ios --plugin . --verbose",
-    "test": "echo \"Run tests with https://github.com/terikon/cordova-plugin-photo-library-tester, or run test:android or test:ios.\" && exit 1",
+    "test": "echo \"Run test:android or test:ios.\" && exit 1",
     "copy-test-images:android:emulator": "adb -e push tests/test-images /mnt/sdcard/DCIM && adb -e shell am broadcast -a android.intent.action.MEDIA_MOUNTED -d file:///sdcard",
     "copy-test-images:ios:simulator": "xcrun simctl addmedia booted tests/test-images/*"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/terikon/cordova-plugin-photo-library.git"
+    "url": "git+https://github.com/tien271/cordova-plugin-photo-library-wkwebview.git"
   },
-  "author": {
-    "name": "Roman Viskin",
-    "email": "npm@terikon.com",
-    "url": "http://il.linkedin.com/in/romanviskin"
-  },
+  "author": "Roman Viskin <npm@terikon.com> (http://il.linkedin.com/in/romanviskin)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/terikon/cordova-plugin-photo-library/issues"
+    "url": "https://github.com/tien271/cordova-plugin-photo-library-wkwebview/issues"
   },
-  "homepage": "https://github.com/terikon/cordova-plugin-photo-library#readme",
+  "homepage": "https://github.com/tien271/cordova-plugin-photo-library-wkwebview#readme",
   "devDependencies": {
     "eslint": "^6.6.0",
     "@types/cordova": "^0.0.34",
@@ -32,7 +28,7 @@
     "es6-shim": "0.35.3",
     "es7-shim": "6.0.0",
     "blueimp-canvastoblob": "2.1.0",
-    "cordova-paramedic": "https://github.com/apache/cordova-paramedic.git"
+    "cordova-paramedic": "git+https://github.com/apache/cordova-paramedic.git"
   },
   "dependencies": {
     "async": "^2.1.4"
