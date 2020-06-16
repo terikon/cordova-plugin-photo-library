@@ -1,4 +1,4 @@
-The project is now supported WKWebView
+The project is now supported WKWebView but the function getLibrary will not work on iOS
 
 That's how it looks and performs in real app:
 

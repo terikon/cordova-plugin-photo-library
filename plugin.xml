@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='utf-8'?>
 <plugin id="cordova-plugin-photo-library-wkwebview"
-version="3.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+version="3.0.2" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>Photo Library</name>
-    <js-module src="www/PhotoLibrary.js" name="PhotoLibrary">
-        <clobbers target="cordova.plugins.photoLibrary" />
-    </js-module>
-    <js-module src="www/async/dist/async.min.js" name="async" />
-    <js-module src="www/async/dist/async.min.map" name="async_map" />
     <platform name="android">
+        <js-module src="www/PhotoLibrary.android.js" name="PhotoLibrary">
+            <clobbers target="cordova.plugins.photoLibrary" />
+        </js-module>
+        <js-module src="www/async/dist/async.min.js" name="async" />
+        <js-module src="www/async/dist/async.min.map" name="async_map" />
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="PhotoLibrary" >
                 <param name="android-package" value="com.terikon.cordova.photolibrary.PhotoLibrary"/>
@@ -24,6 +24,11 @@ version="3.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="
         <source-file src="src/android/PhotoLibraryGetLibraryOptions.java" target-dir="src/com/terikon/cordova/photolibrary" />
     </platform>
     <platform name="ios">
+        <js-module src="www/PhotoLibrary.ios.js" name="PhotoLibrary">
+            <clobbers target="cordova.plugins.photoLibrary" />
+        </js-module>
+        <!-- <js-module src="www/async/dist/async.min.js" name="async" />
+        <js-module src="www/async/dist/async.min.map" name="async_map" /> -->
         <config-file target="config.xml" parent="/*">
             <feature name="PhotoLibrary">
                 <param name="ios-package" value="PhotoLibrary" />
@@ -41,6 +46,11 @@ version="3.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="
         <dependency id="cordova-plugin-add-swift-support" version="^2.0.2"/>
     </platform>
     <platform name="browser">
+        <js-module src="www/PhotoLibrary.android.js" name="PhotoLibrary">
+            <clobbers target="cordova.plugins.photoLibrary" />
+        </js-module>
+        <js-module src="www/async/dist/async.min.js" name="async" />
+        <js-module src="www/async/dist/async.min.map" name="async_map" />
         <config-file target="config.xml" parent="/*">
               <feature name="PhotoLibrary">
                   <param name="browser-package" value="PhotoLibrary" />
