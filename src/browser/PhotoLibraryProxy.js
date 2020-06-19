@@ -1,6 +1,6 @@
 // Assume browser supports lambdas
 
-var async = cordova.require('cordova-plugin-photo-library.async');
+var async = cordova.require('cordova-plugin-photo-library-wkwebview.async');
 
 var photoLibraryProxy = {
 
