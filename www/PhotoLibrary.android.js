@@ -1,6 +1,6 @@
 var exec = require('cordova/exec');
 
-var async = cordova.require('cordova-plugin-photo-library.async');
+var async = cordova.require('cordova-plugin-photo-library-wkwebview.async');
 
 var defaultThumbnailWidth = 512; // optimal for android
 var defaultThumbnailHeight = 384; // optimal for android
