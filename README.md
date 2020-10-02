@@ -1,7 +1,4 @@
-[![Build Status](https://travis-ci.org/terikon/cordova-plugin-photo-library.svg?branch=master)](https://travis-ci.org/terikon/cordova-plugin-photo-library)
-
-Known issues:
-- This plugin does not work with WKWebView. Please do not use it if you planning to switch to WKWebView, until someone will resolve this issue.
+The project is now supported WKWebView but the function getLibrary will not work on iOS
 
 That's how it looks and performs in real app:
 
@@ -27,7 +24,7 @@ For example, you can use [PhotoSwipe](https://github.com/dimsemenov/photoswipe) 
 
 **Co-maintainer needed**
 
-Currently Android code is pretty stable, iOS has few stability [issues](https://github.com/terikon/cordova-plugin-photo-library/issues).
+Currently Android code is pretty stable, iOS has few stability [issues](https://github.com/tien271/cordova-plugin-photo-library-wkwebview/issues).
 **Co-maintainer with iOS/Swift knowlege is needed, please [contact](https://github.com/viskin)**.
 
 Contributions are welcome.
@@ -36,7 +33,7 @@ Please write tests for your contribution.
 
 # Install
 
-    cordova plugin add cordova-plugin-photo-library --variable PHOTO_LIBRARY_USAGE_DESCRIPTION="To choose photos" --save
+    cordova plugin add cordova-plugin-photo-library-wkwebview --variable PHOTO_LIBRARY_USAGE_DESCRIPTION="To choose photos" --save
 
 # Usage
 
@@ -336,22 +333,6 @@ var app = angular
 # TypeScript
 
 TypeScript definitions are provided in [PhotoLibrary.d.ts](https://github.com/terikon/cordova-plugin-photo-library/blob/master/PhotoLibrary.d.ts)
-
-# Tests
-
-The library includes tests in [tests](https://github.com/terikon/cordova-plugin-photo-library/tree/master/tests) folder. All tests are in
-[tests.js](https://github.com/terikon/cordova-plugin-photo-library/blob/master/tests/tests.js) file.
-
-# Running tests
-
-## Travis
-
-tcc.db file is located at $HOME/Library/Developer/CoreSimulator/Devices/$DEVICEID/data/Library/TCC/TCC.db
-
-## Helper app
-
-To run tests, use [special photo-library-tester](https://github.com/terikon/photo-library-tester).
-It's always useful to run these tests before submitting changes, for each platform (android, ios, browser).
 
 # TODO
 
