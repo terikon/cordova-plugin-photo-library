@@ -1,18 +1,29 @@
 import Foundation
 import Photos
+import WebKit
 
 @objc(PhotoLibrary) class PhotoLibrary : CDVPlugin {
-
+    
+    var interceptor: PhotoLibraryInterceptor?
+    
     lazy var concurrentQueue: DispatchQueue = DispatchQueue(label: "photo-library.queue.plugin", qos: DispatchQoS.utility, attributes: [.concurrent])
 
     override func pluginInitialize() {
         // Do not call PhotoLibraryService here, as it will cause permission prompt to appear on app start.
-        URLProtocol.registerClass(PhotoLibraryProtocol.self)
+        interceptor = PhotoLibraryInterceptor()
     }
 
     override func onMemoryWarning() {
         // self.service.stopCaching()
         NSLog("-- MEMORY WARNING --")
+    }
+    
+    @objc func overrideSchemeTask(_ urlSchemeTask: WKURLSchemeTask?) -> Bool {
+        guard let urlSchemeTask = urlSchemeTask else {
+            return false
+        }
+        
+        return interceptor?.handleSchemeTask(urlSchemeTask) ?? false
     }
 
 
