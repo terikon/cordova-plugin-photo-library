@@ -38,6 +38,9 @@ final class PhotoLibraryService {
 
     var cacheActive = false
 
+    var photo : UIImage? = nil
+    var images : [NSDictionary] = [NSDictionary]()
+
     let mimeTypes = [
         "flv":  "video/x-flv",
         "mp4":  "video/mp4",
@@ -97,6 +100,80 @@ final class PhotoLibraryService {
 
         return SingletonWrapper.singleton
 
+    }
+
+    func getPhotosFromAlbum(_ albumTitle: String) -> [NSDictionary] {
+
+        self.images = [NSDictionary]()
+
+        var fetchedCollection: PHAssetCollection?
+
+        for assetCollectionType in assetCollectionTypes {
+
+            let fetchResult = PHAssetCollection.fetchAssetCollections(with: assetCollectionType, subtype: .any, options: nil)
+
+            fetchResult.enumerateObjects({ (assetCollection: PHAssetCollection, index, stop) in
+                if assetCollection.localizedTitle == albumTitle {
+                    fetchedCollection = assetCollection
+                    stop.pointee = true
+                }
+            });
+
+            if fetchedCollection != nil {
+                print("Found album")
+                break
+            }
+        }
+
+        let photoAssets = PHAsset.fetchAssets(in: fetchedCollection ?? PHAssetCollection(), options: nil) as? PHFetchResult<AnyObject>
+
+        photoAssets?.enumerateObjects{(object: AnyObject!,
+                                       count: Int,
+                                       stop: UnsafeMutablePointer<ObjCBool>) in
+
+            if object is PHAsset{
+                let asset = object as! PHAsset
+                print("Asset")
+                print(asset)
+
+                let semaphore = DispatchSemaphore(value: 0)
+
+                let libraryItem = self.assetToLibraryItem(asset: asset, useOriginalFileNames: false, includeAlbumData: false);
+
+                self.getCompleteInfo(libraryItem, completion: { (fullPath) in
+                    libraryItem["filePath"] = fullPath
+                    semaphore.signal()
+                })
+
+                semaphore.wait()
+
+                self.images.append(libraryItem)
+
+                //                let imageSize = CGSize(width: asset.pixelWidth,
+                //                                       height: asset.pixelHeight)
+                //
+                //                /* For faster performance, and maybe degraded image */
+                //                let options = PHImageRequestOptions()
+                //                options.deliveryMode = .fastFormat
+                //                options.isSynchronous = true
+                //
+                //                imageManager.requestImage(for: asset,
+                //                                          targetSize: imageSize,
+                //                                          contentMode: .aspectFill,
+                //                                          options: options,
+                //                                          resultHandler: {
+                //                                            (image, info) -> Void in
+                //                                            self.photo = image!
+                //                                            /* The image is now available to us */
+                //                                            self.addImgToArray(uploadImage: self.photo!)
+                //                                            print("enum for image, This is number 2")
+                //
+                //                })
+
+            }
+        }
+
+        return self.images;
     }
 
     func getLibrary(_ options: PhotoLibraryGetLibraryOptions, completion: @escaping (_ result: [NSDictionary], _ chunkNum: Int, _ isLastChunk: Bool) -> Void) {

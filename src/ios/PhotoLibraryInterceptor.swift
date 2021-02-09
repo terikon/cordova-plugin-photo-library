@@ -25,7 +25,7 @@ class PhotoLibraryInterceptor {
 
         if url.lastPathComponent.lowercased() != "_app_file_thumbnail"
             && url.lastPathComponent.lowercased() != "_app_file_photo"
-            && url.host?.lowercased() != "_app_file_video" {
+            && url.lastPathComponent.lowercased() != "_app_file_video" {
             return false
         }
 
@@ -48,36 +48,31 @@ class PhotoLibraryInterceptor {
         if url.lastPathComponent.lowercased() == "_app_file_thumbnail" {
 
             let widthStr = queryItems?.filter({$0.name == "width"}).first?.value ?? PhotoLibraryInterceptor.DEFAULT_WIDTH
-            let width = Int(widthStr)
-            if width == nil {
+            guard let width = Int(widthStr) else {
                 self.sendErrorResponse(urlSchemeTask, 404, error: "Incorrect 'width' query parameter")
                 return true
             }
 
             let heightStr = queryItems?.filter({$0.name == "height"}).first?.value ?? PhotoLibraryInterceptor.DEFAULT_HEIGHT
-            let height = Int(heightStr)
-            if height == nil {
+            guard let height = Int(heightStr) else {
                 self.sendErrorResponse(urlSchemeTask, 404, error: "Incorrect 'height' query parameter")
                 return true
             }
 
             let qualityStr = queryItems?.filter({$0.name == "quality"}).first?.value ?? PhotoLibraryInterceptor.DEFAULT_QUALITY
-            let quality = Float(qualityStr)
-            if quality == nil {
+            guard let quality = Float(qualityStr) else {
                 self.sendErrorResponse(urlSchemeTask, 404, error: "Incorrect 'quality' query parameter")
                 return true
             }
 
             concurrentQueue.addOperation {
-                service.getThumbnail(photoId, thumbnailWidth: width!, thumbnailHeight: height!, quality: quality!) { (imageData) in
+                service.getThumbnail(photoId, thumbnailWidth: width, thumbnailHeight: height, quality: quality) { (imageData) in
 
                     guard let imageData = imageData else {
                         self.sendErrorResponse(urlSchemeTask, 404, error: PhotoLibraryService.PERMISSION_ERROR)
                         return
                     }
 
-                    Logger.shared.verbose(imageData.mimeType)
-                    Logger.shared.verbose(imageData.data.count)
                     self.sendResponse(urlSchemeTask, 200, data: imageData.data, mimeType: imageData.mimeType)
                 }
             }
@@ -94,7 +89,7 @@ class PhotoLibraryInterceptor {
                 }
             }
 
-        } else if url.host?.lowercased() == "_app_file_video" {
+        } else if url.lastPathComponent.lowercased() == "_app_file_video" {
 
             concurrentQueue.addOperation {
                 service.getVideo(photoId) { (videoData) in
@@ -118,11 +113,7 @@ class PhotoLibraryInterceptor {
     }
 
     func sendResponse(_ urlSchemeTask: WKURLSchemeTask, _ statusCode: Int, data: Data?, mimeType: String?) {
-        var mimeType = mimeType
-        if mimeType == nil {
-            mimeType = "text/plain"
-        }
-
+        let mimeType: String = mimeType ?? "text/plain"
         let encodingName: String? = mimeType == "text/plain" ? "UTF-8" : nil
 
         let response: CDVHTTPURLResponse = CDVHTTPURLResponse(url: urlSchemeTask.request.url!, mimeType: mimeType, expectedContentLength: data?.count ?? 0, textEncodingName: encodingName)

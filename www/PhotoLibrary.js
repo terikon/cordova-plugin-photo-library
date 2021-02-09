@@ -135,6 +135,9 @@ photoLibrary.getThumbnailURL = function (photoIdOrLibraryItem, success, error, o
     if (isBrowser) {
       cordova.exec(function(thumbnailURL) { success(thumbnailURL + '#' + urlParams); }, error, 'PhotoLibrary', '_getThumbnailURLBrowser', [photoId, options]);
     } else {
+      if (window.WkWebView) {
+        thumbnailURL = window.WkWebView.convertFilePath(thumbnailURL.replace("cdvphotolibrary://", "file://"));
+      }
       success(thumbnailURL);
     }
   } else {
