@@ -135,6 +135,9 @@ photoLibrary.getThumbnailURL = function (photoIdOrLibraryItem, success, error, o
     if (isBrowser) {
       cordova.exec(function(thumbnailURL) { success(thumbnailURL + '#' + urlParams); }, error, 'PhotoLibrary', '_getThumbnailURLBrowser', [photoId, options]);
     } else {
+      if (window.WkWebView) {
+        thumbnailURL = window.WkWebView.convertFilePath(thumbnailURL.replace("cdvphotolibrary://", "file://"));
+      }
       success(thumbnailURL);
     }
   } else {
@@ -165,6 +168,9 @@ photoLibrary.getPhotoURL = function (photoIdOrLibraryItem, success, error, optio
     if (isBrowser) {
       cordova.exec(function(photoURL) { success(photoURL + '#' + urlParams); }, error, 'PhotoLibrary', '_getPhotoURLBrowser', [photoId, options]);
     } else {
+      if (window.WkWebView) {
+        photoURL = window.WkWebView.convertFilePath(photoURL.replace("cdvphotolibrary://", "file://"));
+      }
       success(photoURL);
     }
   } else {
@@ -361,7 +367,11 @@ var addUrlsToLibrary = function (library, callback, options) {
   };
 
   var handleThumbnailURL = function (libraryItem, thumbnailURL) {
-    libraryItem.thumbnailURL = thumbnailURL;
+    if (window.WkWebView) {
+      libraryItem.thumbnailURL = window.WkWebView.convertFilePath(thumbnailURL.replace("cdvphotolibrary://", "file://"));
+    } else {
+      libraryItem.thumbnailURL = thumbnailURL;
+    }
     photoLibrary.getPhotoURL(libraryItem, handlePhotoURL.bind(null, libraryItem), handleUrlError);
   };
 

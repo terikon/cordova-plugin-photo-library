@@ -1,7 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-photo-library"
-version="2.3.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="cordova-plugin-photo-library" version="2.4.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>Photo Library</name>
+    <engines>
+      <engine name="cordova-ios" version=">=6.2.0" />
+    </engines>
     <js-module src="www/PhotoLibrary.js" name="PhotoLibrary">
       <clobbers target="cordova.plugins.photoLibrary" />
     </js-module>
@@ -38,6 +40,7 @@ version="2.3.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="
         <source-file src="src/ios/PhotoLibraryProtocol.swift" />
         <source-file src="src/ios/PhotoLibraryService.swift" />
         <source-file src="src/ios/PhotoLibraryGetLibraryOptions.swift" />
+        <source-file src="src/ios/PhotoLibraryInterceptor.swift" />
     </platform>
     <platform name="browser">
         <config-file target="config.xml" parent="/*">

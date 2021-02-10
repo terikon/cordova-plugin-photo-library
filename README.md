@@ -1,4 +1,4 @@
-The project is now supported WKWebView but the function getLibrary will not work on iOS
+The project supports WKWebView.
 
 That's how it looks and performs in real app:
 
@@ -14,7 +14,8 @@ Displays photo library on cordova's HTML page, by URL. Gets thumbnail of arbitra
 
 - Displays photo gallery as web page, and not as boring native screen which you cannot modify. This brings back control over your app to you.
 For example, you can use [PhotoSwipe](https://github.com/dimsemenov/photoswipe) library to present photos.
-- Provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5 .
+- Provides custom schema to access thumbnails: cdvphotolibrary://thumbnail?fileid=xxx&width=128&height=128&quality=0.5
+- Uses the scheme and host of WkWebView instead of cdvphotolibrary scheme on iOS
 - Works on Android, iOS and browser (cordova serve).
 - Fast - uses browser cache.
 - Can save photos (jpg, png, animated gifs) and videos to specified album on device.
