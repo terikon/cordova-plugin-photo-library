@@ -77,14 +77,14 @@ final class PhotoLibraryService {
         thumbnailRequestOptions.resizeMode = .exact
         thumbnailRequestOptions.deliveryMode = .highQualityFormat
         thumbnailRequestOptions.version = .current
-        thumbnailRequestOptions.isNetworkAccessAllowed = false
+        thumbnailRequestOptions.isNetworkAccessAllowed = true
 
         imageRequestOptions = PHImageRequestOptions()
         imageRequestOptions.isSynchronous = false
         imageRequestOptions.resizeMode = .exact
         imageRequestOptions.deliveryMode = .highQualityFormat
         imageRequestOptions.version = .current
-        imageRequestOptions.isNetworkAccessAllowed = false
+        imageRequestOptions.isNetworkAccessAllowed = true
 
         dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"

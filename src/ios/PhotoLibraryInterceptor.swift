@@ -109,7 +109,11 @@ class PhotoLibraryInterceptor {
     }
 
     func sendErrorResponse(_ urlSchemeTask: WKURLSchemeTask, _ statusCode: Int, error: String) {
-        sendResponse(urlSchemeTask, statusCode, data: error.data(using: String.Encoding.ascii), mimeType: nil)
+        print(error);
+        
+        let response = HTTPURLResponse(url: urlSchemeTask.request.url!, statusCode: statusCode, httpVersion: nil, headerFields: nil)
+        urlSchemeTask.didReceive(response!)
+        urlSchemeTask.didFinish()
     }
 
     func sendResponse(_ urlSchemeTask: WKURLSchemeTask, _ statusCode: Int, data: Data?, mimeType: String?) {
