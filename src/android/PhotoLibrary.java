@@ -60,6 +60,7 @@ public class PhotoLibrary extends CordovaPlugin {
 
               final JSONObject options = args.optJSONObject(0);
               final int itemsInChunk = options.getInt("itemsInChunk");
+              final int maxItems = options.getInt("maxItems");
               final double chunkTimeSec = options.getDouble("chunkTimeSec");
               final boolean includeAlbumData = options.getBoolean("includeAlbumData");
 
@@ -68,7 +69,7 @@ public class PhotoLibrary extends CordovaPlugin {
                 return;
               }
 
-              PhotoLibraryGetLibraryOptions getLibraryOptions = new PhotoLibraryGetLibraryOptions(itemsInChunk, chunkTimeSec, includeAlbumData);
+              PhotoLibraryGetLibraryOptions getLibraryOptions = new PhotoLibraryGetLibraryOptions(itemsInChunk, maxItems, chunkTimeSec, includeAlbumData);
 
               service.getLibrary(getContext(), getLibraryOptions, new PhotoLibraryService.ChunkResultRunnable() {
                 @Override
