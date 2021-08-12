@@ -139,6 +139,42 @@ import Foundation
         }
     }
 
+        @objc(getThumbnailURL:) func getThumbnailURL(_ command: CDVInvokedUrlCommand) {
+        concurrentQueue.async {
+
+            if !PhotoLibraryService.hasPermission() {
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: PhotoLibraryService.PERMISSION_ERROR)
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+                return
+            }
+
+            let service = PhotoLibraryService.instance
+
+            let photoId = command.arguments[0] as! String
+            let options = command.arguments[1] as! NSDictionary
+            let thumbnailWidth = options["thumbnailWidth"] as! Int
+            let thumbnailHeight = options["thumbnailHeight"] as! Int
+            let quality = options["quality"] as! Float
+
+            service.getThumbnailURL(photoId, thumbnailWidth: thumbnailWidth, thumbnailHeight: thumbnailHeight, quality: quality) { (thumbnailURL) in
+
+                let pluginResult = thumbnailURL != nil ?
+                    CDVPluginResult(
+                        status: CDVCommandStatus_OK,
+                        messageAs: thumbnailURL!
+                    )
+                    :
+                    CDVPluginResult(
+                        status: CDVCommandStatus_ERROR,
+                        messageAs: "Could not fetch the thumbnail")
+
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId )
+
+            }
+
+        }
+    }
+
     @objc func getPhoto(_ command: CDVInvokedUrlCommand) {
         concurrentQueue.async {
 

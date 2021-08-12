@@ -35,18 +35,17 @@ final class PhotoLibraryService {
     let cachingImageManager: PHCachingImageManager!
 
     let contentMode = PHImageContentMode.aspectFill // AspectFit: can be smaller, AspectFill - can be larger. TODO: resize to exact size
-
     var cacheActive = false
 
     let mimeTypes = [
         "flv":  "video/x-flv",
         "mp4":  "video/mp4",
-        "m3u8":	"application/x-mpegURL",
+        "m3u8":    "application/x-mpegURL",
         "ts":   "video/MP2T",
-        "3gp":	"video/3gpp",
-        "mov":	"video/quicktime",
-        "avi":	"video/x-msvideo",
-        "wmv":	"video/x-ms-wmv",
+        "3gp":    "video/3gpp",
+        "mov":    "video/quicktime",
+        "avi":    "video/x-msvideo",
+        "wmv":    "video/x-ms-wmv",
         "gif":  "image/gif",
         "jpg":  "image/jpeg",
         "jpeg": "image/jpeg",
@@ -74,7 +73,7 @@ final class PhotoLibraryService {
         thumbnailRequestOptions.resizeMode = .exact
         thumbnailRequestOptions.deliveryMode = .highQualityFormat
         thumbnailRequestOptions.version = .current
-        thumbnailRequestOptions.isNetworkAccessAllowed = false
+        thumbnailRequestOptions.isNetworkAccessAllowed = true
 
         imageRequestOptions = PHImageRequestOptions()
         imageRequestOptions.isSynchronous = false
@@ -134,7 +133,7 @@ final class PhotoLibraryService {
 
 
 
-	// TODO: do not restart caching on multiple calls
+    // TODO: do not restart caching on multiple calls
 //        if fetchResult.count > 0 {
 //
 //            var assets = [PHAsset]()
@@ -146,7 +145,6 @@ final class PhotoLibraryService {
 //            self.cachingImageManager.startCachingImages(for: assets, targetSize: CGSize(width: options.thumbnailWidth, height: options.thumbnailHeight), contentMode: self.contentMode, options: self.imageRequestOptions)
 //            self.cacheActive = true
 //        }
-
         var chunk = [NSDictionary]()
         var chunkStartTime = NSDate()
         var chunkNum = 0
@@ -213,18 +211,8 @@ final class PhotoLibraryService {
             let asset = obj as! PHAsset
 
             if(mediaType == "image") {
-                PHImageManager.default().requestImageData(for: asset, options: self.imageRequestOptions) {
-                    (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
-
-                    if(imageData == nil) {
-                        completion(nil)
-                    }
-                    else {
-                        let file_url:URL = info!["PHImageFileURLKey"] as! URL
-//                        let mime_type = self.mimeTypes[file_url.pathExtension.lowercased()]!
-                        completion(file_url.relativePath)
-                    }
-                }
+                // We don't return thumbnails for images rn
+                completion(nil)
             }
             else if(mediaType == "video") {
 
@@ -341,6 +329,45 @@ final class PhotoLibraryService {
 
     }
 
+    func getThumbnailURL(_ photoId: String, thumbnailWidth: Int, thumbnailHeight: Int, quality: Float, completion: @escaping (_ result: String?) -> Void) {
+
+        let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [photoId], options: self.fetchOptions)
+        if fetchResult.count == 0 {
+            completion(nil)
+            return
+        }
+        let asset = fetchResult[0]
+        
+        PHImageManager.default().requestImage(for: asset, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: .aspectFit, options: self.imageRequestOptions, resultHandler: {(thumbnail, info)->Void in
+            var thumbnailData: Data
+            var thumbnailFileName = ""
+            
+            if (PhotoLibraryService.imageHasAlpha(thumbnail!)){
+                thumbnailData = (thumbnail?.pngData()!)!
+                thumbnailFileName = "\(photoId.split(separator: "/")[0]).png"
+            } else {
+                thumbnailData = (thumbnail?.jpegData(compressionQuality: CGFloat(quality))!)!
+                thumbnailFileName = "\(photoId.split(separator: "/")[0]).jpeg"
+            }
+            
+            guard let thumbnailURL = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(thumbnailFileName) else {
+                return
+            }
+            
+            do {
+                try thumbnailData.write(to: thumbnailURL)
+                completion(thumbnailURL.absoluteString)
+            } catch {
+                completion(nil)
+            }
+        })
+
+        self.cachingImageManager.requestImage(for: asset, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight), contentMode: self.contentMode, options: self.thumbnailRequestOptions) {
+            (image: UIImage?, imageInfo: [AnyHashable: Any]?) in
+        }
+
+    }
+
     func getPhoto(_ photoId: String, completion: @escaping (_ result: PictureData?) -> Void) {
 
         let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [photoId], options: self.fetchOptions)
@@ -356,7 +383,7 @@ final class PhotoLibraryService {
             let asset = obj as! PHAsset
 
             PHImageManager.default().requestImageData(for: asset, options: self.imageRequestOptions) {
-                (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
+                (imageData: Data?, dataUTI: String?, orientation: UIImage.Orientation, info: [AnyHashable: Any]?) in
 
                 guard let image = imageData != nil ? UIImage(data: imageData!) : nil else {
                     completion(nil)
@@ -388,7 +415,7 @@ final class PhotoLibraryService {
 
             if(mediaType == "image") {
                 PHImageManager.default().requestImageData(for: asset, options: self.imageRequestOptions) {
-                    (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
+                    (imageData: Data?, dataUTI: String?, orientation: UIImage.Orientation, info: [AnyHashable: Any]?) in
 
                     if(imageData == nil) {
                         completion(nil)
@@ -493,7 +520,7 @@ final class PhotoLibraryService {
         }
 
         // Permission was manually denied by user, open settings screen
-        let settingsUrl = URL(string: UIApplicationOpenSettingsURLString)
+        let settingsUrl = URL(string: UIApplication.openSettingsURLString)
         if let url = settingsUrl {
             UIApplication.shared.openURL(url)
             // TODO: run callback only when return ?
@@ -587,11 +614,9 @@ final class PhotoLibraryService {
             //                return
             //            }
             //            UISaveVideoAtPathToSavedPhotosAlbum(videoURL.relativePath!, nil, nil, nil)
-
             if !assetsLibrary.videoAtPathIs(compatibleWithSavedPhotosAlbum: videoURL) {
 
                 // TODO: try to convert to MP4 as described here?: http://stackoverflow.com/a/39329155/1691132
-
                 completion(nil, "Provided video is not compatible with Saved Photo album")
                 return
             }
@@ -609,8 +634,8 @@ final class PhotoLibraryService {
                 }
 
                 self.putMediaToAlbum(assetsLibrary, url: assetUrl, album: album, completion: { (error) in
-  
-                    
+
+
                     if error != nil {
                         completion(nil, error)
                     } else {
@@ -666,7 +691,7 @@ final class PhotoLibraryService {
     fileprivate func getDataFromURL(_ url: String) throws -> Data {
         if url.hasPrefix("data:") {
 
-            guard let match = self.dataURLPattern.firstMatch(in: url, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, url.characters.count)) else { // TODO: firstMatchInString seems to be slow for unknown reason
+            guard let match = self.dataURLPattern.firstMatch(in: url, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, url.count)) else { // TODO: firstMatchInString seems to be slow for unknown reason
                 throw PhotoLibraryError.error(description: "The dataURL could not be parsed")
             }
             let dataPos = match.range(at: 0).length
@@ -723,15 +748,14 @@ final class PhotoLibraryService {
         //        let provider: CGDataProvider = CGImageGetDataProvider(image.CGImage)!
         //        let data = CGDataProviderCopyData(provider)
         //        return data;
-
         var data: Data?
         var mimeType: String?
 
         if (imageHasAlpha(image)){
-            data = UIImagePNGRepresentation(image)
+            data = image.pngData()
             mimeType = data != nil ? "image/png" : nil
         } else {
-            data = UIImageJPEGRepresentation(image, CGFloat(quality))
+            data = image.jpegData(compressionQuality: CGFloat(quality))
             mimeType = data != nil ? "image/jpeg" : nil
         }
 
