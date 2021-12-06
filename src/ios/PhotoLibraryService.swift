@@ -214,7 +214,7 @@ final class PhotoLibraryService {
 
             if(mediaType == "image") {
                 PHImageManager.default().requestImageData(for: asset, options: self.imageRequestOptions) {
-                    (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
+                    (imageData: Data?, dataUTI: String?, orientation: UIImage.Orientation, info: [AnyHashable: Any]?) in
 
                     if(imageData == nil) {
                         completion(nil)
@@ -356,7 +356,7 @@ final class PhotoLibraryService {
             let asset = obj as! PHAsset
 
             PHImageManager.default().requestImageData(for: asset, options: self.imageRequestOptions) {
-                (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
+                (imageData: Data?, dataUTI: String?, orientation: UIImage.Orientation, info: [AnyHashable: Any]?) in
 
                 guard let image = imageData != nil ? UIImage(data: imageData!) : nil else {
                     completion(nil)
@@ -388,7 +388,7 @@ final class PhotoLibraryService {
 
             if(mediaType == "image") {
                 PHImageManager.default().requestImageData(for: asset, options: self.imageRequestOptions) {
-                    (imageData: Data?, dataUTI: String?, orientation: UIImageOrientation, info: [AnyHashable: Any]?) in
+                    (imageData: Data?, dataUTI: String?, orientation: UIImage.Orientation, info: [AnyHashable: Any]?) in
 
                     if(imageData == nil) {
                         completion(nil)
@@ -609,8 +609,8 @@ final class PhotoLibraryService {
                 }
 
                 self.putMediaToAlbum(assetsLibrary, url: assetUrl, album: album, completion: { (error) in
-  
-                    
+
+
                     if error != nil {
                         completion(nil, error)
                     } else {
@@ -666,7 +666,7 @@ final class PhotoLibraryService {
     fileprivate func getDataFromURL(_ url: String) throws -> Data {
         if url.hasPrefix("data:") {
 
-            guard let match = self.dataURLPattern.firstMatch(in: url, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, url.characters.count)) else { // TODO: firstMatchInString seems to be slow for unknown reason
+            guard let match = self.dataURLPattern.firstMatch(in: url, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, url.count)) else { // TODO: firstMatchInString seems to be slow for unknown reason
                 throw PhotoLibraryError.error(description: "The dataURL could not be parsed")
             }
             let dataPos = match.range(at: 0).length
