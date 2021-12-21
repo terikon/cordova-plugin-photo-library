@@ -3,12 +3,14 @@
     <name>Photo Library</name>
     <engines>
       <engine name="cordova-ios" version=">=6.2.0" />
+      <engine name="cordova-android" version=">=10.0.0" />
     </engines>
     <js-module src="www/PhotoLibrary.js" name="PhotoLibrary">
       <clobbers target="cordova.plugins.photoLibrary" />
     </js-module>
     <js-module src="www/async/dist/async.min.js" name="async" />
     <js-module src="www/async/dist/async.min.map" name="async_map" />
+    <dependency id="cordova-plugin-device" />
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="PhotoLibrary" >

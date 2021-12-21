@@ -5,21 +5,27 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.util.Base64;
+import android.webkit.WebResourceResponse;
+
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaPluginPathHandler;
+import org.apache.cordova.CordovaResourceApi;
+import org.apache.cordova.LOG;
+import org.apache.cordova.PluginResult;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.apache.cordova.*;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 public class PhotoLibrary extends CordovaPlugin {
+  private static final String TAG = PhotoLibrary.class.getSimpleName();
 
   public static final String PHOTO_LIBRARY_PROTOCOL = "cdvphotolibrary";
 
@@ -265,6 +271,35 @@ public class PhotoLibrary extends CordovaPlugin {
     }
     return toPluginUri(uri);
 
+  }
+
+  @Override
+  public CordovaPluginPathHandler getPathHandler() {
+    //Adapted from https://github.com/apache/cordova-android/issues/1361#issuecomment-978763603
+    return new CordovaPluginPathHandler(path -> {
+      LOG.d(TAG, "Path Handler " + path);
+      //e.g. cdvphotolibrary/thumbnail/photoId=3112&width=512&height=384&quality=0.8
+      if(path.startsWith(PHOTO_LIBRARY_PROTOCOL)) {
+        path = path.replaceAll("^cdvphotolibrary/", "cdvphotolibrary://");
+        path = path.replaceAll("thumbnail/", "thumbnail?");
+        path = path.replaceAll("photo/", "photo?");
+
+        Uri uri = Uri.parse(path);
+        LOG.d(TAG, "URI " + uri);
+        Uri remappedUri = remapUri(uri);
+        LOG.d(TAG, "RemappedUri " + uri);
+        if(remappedUri != null) {
+          try {
+            CordovaResourceApi.OpenForReadResult result = handleOpenForRead(remappedUri);
+            LOG.d(TAG, "Result " + result.inputStream.available());
+            return new WebResourceResponse(result.mimeType, "utf-8", result.inputStream);
+          } catch (IOException e) {
+            LOG.e(TAG, "error open cdvphotolibrary resource "+ e);
+          }
+        }
+      }
+      return null;
+    });
   }
 
   @Override

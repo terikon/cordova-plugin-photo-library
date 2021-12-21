@@ -137,6 +137,8 @@ photoLibrary.getThumbnailURL = function (photoIdOrLibraryItem, success, error, o
     } else {
       if (window.WkWebView) {
         thumbnailURL = window.WkWebView.convertFilePath(thumbnailURL.replace("cdvphotolibrary://", "file://"));
+      } else if (typeof device !== "undefined" && device.platform === "Android") {
+        thumbnailURL = "http://localhost/cdvphotolibrary/thumbnail/" + urlParams;
       }
       success(thumbnailURL);
     }
@@ -170,6 +172,9 @@ photoLibrary.getPhotoURL = function (photoIdOrLibraryItem, success, error, optio
     } else {
       if (window.WkWebView) {
         photoURL = window.WkWebView.convertFilePath(photoURL.replace("cdvphotolibrary://", "file://"));
+        success(photoURL);
+      } else if (typeof device !== "undefined" && device.platform === "Android") {
+        photoURL = "http://localhost/cdvphotolibrary/photo/" + urlParams;
       }
       success(photoURL);
     }
