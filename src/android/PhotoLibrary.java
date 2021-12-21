@@ -7,6 +7,10 @@ import android.net.Uri;
 import android.util.Base64;
 import android.webkit.WebResourceResponse;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.webkit.WebViewAssetLoader;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaPluginPathHandler;
@@ -276,29 +280,33 @@ public class PhotoLibrary extends CordovaPlugin {
   @Override
   public CordovaPluginPathHandler getPathHandler() {
     //Adapted from https://github.com/apache/cordova-android/issues/1361#issuecomment-978763603
-    return new CordovaPluginPathHandler(path -> {
-      LOG.d(TAG, "Path Handler " + path);
-      //e.g. cdvphotolibrary/thumbnail/photoId=3112&width=512&height=384&quality=0.8
-      if(path.startsWith(PHOTO_LIBRARY_PROTOCOL)) {
-        path = path.replaceAll("^cdvphotolibrary/", "cdvphotolibrary://");
-        path = path.replaceAll("thumbnail/", "thumbnail?");
-        path = path.replaceAll("photo/", "photo?");
+    return new CordovaPluginPathHandler(new WebViewAssetLoader.PathHandler() {
+      @Nullable
+      @Override
+      public WebResourceResponse handle(@NonNull String path) {
+        LOG.d(TAG, "Path Handler " + path);
+        //e.g. cdvphotolibrary/thumbnail/photoId=3112&width=512&height=384&quality=0.8
+        if (path.startsWith(PHOTO_LIBRARY_PROTOCOL)) {
+          path = path.replaceAll("^cdvphotolibrary/", "cdvphotolibrary://");
+          path = path.replaceAll("thumbnail/", "thumbnail?");
+          path = path.replaceAll("photo/", "photo?");
 
-        Uri uri = Uri.parse(path);
-        LOG.d(TAG, "URI " + uri);
-        Uri remappedUri = remapUri(uri);
-        LOG.d(TAG, "RemappedUri " + uri);
-        if(remappedUri != null) {
-          try {
-            CordovaResourceApi.OpenForReadResult result = handleOpenForRead(remappedUri);
-            LOG.d(TAG, "Result " + result.inputStream.available());
-            return new WebResourceResponse(result.mimeType, "utf-8", result.inputStream);
-          } catch (IOException e) {
-            LOG.e(TAG, "error open cdvphotolibrary resource "+ e);
+          Uri uri = Uri.parse(path);
+          LOG.d(TAG, "URI " + uri);
+          Uri remappedUri = remapUri(uri);
+          LOG.d(TAG, "RemappedUri " + uri);
+          if (remappedUri != null) {
+            try {
+              CordovaResourceApi.OpenForReadResult result = handleOpenForRead(remappedUri);
+              LOG.d(TAG, "Result " + result.inputStream.available());
+              return new WebResourceResponse(result.mimeType, "utf-8", result.inputStream);
+            } catch (IOException e) {
+              LOG.e(TAG, "error open cdvphotolibrary resource " + e);
+            }
           }
         }
+        return null;
       }
-      return null;
     });
   }
 
