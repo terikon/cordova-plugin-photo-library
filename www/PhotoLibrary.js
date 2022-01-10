@@ -49,28 +49,32 @@ photoLibrary.getLibrary = function (success, error, options) {
   var chunksToProcess = []; // chunks are stored in its index
   var currentChunkNum = 0;
 
-  cordova.exec(
-    function (chunk) {
-      // callbacks arrive from cordova.exec not in order, restoring the order here
-      if (chunk.chunkNum === currentChunkNum) {
-        // the chunk arrived in order
-        q.push(chunk);
-        currentChunkNum += 1;
-        while (chunksToProcess[currentChunkNum]) {
-          q.push(chunksToProcess[currentChunkNum]);
-          delete chunksToProcess[currentChunkNum];
+  this.requestAuthorization(function () {
+    cordova.exec(
+      function (chunk) {
+        // callbacks arrive from cordova.exec not in order, restoring the order here
+        if (chunk.chunkNum === currentChunkNum) {
+          // the chunk arrived in order
+          q.push(chunk);
           currentChunkNum += 1;
+          while (chunksToProcess[currentChunkNum]) {
+            q.push(chunksToProcess[currentChunkNum]);
+            delete chunksToProcess[currentChunkNum];
+            currentChunkNum += 1;
+          }
+        } else {
+          // the chunk arrived not in order
+          chunksToProcess[chunk.chunkNum] = chunk;
         }
-      } else {
-        // the chunk arrived not in order
-        chunksToProcess[chunk.chunkNum] = chunk;
-      }
-    },
-    error,
-    'PhotoLibrary',
-    'getLibrary', [options]
-  );
-
+      },
+      error,
+      'PhotoLibrary',
+      'getLibrary', [options]
+    );
+  }, error, {
+    read: true,
+    write: false
+  });
 };
 
 photoLibrary.getAlbums = function (success, error) {
