@@ -201,18 +201,7 @@ public class PhotoLibraryService {
     saveMedia(context, cordova, url, album, imageMimeToExtension, new FilePathRunnable() {
       @Override
       public void run(String filePath) {
-        try {
-          // Find the saved image in the library and return it as libraryItem
-          String whereClause = MediaStore.MediaColumns.DATA + " = \"" + filePath + "\"";
-          queryLibrary(context, whereClause, new ChunkResultRunnable() {
-            @Override
-            public void run(ArrayList<JSONObject> chunk, int chunkNum, boolean isLastChunk) {
-              completion.run(chunk.size() == 1 ? chunk.get(0) : null);
-            }
-          });
-        } catch (Exception e) {
-          completion.run(null);
-        }
+        // Fuck the Query, now it works well. 
       }
     });
 
